@@ -29,7 +29,7 @@ AIO Research Agent is an all-in-one intelligent companion for navigating the wor
 
 ## Demo
 
-https://github.com/AIVIETNAMResearch/AIO_Research_Agent/assets/81065083/195df8e8-60c9-442a-9604-33d2a585ff97
+<iframe width="560" height="315" src="https://www.youtube.com/watch?v=7tP1WGy5BM8" frameborder="0" allow="autoplay; encrypted-media" allowfullscreen></iframe>
 
 ## Getting Started
 
