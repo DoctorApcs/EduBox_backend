@@ -29,8 +29,13 @@ AIO Research Agent is an all-in-one intelligent companion for navigating the wor
 
 ## Demo
 
-[![IMAGE ALT TEXT](http://img.youtube.com/vi/7tP1WGy5BM8/0.jpg)](http://www.youtube.com/watch?v=7tP1WGy5BM8 "Title")
-  
+<div align="center">
+  <a href="http://www.youtube.com/watch?v=7tP1WGy5BM8" target="_blank">
+    <img src="http://img.youtube.com/vi/7tP1WGy5BM8/0.jpg" 
+    alt="IMAGE ALT TEXT HERE" width="100%" style="max-width: 100%;">
+  </a>
+</div>  
+
 ## Getting Started
 
 To install this application, follow these steps:
