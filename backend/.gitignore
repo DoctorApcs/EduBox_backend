@@ -13,3 +13,4 @@ wandb/*
 lib/*
 .files/*
 qdrant_storage/*
+.venv/*
