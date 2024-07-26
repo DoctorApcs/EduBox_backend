@@ -1,38 +1,25 @@
 import React from "react";
+import { FileText, MoreVertical } from "lucide-react";
 
 const KnowledgeBaseCard = ({ title, docCount, lastUpdated }) => {
   return (
-    <div className="bg-white rounded-lg shadow-md p-4 w-64">
-      <div className="flex justify-between items-center mb-4">
-        <div className="w-10 h-10 bg-gray-200 rounded-full"></div>
-        <button className="text-gray-400">...</button>
+    <div className="bg-white rounded-lg shadow-md p-4 sm:p-6 hover:shadow-lg transition-shadow duration-300 w-full h-full">
+      <div className="flex justify-between items-start mb-4">
+        <div className="w-10 h-10 sm:w-12 sm:h-12 bg-blue-100 rounded-full flex items-center justify-center">
+          <FileText className="w-5 h-5 sm:w-6 sm:h-6 text-blue-500" />
+        </div>
+        <button className="text-gray-400 hover:text-gray-600">
+          <MoreVertical className="w-5 h-5" />
+        </button>
       </div>
-      <h2 className="text-xl font-semibold mb-2">{title}</h2>
-      <div className="flex items-center text-gray-500 text-sm">
-        <svg
-          className="w-4 h-4 mr-2"
-          viewBox="0 0 24 24"
-          fill="none"
-          xmlns="http://www.w3.org/2000/svg"
-        >
-          <path
-            d="M13 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V9l-7-7z"
-            stroke="currentColor"
-            strokeWidth="2"
-            strokeLinecap="round"
-            strokeLinejoin="round"
-          />
-          <path
-            d="M13 2v7h7"
-            stroke="currentColor"
-            strokeWidth="2"
-            strokeLinecap="round"
-            strokeLinejoin="round"
-          />
-        </svg>
-        {docCount} Docs
+      <h2 className="text-lg sm:text-xl font-semibold mb-2 sm:mb-3 text-gray-800">
+        {title}
+      </h2>
+      <div className="flex items-center text-sm text-gray-500 mb-2">
+        <FileText className="w-4 h-4 mr-2" />
+        {docCount} {docCount === 1 ? "Document" : "Documents"}
       </div>
-      <div className="text-gray-500 text-sm mt-1">{lastUpdated}</div>
+      <div className="text-sm text-gray-500">Last updated: {lastUpdated}</div>
     </div>
   );
 };

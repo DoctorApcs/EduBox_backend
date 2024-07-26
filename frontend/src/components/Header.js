@@ -3,7 +3,6 @@
 import React from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-// import { GitHub, Settings } from "lucide-react";
 
 const Header = () => {
   const pathname = usePathname();
@@ -11,9 +10,17 @@ const Header = () => {
   const navItems = [
     { name: "Knowledge Base", path: "/knowledge" },
     { name: "Chat", path: "/chat" },
-    { name: "Graph", path: "/graph" },
+    // { name: "Graph", path: "/graph" },
     { name: "File Management", path: "/file-management" },
   ];
+
+  const isActive = (path) => {
+    // If the current path is just "/", it won't match any nav item
+    if (pathname === "/") return false;
+
+    // Check if the current pathname starts with the nav item's path
+    return pathname.startsWith(path);
+  };
 
   return (
     <header className="bg-white shadow-sm h-16">
@@ -49,7 +56,7 @@ const Header = () => {
               key={item.path}
               href={item.path}
               className={`px-3 py-2 rounded-md ${
-                pathname === item.path
+                isActive(item.path)
                   ? "bg-blue-500 text-white"
                   : "text-gray-600 hover:bg-gray-100"
               }`}
@@ -62,8 +69,6 @@ const Header = () => {
           <select className="bg-gray-100 rounded-md px-2 py-1">
             <option>English</option>
           </select>
-          {/* <GitHub className="w-6 h-6 text-gray-600" /> */}
-          {/* <Settings className="w-6 h-6 text-gray-600" /> */}
         </div>
       </div>
     </header>

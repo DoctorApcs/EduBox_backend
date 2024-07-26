@@ -1,9 +1,17 @@
 "use client";
 
-import React from "react";
+import React, { useState } from "react";
 import { Search, Plus, FileText, Settings } from "lucide-react";
+import UploadFileModal from "@/components/knowledge_base/UploadFileModal";
 
 const DatasetView = ({ knowledgeBaseName }) => {
+  const [isUploadModalOpen, setIsUploadModalOpen] = useState(false);
+
+  const handleUpload = (files) => {
+    // Here you would handle the file upload logic
+    console.log("Uploading files:", files);
+  };
+
   return (
     <div className="flex h-screen bg-gray-100">
       {/* Sidebar */}
@@ -71,7 +79,10 @@ const DatasetView = ({ knowledgeBaseName }) => {
                   size={20}
                 />
               </div>
-              <button className="px-4 py-2 bg-blue-500 text-white rounded flex items-center">
+              <button
+                onClick={() => setIsUploadModalOpen(true)}
+                className="px-4 py-2 bg-blue-500 text-white rounded flex items-center"
+              >
                 <Plus size={20} className="mr-2" />
                 Add file
               </button>
@@ -103,6 +114,11 @@ const DatasetView = ({ knowledgeBaseName }) => {
           </table>
         </div>
       </main>
+      <UploadFileModal
+        isOpen={isUploadModalOpen}
+        onClose={() => setIsUploadModalOpen(false)}
+        onUpload={handleUpload}
+      />
     </div>
   );
 };
