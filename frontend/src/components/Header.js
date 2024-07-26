@@ -48,7 +48,7 @@ const Header = () => {
               strokeLinejoin="round"
             />
           </svg>
-          <span className="font-bold text-xl">RAGFlow</span>
+          <span className="font-bold text-xl">Knowledge Base</span>
         </div>
         <nav className="flex space-x-4">
           {navItems.map((item) => (
