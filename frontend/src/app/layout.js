@@ -6,10 +6,10 @@ const inter = Inter({ subsets: ["latin"] });
 
 export default function RootLayout({ children }) {
   return (
-    <html lang="en">
-      <body className={inter.className}>
+    <html lang="en" className="h-full">
+      <body className={`${inter.className} flex flex-col h-full`}>
         <Header />
-        {children}
+        <main className="flex-grow">{children}</main>
       </body>
     </html>
   );

@@ -1,11 +1,23 @@
+"use client";
+
 import React from "react";
 import Link from "next/link";
+import { usePathname } from "next/navigation";
 // import { GitHub, Settings } from "lucide-react";
 
 const Header = () => {
+  const pathname = usePathname();
+
+  const navItems = [
+    { name: "Knowledge Base", path: "/knowledge" },
+    { name: "Chat", path: "/chat" },
+    { name: "Graph", path: "/graph" },
+    { name: "File Management", path: "/file-management" },
+  ];
+
   return (
-    <header className="bg-white shadow-sm">
-      <div className="container mx-auto px-4 py-3 flex items-center justify-between">
+    <header className="bg-white shadow-sm h-16">
+      <div className="container mx-auto px-4 h-full flex items-center justify-between">
         <div className="flex items-center space-x-4">
           <svg
             className="w-8 h-8 text-blue-500"
@@ -32,37 +44,26 @@ const Header = () => {
           <span className="font-bold text-xl">RAGFlow</span>
         </div>
         <nav className="flex space-x-4">
-          <Link
-            href="/"
-            className="px-3 py-2 bg-blue-500 text-white rounded-md flex items-center"
-          >
-            Knowledge Base
-          </Link>
-          <Link
-            href="/chat"
-            className="px-3 py-2 text-gray-600 hover:bg-gray-100 rounded-md"
-          >
-            Chat
-          </Link>
-          <Link
-            href="/graph"
-            className="px-3 py-2 text-gray-600 hover:bg-gray-100 rounded-md"
-          >
-            Graph
-          </Link>
-          <Link
-            href="/file-management"
-            className="px-3 py-2 text-gray-600 hover:bg-gray-100 rounded-md"
-          >
-            File Management
-          </Link>
+          {navItems.map((item) => (
+            <Link
+              key={item.path}
+              href={item.path}
+              className={`px-3 py-2 rounded-md ${
+                pathname === item.path
+                  ? "bg-blue-500 text-white"
+                  : "text-gray-600 hover:bg-gray-100"
+              }`}
+            >
+              {item.name}
+            </Link>
+          ))}
         </nav>
         <div className="flex items-center space-x-4">
           <select className="bg-gray-100 rounded-md px-2 py-1">
             <option>English</option>
           </select>
-          {/* <GitHub className="w-6 h-6 text-gray-600" />
-          <Settings className="w-6 h-6 text-gray-600" /> */}
+          {/* <GitHub className="w-6 h-6 text-gray-600" /> */}
+          {/* <Settings className="w-6 h-6 text-gray-600" /> */}
         </div>
       </div>
     </header>

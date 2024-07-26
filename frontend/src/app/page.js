@@ -1,5 +1,5 @@
-import KnowledgeBasePage from "@/components/KnowledgeBasePage";
+import { redirect } from "next/navigation";
 
 export default function Home() {
-  return <KnowledgeBasePage />;
+  redirect("/knowledge");
 }
