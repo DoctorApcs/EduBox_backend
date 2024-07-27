@@ -9,6 +9,7 @@ import uuid
 from src.dependencies import get_db_manager
 from src.database.manager import DatabaseManager
 from api.models.knowledge_base import KnowledgeBaseCreate, KnowledgeBaseResponse, KnowledgeBaseUpdate
+from api.services.knowledge_base import KnowledgeBaseService
 from typing import List
 
 kb_router = APIRouter()
@@ -86,44 +87,51 @@ async def create_knowledge_base(
     except Exception as e:
         raise HTTPException(status_code=400, detail=str(e))
 
+@kb_router.post("/", response_model=KnowledgeBaseResponse)
+async def create_knowledge_base(
+    kb: KnowledgeBaseCreate,
+    current_user_id: int = Depends(get_current_user_id),
+    kb_service: KnowledgeBaseService = Depends()
+):
+    return kb_service.create_knowledge_base(current_user_id, kb)
+
 @kb_router.get("/{kb_id}", response_model=KnowledgeBaseResponse)
 async def read_knowledge_base(
     kb_id: int,
     current_user_id: int = Depends(get_current_user_id),
-    db_manager: DatabaseManager = Depends(get_db_manager)
+    kb_service: KnowledgeBaseService = Depends()
 ):
-    kb = db_manager.get_knowledge_base(kb_id, current_user_id)
+    kb = kb_service.get_knowledge_base(kb_id, current_user_id)
     if kb is None:
         raise HTTPException(status_code=404, detail="Knowledge base not found")
-    return KnowledgeBaseResponse(id=kb.id, name=kb.name, description=kb.description, user_id=kb.user_id)
+    return kb
 
 @kb_router.get("/", response_model=List[KnowledgeBaseResponse])
 async def list_knowledge_bases(
     current_user_id: int = Depends(get_current_user_id),
-    db_manager: DatabaseManager = Depends(get_db_manager)
+    kb_service: KnowledgeBaseService = Depends()
 ):
-    kbs = db_manager.list_knowledge_bases(current_user_id)
-    return [KnowledgeBaseResponse(id=kb.id, name=kb.name, description=kb.description, user_id=kb.user_id) for kb in kbs]
+    return kb_service.list_knowledge_bases(current_user_id)
 
 @kb_router.put("/{kb_id}", response_model=KnowledgeBaseResponse)
 async def update_knowledge_base(
     kb_id: int,
     kb_update: KnowledgeBaseUpdate,
     current_user_id: int = Depends(get_current_user_id),
-    db_manager: DatabaseManager = Depends(get_db_manager)
+    kb_service: KnowledgeBaseService = Depends()
 ):
-    updated_kb = db_manager.update_knowledge_base(kb_id, current_user_id, kb_update.name, kb_update.description)
+    updated_kb = kb_service.update_knowledge_base(kb_id, current_user_id, kb_update)
     if updated_kb is None:
         raise HTTPException(status_code=404, detail="Knowledge base not found")
-    return KnowledgeBaseResponse(id=updated_kb.id, name=updated_kb.name, description=updated_kb.description, user_id=updated_kb.user_id)
+    return updated_kb
 
 @kb_router.delete("/{kb_id}", response_model=dict)
 async def delete_knowledge_base(
     kb_id: int,
     current_user_id: int = Depends(get_current_user_id),
-    db_manager: DatabaseManager = Depends(get_db_manager)
+    kb_service: KnowledgeBaseService = Depends()
 ):
-    success = db_manager.delete_knowledge_base(kb_id, current_user_id)
+    success = kb_service.delete_knowledge_base(kb_id, current_user_id)
     if not success:
         raise HTTPException(status_code=404, detail="Knowledge base not found")
     return {"message": "Knowledge base deleted successfully"}
