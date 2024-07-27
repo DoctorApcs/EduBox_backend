@@ -5,7 +5,7 @@ def upload_and_check_status(file_path):
     # Upload file
     with open(file_path, 'rb') as file:
         response = requests.post(
-            "http://localhost:8000/api/knowledge_base/",
+            "http://localhost:8000/api/knowledge_base/upload_document",
             files={
                 "file": file,
             },
@@ -20,7 +20,7 @@ def upload_and_check_status(file_path):
         
         # Check task status
         while True:
-            status_response = requests.get(f"http://localhost:8000/api/knowledge_base/{task_id}")
+            status_response = requests.get(f"http://localhost:8000/api/task_status/{task_id}")
             status_data = status_response.json()
             
             if status_data['status'] == 'completed':

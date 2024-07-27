@@ -30,7 +30,7 @@ def get_knowledge_base_id(
     return kb.id
 
 
-@kb_router.post("/upload_document/")
+@kb_router.post("/upload_document")
 async def upload_document(
     file: UploadFile = File(...),
     knowledge_base_id: int = Depends(get_knowledge_base_id),
@@ -97,7 +97,7 @@ async def read_knowledge_base(
         raise HTTPException(status_code=404, detail="Knowledge base not found")
     return KnowledgeBaseResponse(id=kb.id, name=kb.name, description=kb.description, user_id=kb.user_id)
 
-@kb_router.get("/knowledge_bases/", response_model=List[KnowledgeBaseResponse])
+@kb_router.get("/", response_model=List[KnowledgeBaseResponse])
 async def list_knowledge_bases(
     current_user_id: int = Depends(get_current_user_id),
     db_manager: DatabaseManager = Depends(get_db_manager)
@@ -105,7 +105,7 @@ async def list_knowledge_bases(
     kbs = db_manager.list_knowledge_bases(current_user_id)
     return [KnowledgeBaseResponse(id=kb.id, name=kb.name, description=kb.description, user_id=kb.user_id) for kb in kbs]
 
-@kb_router.put("/knowledge_bases/{kb_id}", response_model=KnowledgeBaseResponse)
+@kb_router.put("/{kb_id}", response_model=KnowledgeBaseResponse)
 async def update_knowledge_base(
     kb_id: int,
     kb_update: KnowledgeBaseUpdate,
@@ -117,7 +117,7 @@ async def update_knowledge_base(
         raise HTTPException(status_code=404, detail="Knowledge base not found")
     return KnowledgeBaseResponse(id=updated_kb.id, name=updated_kb.name, description=updated_kb.description, user_id=updated_kb.user_id)
 
-@kb_router.delete("/knowledge_bases/{kb_id}", response_model=dict)
+@kb_router.delete("/{kb_id}", response_model=dict)
 async def delete_knowledge_base(
     kb_id: int,
     current_user_id: int = Depends(get_current_user_id),

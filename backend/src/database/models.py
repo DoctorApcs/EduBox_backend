@@ -26,6 +26,16 @@ class KnowledgeBase(Base):
     updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
     user = relationship("User", back_populates="knowledge_bases")
     documents = relationship("Document", back_populates="knowledge_base")
+    
+    @property
+    def document_count(self):
+        return len(self.documents)
+
+    @property
+    def last_updated(self):
+        if not self.documents:
+            return self.updated_at
+        return max(doc.created_at for doc in self.documents + [self])
 
 class Document(Base):
     __tablename__ = 'documents'
