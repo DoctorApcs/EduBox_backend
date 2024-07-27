@@ -14,3 +14,4 @@ lib/*
 .files/*
 qdrant_storage/*
 .venv/*
+uploads/*
