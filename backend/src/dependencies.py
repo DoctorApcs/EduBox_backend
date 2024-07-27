@@ -11,9 +11,11 @@ def initialize_database(db_manager: DatabaseManager):
         # Create admin user
         user_id = db_manager.create_user("admin", "admin@example.com", "123")
         print("Admin user created.")
+    else:
+        user_id = admin_user.id
 
     # Check if default knowledge base exists
-    default_kb = db_manager.get_knowledge_base(1, 1)
+    default_kb = db_manager.find_knowledge_base("Default", user_id)
     if not default_kb:
         # Create default knowledge base
         db_manager.create_knowledge_base(user_id, "Default", "Default knowledge base")

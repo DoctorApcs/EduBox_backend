@@ -33,6 +33,7 @@ def process_document(file_path: str, document_id: int, db_manager : DatabaseMana
         chunks = result['content']
         
         for i, chunk in enumerate(chunks):
+            print(f"Processing chunk {i}")
             # Add document chunk to database and vector store
             db_manager.add_document_chunk(
                 document_id=document_id,
