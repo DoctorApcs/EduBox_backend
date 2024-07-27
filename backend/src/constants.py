@@ -1,4 +1,8 @@
+import os
 from config.config import get_config
+from dotenv import load_dotenv
+
+load_dotenv()
 
 cfg = get_config('config/config.yaml')
 
@@ -70,5 +74,8 @@ class ModelConfig:
     REFINE_PROMPT = REFINE_PROMPT
     OTHER_KWARGS = cfg
     
+    OPENAI_API_KEY = os.getenv('OPENAI_API_KEY')
+    
 class GlobalConfig:
     MODEL = ModelConfig
+    DATABASE_PATH = "/home/bachngo/Desktop/code/Knowledge_Base_Agent/backend/DB/knowledge_base.db"

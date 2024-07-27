@@ -1,12 +1,9 @@
-from qdrant_client.models import VectorParams, PayloadSchemaType, Distance, PointStruct
-from qdrant_client import QdrantClient, models
-from sqlalchemy import create_engine
+from fastapi import HTTPException
+from sqlalchemy import create_engine, or_
 from sqlalchemy.orm import sessionmaker
-from models import Base, User, KnowledgeBase, Document, DocumentChunk, Assistant, Conversation, Message
-from vector_store import VectorDB, QdrantVectorDB
+from .models import Base, User, KnowledgeBase, Document, DocumentChunk, Assistant, Conversation, Message
+from .vector_store import VectorDB, QdrantVectorDB
 import uuid 
-
-VECTOR_SIZE = 4
 
 # Database manager class
 class DatabaseManager:
@@ -15,7 +12,6 @@ class DatabaseManager:
         Base.metadata.create_all(self.engine)
         self.Session = sessionmaker(bind=self.engine)
         self.vector_db = vector_db
-        self.vector_db.initialize()
 
     def create_user(self, username, email, password_hash):
         with self.Session() as session:
@@ -23,6 +19,19 @@ class DatabaseManager:
             session.add(user)
             session.commit()
             return user.id
+
+    def find_user(self, identifier):
+        """
+        Find a user by username or email.
+        
+        :param identifier: The username or email to search for
+        :return: User object if found, None otherwise
+        """
+        with self.Session() as session:
+            user = session.query(User).filter(
+                or_(User.username == identifier, User.email == identifier)
+            ).first()
+            return user
 
     def create_knowledge_base(self, user_id, name, description):
         with self.Session() as session:
@@ -102,6 +111,33 @@ class DatabaseManager:
         return [(hit.payload["document_chunk_id"], hit.payload["content"]) for hit in search_result]
 
 
+    def get_current_user_id(self):
+        """
+        For now, this method always returns 1 as the admin user ID.
+        In a real application, this would typically involve checking session data or tokens.
+        """
+        return 1
+
+    def get_knowledge_base(self, knowledge_base_id: int, user_id: int):
+        """
+        Retrieve a knowledge base by ID and check if it belongs to the user.
+        """
+        with self.Session() as session:
+            kb = session.query(KnowledgeBase).filter_by(id=knowledge_base_id, user_id=user_id).first()
+            if not kb:
+                raise HTTPException(status_code=404, detail="Knowledge base not found or access denied")
+            return kb
+        
+    def find_knowledge_base(self, knowledge_base_name: str, user_id: int):
+        """
+        Retrieve a knowledge base by name and check if it belongs to the user.
+        """
+        with self.Session() as session:
+            kb = session.query(KnowledgeBase).filter_by(name=knowledge_base_name, user_id=user_id).first()
+            if not kb:
+                return None
+            return kb
+
 # Usage example
 if __name__ == "__main__":
     
@@ -109,28 +145,28 @@ if __name__ == "__main__":
     db_manager = DatabaseManager("/home/bachngo/Desktop/code/Knowledge_Base_Agent/backend/DB/knowledge_base.db", vector_db)
     
     # Create a user
-    user_id = db_manager.create_user("john_doe", "john@example.com", "hashed_password")
+    user_id = db_manager.create_user("admin", "admin@example.com", "123")
     
     # Create a knowledge base
     kb_id = db_manager.create_knowledge_base(user_id, "General Knowledge", "A broad knowledge base")
     
     # Add a document
-    doc_id = db_manager.add_document(kb_id, "sample.txt", "text/plain", "/path/to/sample.txt")
+    # doc_id = db_manager.add_document(kb_id, "sample.txt", "text/plain", "/path/to/sample.txt")
     
     # Add a document chunk (you'd typically do this after processing the document)
-    chunk_id = db_manager.add_document_chunk(doc_id, 0, "This is a sample text", [0.1, 0.2, 0.3, 0.4])  # Simplified vector
+    # chunk_id = db_manager.add_document_chunk(doc_id, 0, "This is a sample text", [0.1, 0.2, 0.3, 0.4])  # Simplified vector
     
     # Create an assistant
-    assistant_id = db_manager.create_assistant(user_id, "General Assistant", "A helpful AI assistant",
-                                               kb_id, {"model": "gpt-3.5-turbo"})
+    # assistant_id = db_manager.create_assistant(user_id, "General Assistant", "A helpful AI assistant",
+    #                                            kb_id, {"model": "gpt-3.5-turbo"})
     
-    # Start a conversation
-    conv_id = db_manager.start_conversation(user_id, assistant_id)
+    # # Start a conversation
+    # conv_id = db_manager.start_conversation(user_id, assistant_id)
     
-    # Add messages to the conversation
-    db_manager.add_message(conv_id, "user", "Hello, can you help me?")
-    db_manager.add_message(conv_id, "assistant", "Of course! How can I assist you today?")
+    # # Add messages to the conversation
+    # db_manager.add_message(conv_id, "user", "Hello, can you help me?")
+    # db_manager.add_message(conv_id, "assistant", "Of course! How can I assist you today?")
     
-    # Search for similar chunks (you'd typically do this when processing a user query)
-    similar_chunks = db_manager.search_similar_chunks([0.15, 0.25, 0.35, 0.45], kb_id)  # Simplified query vector
-    print("Similar chunks:", similar_chunks)
+    # # Search for similar chunks (you'd typically do this when processing a user query)
+    # similar_chunks = db_manager.search_similar_chunks([0.15, 0.25, 0.35, 0.45], kb_id)  # Simplified query vector
+    # print("Similar chunks:", similar_chunks)

@@ -6,7 +6,12 @@ def upload_and_check_status(file_path):
     with open(file_path, 'rb') as file:
         response = requests.post(
             "http://localhost:8000/v1/upload_document/",
-            files={"file": file}
+            files={
+                "file": file,
+            },
+            params = {
+                "knowledge_base_id": 1
+            }
         )
     
     if response.status_code == 202:

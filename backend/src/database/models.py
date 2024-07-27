@@ -35,7 +35,6 @@ class Document(Base):
     file_type = Column(String(50), nullable=False)
     file_path = Column(String(255), nullable=False)
     created_at = Column(DateTime, default=datetime.utcnow)
-    processed_at = Column(DateTime)
     knowledge_base = relationship("KnowledgeBase", back_populates="documents")
     chunks = relationship("DocumentChunk", back_populates="document")
     knowledge_base = relationship("KnowledgeBase")  # Add this line
