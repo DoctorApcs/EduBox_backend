@@ -1,37 +1,21 @@
-from models import Base, User, KnowledgeBase, Document, DocumentChunk, Assistant, Conversation, Message
 from qdrant_client.models import VectorParams, PayloadSchemaType, Distance, PointStruct
 from qdrant_client import QdrantClient, models
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
-import uuid
+from models import Base, User, KnowledgeBase, Document, DocumentChunk, Assistant, Conversation, Message
+from vector_store import VectorDB, QdrantVectorDB
+import uuid 
 
 VECTOR_SIZE = 4
 
 # Database manager class
 class DatabaseManager:
-    def __init__(self, db_path, qdrant_url):
+    def __init__(self, db_path, vector_db: VectorDB):
         self.engine = create_engine(f'sqlite:///{db_path}', connect_args={"check_same_thread": False})
         Base.metadata.create_all(self.engine)
         self.Session = sessionmaker(bind=self.engine)
-        self.qdrant_client = QdrantClient(qdrant_url)
-        
-        # Ensure Qdrant collection exists
-        self.qdrant_client.recreate_collection(
-            collection_name="document_vectors",
-            vectors_config=VectorParams(size=VECTOR_SIZE, distance=Distance.COSINE),
-        )
-
-        # Define payload schema separately
-        self.qdrant_client.create_payload_index(
-            collection_name="document_vectors",
-            field_name="document_chunk_id",
-            field_schema=PayloadSchemaType.INTEGER
-        )
-        self.qdrant_client.create_payload_index(
-            collection_name="document_vectors",
-            field_name="knowledge_base_id",
-            field_schema=PayloadSchemaType.INTEGER
-        )
+        self.vector_db = vector_db
+        self.vector_db.initialize()
 
     def create_user(self, username, email, password_hash):
         with self.Session() as session:
@@ -73,20 +57,15 @@ class DatabaseManager:
             session.add(chunk)
             session.commit()
             
-            # Add vector to Qdrant
-            self.qdrant_client.upsert(
-                collection_name="document_vectors",
-                points=[
-                    models.PointStruct(
-                        id=vector_id,
-                        vector=vector,
-                        payload={
-                            "document_chunk_id": chunk.id,
-                            "knowledge_base_id": knowledge_base_id,
-                            "content": content
-                        }
-                    )
-                ]
+            # Add vector to VectorDB
+            self.vector_db.add_vector(
+                vector_id=vector_id,
+                vector=vector,
+                payload={
+                    "document_chunk_id": chunk.id,
+                    "knowledge_base_id": knowledge_base_id,
+                    "content": content
+                }
             )
             return chunk.id
 
@@ -115,17 +94,9 @@ class DatabaseManager:
     
     
     def search_similar_chunks(self, query_vector, knowledge_base_id, limit=5):
-        search_result = self.qdrant_client.search(
-            collection_name="document_vectors",
+        search_result = self.vector_db.search_vectors(
             query_vector=query_vector,
-            query_filter=models.Filter(
-                must=[
-                    models.FieldCondition(
-                        key="knowledge_base_id",
-                        match=models.MatchValue(value=knowledge_base_id)
-                    )
-                ]
-            ),
+            filter_condition=("knowledge_base_id", knowledge_base_id),
             limit=limit
         )
         return [(hit.payload["document_chunk_id"], hit.payload["content"]) for hit in search_result]
@@ -133,7 +104,9 @@ class DatabaseManager:
 
 # Usage example
 if __name__ == "__main__":
-    db_manager = DatabaseManager("knowledge_base.db", "http://localhost:6333")
+    
+    vector_db = QdrantVectorDB("http://localhost:6333")
+    db_manager = DatabaseManager("/home/bachngo/Desktop/code/Knowledge_Base_Agent/backend/DB/knowledge_base.db", vector_db)
     
     # Create a user
     user_id = db_manager.create_user("john_doe", "john@example.com", "hashed_password")
