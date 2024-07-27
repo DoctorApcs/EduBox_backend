@@ -26,6 +26,16 @@ class KnowledgeBase(Base):
     updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
     user = relationship("User", back_populates="knowledge_bases")
     documents = relationship("Document", back_populates="knowledge_base")
+    
+    @property
+    def document_count(self):
+        return len(self.documents)
+
+    @property
+    def last_updated(self):
+        if not self.documents:
+            return self.updated_at
+        return max(doc.created_at for doc in self.documents + [self])
 
 class Document(Base):
     __tablename__ = 'documents'
@@ -35,7 +45,6 @@ class Document(Base):
     file_type = Column(String(50), nullable=False)
     file_path = Column(String(255), nullable=False)
     created_at = Column(DateTime, default=datetime.utcnow)
-    processed_at = Column(DateTime)
     knowledge_base = relationship("KnowledgeBase", back_populates="documents")
     chunks = relationship("DocumentChunk", back_populates="document")
     knowledge_base = relationship("KnowledgeBase")  # Add this line
