@@ -58,6 +58,10 @@ const KnowledgeBasePage = () => {
     }
   };
 
+  const handleKnowledgeBaseClick = (id) => {
+    router.push(`/knowledge/${encodeURIComponent(id)}`);
+  };
+
   const formatDate = (dateString) => {
     const date = new Date(dateString);
     return date
@@ -115,6 +119,7 @@ const KnowledgeBasePage = () => {
             description={kb.description}
             docCount={kb.document_count}
             lastUpdated={formatDate(kb.last_updated)}
+            onClick={() => handleKnowledgeBaseClick(kb.id)}
           />
         ))}
       </div>

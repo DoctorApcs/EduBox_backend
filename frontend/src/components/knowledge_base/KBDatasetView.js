@@ -1,16 +1,46 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { Search, Plus, FileText, Settings } from "lucide-react";
 import UploadFileModal from "@/components/knowledge_base/UploadFileModal";
 
-const DatasetView = ({ knowledgeBaseName }) => {
+const API_BASE_URL =
+  process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:8000";
+
+const DatasetView = ({ knowledgeBaseID }) => {
   const [isUploadModalOpen, setIsUploadModalOpen] = useState(false);
+  const [knowledgeBase, setKnowledgeBase] = useState(null);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState(null);
+
+  useEffect(() => {
+    const fetchKnowledgeBase = async () => {
+      try {
+        const response = await fetch(
+          `${API_BASE_URL}/api/knowledge_base/${knowledgeBaseID}`
+        );
+        if (!response.ok) {
+          throw new Error("Failed to fetch knowledge base data");
+        }
+        const data = await response.json();
+        setKnowledgeBase(data);
+        setIsLoading(false);
+      } catch (err) {
+        setError(err.message);
+        setIsLoading(false);
+      }
+    };
+
+    fetchKnowledgeBase();
+  }, [knowledgeBaseID]);
 
   const handleUpload = (files) => {
     // Here you would handle the file upload logic
     console.log("Uploading files:", files);
   };
+
+  if (isLoading) return <div>Loading...</div>;
+  if (error) return <div>Error: {error}</div>;
 
   return (
     <div className="flex h-screen bg-gray-100">
@@ -18,7 +48,7 @@ const DatasetView = ({ knowledgeBaseName }) => {
       <aside className="w-64 bg-white shadow-md">
         <div className="p-4">
           <div className="w-10 h-10 bg-gray-200 rounded-full mb-4"></div>
-          <h2 className="text-xl font-semibold">{knowledgeBaseName}</h2>
+          <h2 className="text-xl font-semibold">{knowledgeBase.name}</h2>
         </div>
         <nav className="mt-6">
           <a
@@ -93,23 +123,37 @@ const DatasetView = ({ knowledgeBaseName }) => {
             <thead>
               <tr className="text-left text-gray-600 bg-gray-100">
                 <th className="p-2">Name</th>
-                <th className="p-2">Chunk Number</th>
+                <th className="p-2">File Type</th>
                 <th className="p-2">Upload Date</th>
-                <th className="p-2">Chunk Method</th>
-                <th className="p-2">Enable</th>
-                <th className="p-2">Parsing Status</th>
                 <th className="p-2">Action</th>
               </tr>
             </thead>
             <tbody>
-              <tr>
-                <td colSpan="7" className="text-center py-4">
-                  <div className="flex flex-col items-center text-gray-400">
-                    <FileText size={48} />
-                    <p className="mt-2">No data</p>
-                  </div>
-                </td>
-              </tr>
+              {knowledgeBase.documents.length > 0 ? (
+                knowledgeBase.documents.map((doc) => (
+                  <tr key={doc.id}>
+                    <td className="p-2">{doc.file_name}</td>
+                    <td className="p-2">{doc.file_type}</td>
+                    <td className="p-2">
+                      {new Date(doc.created_at).toLocaleString()}
+                    </td>
+                    <td className="p-2">
+                      <button className="text-blue-500 hover:text-blue-700">
+                        View
+                      </button>
+                    </td>
+                  </tr>
+                ))
+              ) : (
+                <tr>
+                  <td colSpan="4" className="text-center py-4">
+                    <div className="flex flex-col items-center text-gray-400">
+                      <FileText size={48} />
+                      <p className="mt-2">No data</p>
+                    </div>
+                  </td>
+                </tr>
+              )}
             </tbody>
           </table>
         </div>

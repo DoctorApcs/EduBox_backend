@@ -7,7 +7,7 @@ import DatasetView from "@/components/knowledge_base/KBDatasetView";
 
 export default function KnowledgeBasePage() {
   const params = useParams();
-  const knowledgeBaseName = decodeURIComponent(params.name);
+  const knowledgeBaseID = decodeURIComponent(params.name);
 
-  return <DatasetView knowledgeBaseName={knowledgeBaseName} />;
+  return <DatasetView knowledgeBaseID={knowledgeBaseID} />;
 }
