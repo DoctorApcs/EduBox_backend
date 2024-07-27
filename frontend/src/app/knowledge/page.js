@@ -5,6 +5,8 @@ import { useRouter } from "next/navigation";
 import { Search, Plus } from "lucide-react";
 import KnowledgeBaseCard from "@/components/knowledge_base/KnowledgeBaseCard";
 import KnowledgeBaseModal from "@/components/knowledge_base/KnowledgeBaseModal";
+import LoadingSpinner from "@/components/LoadingSpinner";
+import ErrorComponent from "@/components/Error";
 
 const API_BASE_URL =
   process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:8000";
@@ -77,11 +79,11 @@ const KnowledgeBasePage = () => {
   };
 
   if (isLoading) {
-    return <div>Loading...</div>;
+    return <LoadingSpinner />;
   }
 
   if (error) {
-    return <div>Error: {error}</div>;
+    return <ErrorComponent message={error} />;
   }
 
   return (

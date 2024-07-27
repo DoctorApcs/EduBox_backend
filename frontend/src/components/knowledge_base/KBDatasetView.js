@@ -3,6 +3,8 @@
 import React, { useState, useEffect } from "react";
 import { Search, Plus, FileText, Settings } from "lucide-react";
 import UploadFileModal from "@/components/knowledge_base/UploadFileModal";
+import LoadingSpinner from "@/components/LoadingSpinner";
+import ErrorComponent from "@/components/Error";
 
 const API_BASE_URL =
   process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:8000";
@@ -39,8 +41,8 @@ const DatasetView = ({ knowledgeBaseID }) => {
     console.log("Uploading files:", files);
   };
 
-  if (isLoading) return <div>Loading...</div>;
-  if (error) return <div>Error: {error}</div>;
+  if (isLoading) return <LoadingSpinner />;
+  if (error) return <ErrorComponent message={error} />;
 
   return (
     <div className="flex h-screen bg-gray-100">
