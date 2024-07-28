@@ -1,6 +1,13 @@
 import requests
+import json
 
 BASE_URL = "http://localhost:8000/api/assistant"
+
+def print_response(response):
+    print(f"Status Code: {response.status_code}")
+    print("Response:")
+    print(json.dumps(response.json(), indent=2))
+    print("\n" + "="*50 + "\n")
 
 def test_create_assistant():
     data = {
@@ -10,27 +17,61 @@ def test_create_assistant():
         "configuration": {"model": "gpt-4o-mini", "service": "openai", "temperature": "0.8"}
     }
     response = requests.post(f"{BASE_URL}/", json=data)
-    print("Create Assistant Response:", response.status_code)
-    print(response.json())
+    print("Create Assistant Response:")
+    print_response(response)
     return response.json()["id"]
 
 def test_delete_assistant(assistant_id):
     response = requests.delete(f"{BASE_URL}/{assistant_id}")
-    print("Delete Assistant Response:", response.status_code)
-    print(response.json())
+    print("Delete Assistant Response:")
+    print_response(response)
 
-def test_chat_with_assistant(assistant_id):
-    data = {"content": "Hello, assistant!"}
-    response = requests.post(f"{BASE_URL}/{assistant_id}/chat", json=data)
-    print("Chat Response:", response.status_code)
-    print(response.json())
+def test_create_conversation(assistant_id):
+    data = {
+        "assistant_id": assistant_id
+    }
+    response = requests.post(f"{BASE_URL}/conversations", json=data)
+    print("Create Conversation Response:")
+    print_response(response)
+    return response.json()["id"]
+
+def test_chat_with_assistant(conversation_id, message):
+    data = {"content": message}
+    response = requests.post(f"{BASE_URL}/conversations/{conversation_id}/chat", json=data)
+    print(f"Chat Response (User: {message}):")
+    print_response(response)
+    return response.json()["assistant_message"]
+
+def test_get_conversation_history(conversation_id):
+    response = requests.get(f"{BASE_URL}/conversations/{conversation_id}/history")
+    print("Get Conversation History Response:")
+    print_response(response)
+
+
+def test_get_all_assistants():
+    response = requests.get(f"{BASE_URL}/")
+    print("Get All Assistants Response:")
+    print_response(response)
+    return response.json()
+
 
 if __name__ == "__main__":
+    all_assistants = test_get_all_assistants()
+    print(all_assistants)
+
     # Create an assistant
     assistant_id = test_create_assistant()
 
+    # Create a conversation
+    conversation_id = test_create_conversation(assistant_id)
+
     # Chat with the assistant
-    test_chat_with_assistant(assistant_id)
+    test_chat_with_assistant(conversation_id, "Hello, assistant! I am Bach")
+    test_chat_with_assistant(conversation_id, "What's my name?")
+    test_chat_with_assistant(conversation_id, "Thank you for your help!")
+
+    # Get conversation history
+    test_get_conversation_history(conversation_id)
 
     # Delete the assistant
     test_delete_assistant(assistant_id)

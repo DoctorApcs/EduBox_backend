@@ -20,8 +20,29 @@ class AssistantResponse(BaseModel):
 
     model_config = ConfigDict(from_attributes=True)
 
+class ConversationCreate(BaseModel):
+    assistant_id: int
+
+class ConversationResponse(BaseModel):
+    id: int
+    user_id: int
+    assistant_id: int
+    started_at: datetime
+    ended_at: Optional[datetime]
+
+    model_config = ConfigDict(from_attributes=True)
+
 class ChatMessage(BaseModel):
     content: str
 
 class ChatResponse(BaseModel):
     assistant_message: str
+
+class MessageResponse(BaseModel):
+    id: int
+    conversation_id: int
+    sender_type: str
+    content: str
+    created_at: datetime
+
+    model_config = ConfigDict(from_attributes=True)

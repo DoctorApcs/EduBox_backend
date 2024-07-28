@@ -130,6 +130,13 @@ class DatabaseManager:
             assistant = session.query(Assistant).filter_by(id=assistant_id, user_id=user_id).first()
             if not assistant:
                 return False
+            
+            # Delete all conversations associated with this assistant
+            conversations = session.query(Conversation).filter_by(assistant_id=assistant_id).all()
+            for conversation in conversations:
+                session.delete(conversation)
+            
+            # Delete the assistant
             session.delete(assistant)
             session.commit()
             return True
