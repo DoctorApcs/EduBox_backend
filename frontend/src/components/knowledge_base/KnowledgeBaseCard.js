@@ -1,9 +1,12 @@
 import React from "react";
 import { FileText, MoreVertical } from "lucide-react";
 
-const KnowledgeBaseCard = ({ title, docCount, lastUpdated }) => {
+const KnowledgeBaseCard = ({ title, docCount, lastUpdated, onClick }) => {
   return (
-    <div className="bg-white rounded-lg shadow-md p-4 sm:p-6 hover:shadow-lg transition-shadow duration-300 w-full h-full">
+    <div
+      className="bg-white rounded-lg shadow-md p-4 sm:p-6 hover:shadow-lg transition-shadow duration-300 w-full h-full"
+      onClick={onClick}
+    >
       <div className="flex justify-between items-start mb-4">
         <div className="w-10 h-10 sm:w-12 sm:h-12 bg-blue-100 rounded-full flex items-center justify-center">
           <FileText className="w-5 h-5 sm:w-6 sm:h-6 text-blue-500" />

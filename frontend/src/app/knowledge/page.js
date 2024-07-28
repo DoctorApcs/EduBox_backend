@@ -1,37 +1,90 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { Search, Plus } from "lucide-react";
 import KnowledgeBaseCard from "@/components/knowledge_base/KnowledgeBaseCard";
 import KnowledgeBaseModal from "@/components/knowledge_base/KnowledgeBaseModal";
+import LoadingSpinner from "@/components/LoadingSpinner";
+import ErrorComponent from "@/components/Error";
+
+const API_BASE_URL =
+  process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:8000";
 
 const KnowledgeBasePage = () => {
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [knowledgeBases, setKnowledgeBases] = useState([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState(null);
   const router = useRouter();
 
-  const handleCreateKnowledgeBase = (name) => {
-    // Here you would typically call an API to create the knowledge base
-    console.log(`Creating knowledge base: ${name}`);
-    // Then redirect to the new knowledge base view
-    router.push(`/knowledge/${encodeURIComponent(name)}`);
+  useEffect(() => {
+    const fetchKnowledgeBases = async () => {
+      try {
+        const response = await fetch(`${API_BASE_URL}/api/knowledge_base`);
+        if (!response.ok) {
+          throw new Error("Failed to fetch knowledge bases");
+        }
+        const data = await response.json();
+        setKnowledgeBases(data);
+        setIsLoading(false);
+      } catch (err) {
+        setError(err.message);
+        setIsLoading(false);
+      }
+    };
+
+    fetchKnowledgeBases();
+  }, []);
+
+  const handleCreateKnowledgeBase = async (name, description) => {
+    try {
+      const response = await fetch(`${API_BASE_URL}/api/knowledge_base`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ name, description }),
+      });
+
+      if (!response.ok) {
+        throw new Error("Failed to create knowledge base");
+      }
+
+      const newKnowledgeBase = await response.json();
+      setKnowledgeBases([...knowledgeBases, newKnowledgeBase]);
+      router.push(`/knowledge/${encodeURIComponent(newKnowledgeBase.id)}`);
+    } catch (err) {
+      console.error("Error creating knowledge base:", err);
+      // Here you might want to show an error message to the user
+    }
   };
 
-  // Sample data for multiple knowledge bases
-  const knowledgeBases = [
-    { title: "Papers", docCount: 2, lastUpdated: "26/06/2024 17:55:21" },
-    { title: "Research", docCount: 5, lastUpdated: "25/06/2024 10:30:00" },
-    { title: "Projects", docCount: 3, lastUpdated: "24/06/2024 14:15:30" },
-    { title: "Case Studies", docCount: 7, lastUpdated: "23/06/2024 09:45:00" },
-    { title: "Experiments", docCount: 4, lastUpdated: "22/06/2024 16:20:00" },
-    {
-      title: "Literature Reviews",
-      docCount: 6,
-      lastUpdated: "21/06/2024 11:10:00",
-    },
-    { title: "Data Analysis", docCount: 8, lastUpdated: "20/06/2024 14:30:00" },
-    { title: "Methodologies", docCount: 3, lastUpdated: "19/06/2024 09:20:00" },
-  ];
+  const handleKnowledgeBaseClick = (id) => {
+    router.push(`/knowledge/${encodeURIComponent(id)}`);
+  };
+
+  const formatDate = (dateString) => {
+    const date = new Date(dateString);
+    return date
+      .toLocaleString("en-GB", {
+        day: "2-digit",
+        month: "2-digit",
+        year: "numeric",
+        hour: "2-digit",
+        minute: "2-digit",
+        second: "2-digit",
+      })
+      .replace(",", "");
+  };
+
+  if (isLoading) {
+    return <LoadingSpinner />;
+  }
+
+  if (error) {
+    return <ErrorComponent message={error} />;
+  }
 
   return (
     <div className="min-h-full w-full p-4 sm:p-6 lg:p-8 max-w-screen-2xl mx-auto">
@@ -61,12 +114,14 @@ const KnowledgeBasePage = () => {
       </div>
 
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 sm:gap-6 lg:gap-8">
-        {knowledgeBases.map((kb, index) => (
+        {knowledgeBases.map((kb) => (
           <KnowledgeBaseCard
-            key={index}
-            title={kb.title}
-            docCount={kb.docCount}
-            lastUpdated={kb.lastUpdated}
+            key={kb.id}
+            title={kb.name}
+            description={kb.description}
+            docCount={kb.document_count}
+            lastUpdated={formatDate(kb.last_updated)}
+            onClick={() => handleKnowledgeBaseClick(kb.id)}
           />
         ))}
       </div>

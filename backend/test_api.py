@@ -1,43 +1,77 @@
 import requests
-import time
+import json
 
-def upload_and_check_status(file_path):
-    # Upload file
-    with open(file_path, 'rb') as file:
-        response = requests.post(
-            "http://localhost:8000/api/knowledge_base/upload_document",
-            files={
-                "file": file,
-            },
-            params = {
-                "knowledge_base_id": 1
-            }
-        )
-    
-    if response.status_code == 202:
-        print("File uploaded successfully")
-        task_id = response.json()['task_id']
-        
-        # Check task status
-        while True:
-            status_response = requests.get(f"http://localhost:8000/api/task_status/{task_id}")
-            status_data = status_response.json()
-            
-            if status_data['status'] == 'completed':
-                print("Task completed")
-                print("Result:", status_data['result'])
-                break
-            elif status_data['status'] == 'failed':
-                print("Task failed")
-                print("Error:", status_data['error'])
-                break
-            else:
-                print("Task still in progress...")
-                time.sleep(5)  # Wait for 5 seconds before checking again
-    else:
-        print("File upload failed")
-        print("Error:", response.text)
+BASE_URL = "http://localhost:8000/api/assistant"
+
+def print_response(response):
+    print(f"Status Code: {response.status_code}")
+    print("Response:")
+    print(json.dumps(response.json(), indent=2))
+    print("\n" + "="*50 + "\n")
+
+def test_create_assistant():
+    data = {
+        "name": "Test Assistant",
+        "description": "A test assistant",
+        "knowledge_base_id": 1,
+        "configuration": {"model": "gpt-4o-mini", "service": "openai", "temperature": "0.8"}
+    }
+    response = requests.post(f"{BASE_URL}/", json=data)
+    print("Create Assistant Response:")
+    print_response(response)
+    return response.json()["id"]
+
+def test_delete_assistant(assistant_id):
+    response = requests.delete(f"{BASE_URL}/{assistant_id}")
+    print("Delete Assistant Response:")
+    print_response(response)
+
+def test_create_conversation(assistant_id):
+    data = {
+        "assistant_id": assistant_id
+    }
+    response = requests.post(f"{BASE_URL}/conversations", json=data)
+    print("Create Conversation Response:")
+    print_response(response)
+    return response.json()["id"]
+
+def test_chat_with_assistant(conversation_id, message):
+    data = {"content": message}
+    response = requests.post(f"{BASE_URL}/conversations/{conversation_id}/chat", json=data)
+    print(f"Chat Response (User: {message}):")
+    print_response(response)
+    return response.json()["assistant_message"]
+
+def test_get_conversation_history(conversation_id):
+    response = requests.get(f"{BASE_URL}/conversations/{conversation_id}/history")
+    print("Get Conversation History Response:")
+    print_response(response)
+
+
+def test_get_all_assistants():
+    response = requests.get(f"{BASE_URL}/")
+    print("Get All Assistants Response:")
+    print_response(response)
+    return response.json()
+
 
 if __name__ == "__main__":
-    file_path = "/home/bachngo/Desktop/code/Knowledge_Base_Agent/backend/data/file1.pdf"  # Replace with the path to your test document
-    upload_and_check_status(file_path)
+    all_assistants = test_get_all_assistants()
+    print(all_assistants)
+
+    # Create an assistant
+    assistant_id = test_create_assistant()
+
+    # Create a conversation
+    conversation_id = test_create_conversation(assistant_id)
+
+    # Chat with the assistant
+    test_chat_with_assistant(conversation_id, "Hello, assistant! I am Bach")
+    test_chat_with_assistant(conversation_id, "What's my name?")
+    test_chat_with_assistant(conversation_id, "Thank you for your help!")
+
+    # Get conversation history
+    test_get_conversation_history(conversation_id)
+
+    # Delete the assistant
+    test_delete_assistant(assistant_id)

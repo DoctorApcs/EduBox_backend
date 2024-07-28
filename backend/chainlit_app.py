@@ -1,8 +1,8 @@
 import chainlit as cl
 from chainlit.types import ThreadDict
 from chainlit.server import app
-from api.knowledge_base import router
-from api.service import AssistantService
+from api.routes.knowledge_base import router
+from api.services.chatbot import AssistantService
 from src.callbacks.chainlit_callback import ChainlitCallback
 from llama_index.core.callbacks import CallbackManager
 

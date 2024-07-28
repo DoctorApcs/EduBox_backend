@@ -1,5 +1,5 @@
 from functools import lru_cache
-from typing import Generator
+from fastapi import Depends
 from src.database.manager import DatabaseManager, QdrantVectorDB
 from src.constants import GlobalConfig
 
@@ -42,3 +42,6 @@ def get_db_manager():
     finally:
         # If DatabaseManager needs any cleanup, do it here
         pass
+    
+def get_current_user_id(db_manager: DatabaseManager = Depends(get_db_manager)):
+    return db_manager.get_current_user_id()

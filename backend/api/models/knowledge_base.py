@@ -1,6 +1,16 @@
 from pydantic import BaseModel, ConfigDict
 from typing import Optional
 from datetime import datetime
+from typing import List
+
+class DocumentInKnowledgeBase(BaseModel):
+    id: int
+    file_name: str
+    file_type: str
+    file_path: str
+    created_at: datetime
+
+    model_config = ConfigDict(from_attributes=True)
 
 class KnowledgeBaseCreate(BaseModel):
     name: str
@@ -19,5 +29,6 @@ class KnowledgeBaseResponse(BaseModel):
     updated_at: datetime
     document_count: int
     last_updated: datetime
+    documents: List[DocumentInKnowledgeBase]
 
     model_config = ConfigDict(from_attributes=True)
