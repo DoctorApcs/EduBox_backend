@@ -13,6 +13,7 @@ class DatabaseManager:
         self.Session = sessionmaker(bind=self.engine)
         self.vector_db = vector_db
 
+    #### User operations ####
     def create_user(self, username, email, password_hash):
         with self.Session() as session:
             user = User(username=username, email=email, password_hash=password_hash)
@@ -33,13 +34,42 @@ class DatabaseManager:
             ).first()
             return user
 
+    def get_current_user_id(self):
+        """
+        For now, this method always returns 1 as the admin user ID.
+        In a real application, this would typically involve checking session data or tokens.
+        """
+        return 1
+
+    #### Knowledge base operations ####
     def create_knowledge_base(self, user_id, name, description):
         with self.Session() as session:
             kb = KnowledgeBase(user_id=user_id, name=name, description=description)
             session.add(kb)
             session.commit()
             return kb.id
-
+        
+    def get_knowledge_base(self, knowledge_base_id: int, user_id: int):
+        """
+        Retrieve a knowledge base by ID and check if it belongs to the user.
+        """
+        with self.Session() as session:
+            kb = session.query(KnowledgeBase).filter_by(id=knowledge_base_id, user_id=user_id).first()
+            if not kb:
+                raise HTTPException(status_code=404, detail="Knowledge base not found or access denied")
+            return kb
+        
+    def find_knowledge_base(self, knowledge_base_name: str, user_id: int):
+        """
+        Retrieve a knowledge base by name and check if it belongs to the user.
+        """
+        with self.Session() as session:
+            kb = session.query(KnowledgeBase).filter_by(name=knowledge_base_name, user_id=user_id).first()
+            if not kb:
+                return None
+            return kb
+        
+    #### Document operations ####
     def add_document(self, knowledge_base_id, file_name, file_type, file_path):
         with self.Session() as session:
             doc = Document(knowledge_base_id=knowledge_base_id, file_name=file_name,
@@ -77,15 +107,32 @@ class DatabaseManager:
                 }
             )
             return chunk.id
+        
+    def search_similar_chunks(self, query_vector, knowledge_base_id, limit=5):
+        search_result = self.vector_db.search_vectors(
+            query_vector=query_vector,
+            filter_condition=("knowledge_base_id", knowledge_base_id),
+            limit=limit
+        )
+        return [(hit.payload["document_chunk_id"], hit.payload["content"]) for hit in search_result]
 
-
+    #### Assistant operations ####
     def create_assistant(self, user_id, name, description, knowledge_base_id, configuration):
         with self.Session() as session:
             assistant = Assistant(user_id=user_id, name=name, description=description,
                                   knowledge_base_id=knowledge_base_id, configuration=configuration)
             session.add(assistant)
             session.commit()
-            return assistant.id
+            return assistant
+        
+    def delete_assistant(self, assistant_id, user_id):
+        with self.Session() as session:
+            assistant = session.query(Assistant).filter_by(id=assistant_id, user_id=user_id).first()
+            if not assistant:
+                return False
+            session.delete(assistant)
+            session.commit()
+            return True
 
     def start_conversation(self, user_id, assistant_id):
         with self.Session() as session:
@@ -102,41 +149,7 @@ class DatabaseManager:
             return message.id
     
     
-    def search_similar_chunks(self, query_vector, knowledge_base_id, limit=5):
-        search_result = self.vector_db.search_vectors(
-            query_vector=query_vector,
-            filter_condition=("knowledge_base_id", knowledge_base_id),
-            limit=limit
-        )
-        return [(hit.payload["document_chunk_id"], hit.payload["content"]) for hit in search_result]
 
-
-    def get_current_user_id(self):
-        """
-        For now, this method always returns 1 as the admin user ID.
-        In a real application, this would typically involve checking session data or tokens.
-        """
-        return 1
-
-    def get_knowledge_base(self, knowledge_base_id: int, user_id: int):
-        """
-        Retrieve a knowledge base by ID and check if it belongs to the user.
-        """
-        with self.Session() as session:
-            kb = session.query(KnowledgeBase).filter_by(id=knowledge_base_id, user_id=user_id).first()
-            if not kb:
-                raise HTTPException(status_code=404, detail="Knowledge base not found or access denied")
-            return kb
-        
-    def find_knowledge_base(self, knowledge_base_name: str, user_id: int):
-        """
-        Retrieve a knowledge base by name and check if it belongs to the user.
-        """
-        with self.Session() as session:
-            kb = session.query(KnowledgeBase).filter_by(name=knowledge_base_name, user_id=user_id).first()
-            if not kb:
-                return None
-            return kb
 
 # Usage example
 if __name__ == "__main__":

@@ -1,5 +1,5 @@
 from fastapi import Depends, HTTPException
-from sqlalchemy.orm import Session
+from sqlalchemy.orm import Session, joinedload
 from src.database.manager import DatabaseManager
 from api.models.knowledge_base import KnowledgeBaseCreate, KnowledgeBaseUpdate, KnowledgeBaseResponse
 from src.database.models import KnowledgeBase
@@ -19,7 +19,7 @@ class KnowledgeBaseService:
 
     def get_knowledge_base(self, kb_id: int, user_id: int) -> KnowledgeBaseResponse:
         with self.db_manager.Session() as session:
-            kb = session.query(KnowledgeBase).filter_by(id=kb_id, user_id=user_id).first()
+            kb = session.query(KnowledgeBase).options(joinedload(KnowledgeBase.documents)).filter_by(id=kb_id, user_id=user_id).first()
             if kb:
                 return KnowledgeBaseResponse.model_validate(kb)
             return None

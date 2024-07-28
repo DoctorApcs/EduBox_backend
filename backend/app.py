@@ -1,6 +1,7 @@
 from fastapi import FastAPI
 from dotenv import load_dotenv
 from api.routes.knowledge_base import kb_router
+from api.routes.assistant import assistant_router
 from fastapi.middleware.cors import CORSMiddleware
 from celery.result import AsyncResult
 from fastapi.responses import JSONResponse
@@ -53,3 +54,4 @@ app.add_middleware(
 
 
 app.include_router(kb_router, prefix="/api/knowledge_base")
+app.include_router(assistant_router, prefix="/api/assistant")

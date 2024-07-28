@@ -79,18 +79,6 @@ async def upload_document(
 async def create_knowledge_base(
     kb: KnowledgeBaseCreate,
     current_user_id: int = Depends(get_current_user_id),
-    db_manager: DatabaseManager = Depends(get_db_manager)
-):
-    try:
-        kb_id = db_manager.create_knowledge_base(current_user_id, kb.name, kb.description)
-        return KnowledgeBaseResponse(id=kb_id, name=kb.name, description=kb.description, user_id=current_user_id)
-    except Exception as e:
-        raise HTTPException(status_code=400, detail=str(e))
-
-@kb_router.post("/", response_model=KnowledgeBaseResponse)
-async def create_knowledge_base(
-    kb: KnowledgeBaseCreate,
-    current_user_id: int = Depends(get_current_user_id),
     kb_service: KnowledgeBaseService = Depends()
 ):
     return kb_service.create_knowledge_base(current_user_id, kb)
