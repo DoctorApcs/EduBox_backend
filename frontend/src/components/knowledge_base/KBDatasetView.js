@@ -1,7 +1,15 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
-import { Search, Plus, FileText, Settings } from "lucide-react";
+import {
+  Search,
+  Plus,
+  FileText,
+  Settings,
+  Check,
+  FileIcon,
+  File,
+} from "lucide-react";
 import UploadFileModal from "@/components/knowledge_base/UploadFileModal";
 import LoadingSpinner from "@/components/LoadingSpinner";
 import ErrorComponent from "@/components/Error";
@@ -14,6 +22,7 @@ const DatasetView = ({ knowledgeBaseID }) => {
   const [knowledgeBase, setKnowledgeBase] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [documents, setDocuments] = useState([]);
 
   useEffect(() => {
     const fetchKnowledgeBase = async () => {
@@ -26,6 +35,7 @@ const DatasetView = ({ knowledgeBaseID }) => {
         }
         const data = await response.json();
         setKnowledgeBase(data);
+        setDocuments(data.documents);
         setIsLoading(false);
       } catch (err) {
         setError(err.message);
@@ -36,9 +46,97 @@ const DatasetView = ({ knowledgeBaseID }) => {
     fetchKnowledgeBase();
   }, [knowledgeBaseID]);
 
-  const handleUpload = (files) => {
-    // Here you would handle the file upload logic
-    console.log("Uploading files:", files);
+  useEffect(() => {
+    const checkDocumentStatuses = async () => {
+      const updatedDocuments = await Promise.all(
+        documents.map(async (doc) => {
+          const response = await fetch(
+            `${API_BASE_URL}/api/knowledge_base/document_status/${doc.id}`
+          );
+          const status = await response.json();
+          return { ...doc, status: status.status, progress: status.progress };
+        })
+      );
+      setDocuments(updatedDocuments);
+    };
+
+    const intervalId = setInterval(checkDocumentStatuses, 5000);
+    return () => clearInterval(intervalId);
+  }, [documents]);
+
+  const handleUpload = async (files) => {
+    for (const file of files) {
+      const formData = new FormData();
+      formData.append("file", file);
+
+      try {
+        const response = await fetch(
+          `${API_BASE_URL}/api/knowledge_base/upload_document?knowledge_base_id=${knowledgeBaseID}`,
+          {
+            method: "POST",
+            body: formData,
+          }
+        );
+
+        if (!response.ok) {
+          const errorData = await response.json();
+          throw new Error(errorData.detail || "Failed to upload document");
+        }
+
+        const result = await response.json();
+        setDocuments((prevDocuments) => [
+          ...prevDocuments,
+          { id: result.document_id, file_name: file.name, status: "uploaded" },
+        ]);
+      } catch (error) {
+        console.error("Error uploading document:", error);
+        setError(error.message);
+      }
+    }
+  };
+
+  const handleProcessDocument = async (documentId) => {
+    try {
+      const response = await fetch(
+        `${API_BASE_URL}/api/knowledge_base/process_document/${documentId}`,
+        {
+          method: "POST",
+        }
+      );
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.detail || "Failed to process document");
+      }
+
+      setDocuments((prevDocuments) =>
+        prevDocuments.map((doc) =>
+          doc.id === documentId ? { ...doc, status: "processing" } : doc
+        )
+      );
+    } catch (error) {
+      console.error("Error processing document:", error);
+      setError(error.message);
+    }
+  };
+
+  const getFileIcon = (fileName) => {
+    if (fileName.endsWith(".pdf")) {
+      return <FileIcon className="inline-block mr-2 text-red-500" size={16} />;
+    } else if (fileName.endsWith(".docx")) {
+      return <FileIcon className="inline-block mr-2 text-blue-500" size={16} />;
+    } else {
+      return <File className="inline-block mr-2 text-gray-500" size={16} />;
+    }
+  };
+
+  const truncateFileName = (fileName, maxLength = 80) => {
+    if (fileName.length <= maxLength) return fileName;
+    const extension = fileName.split(".").pop();
+    const nameWithoutExtension = fileName.slice(0, -(extension.length + 1));
+    const truncatedName =
+      nameWithoutExtension.slice(0, maxLength - 3 - extension.length) + "...";
+    return truncatedName + "." + extension;
   };
 
   if (isLoading) return <LoadingSpinner />;
@@ -83,6 +181,16 @@ const DatasetView = ({ knowledgeBaseID }) => {
           <p className="text-sm text-gray-600">Knowledge Base / Dataset</p>
         </div>
 
+        {error && (
+          <div
+            className="bg-red-100 border-l-4 border-red-500 text-red-700 p-4 mb-6"
+            role="alert"
+          >
+            <p className="font-bold">Error:</p>
+            <p>{error}</p>
+          </div>
+        )}
+
         <div
           className="bg-yellow-100 border-l-4 border-yellow-500 text-yellow-700 p-4 mb-6"
           role="alert"
@@ -122,33 +230,69 @@ const DatasetView = ({ knowledgeBaseID }) => {
           </div>
 
           <table className="w-full">
+            <colgroup>
+              <col style={{ width: "40%" }} />
+              <col style={{ width: "15%" }} />
+              <col style={{ width: "20%" }} />
+              <col style={{ width: "15%" }} />
+              <col style={{ width: "10%" }} />
+            </colgroup>
             <thead>
               <tr className="text-left text-gray-600 bg-gray-100">
                 <th className="p-2">Name</th>
                 <th className="p-2">File Type</th>
                 <th className="p-2">Upload Date</th>
+                <th className="p-2">Status</th>
                 <th className="p-2">Action</th>
               </tr>
             </thead>
             <tbody>
-              {knowledgeBase.documents.length > 0 ? (
-                knowledgeBase.documents.map((doc) => (
+              {documents.length > 0 ? (
+                documents.map((doc) => (
                   <tr key={doc.id}>
-                    <td className="p-2">{doc.file_name}</td>
+                    <td className="p-2">
+                      <div className="flex items-center">
+                        {getFileIcon(doc.file_name)}
+                        <span title={doc.file_name} className="truncate">
+                          {truncateFileName(doc.file_name)}
+                        </span>
+                      </div>
+                    </td>
                     <td className="p-2">{doc.file_type}</td>
                     <td className="p-2">
                       {new Date(doc.created_at).toLocaleString()}
                     </td>
                     <td className="p-2">
-                      <button className="text-blue-500 hover:text-blue-700">
-                        View
-                      </button>
+                      {doc.status === "processing" && doc.progress ? (
+                        `Processing (${doc.progress.current}/${doc.progress.total})`
+                      ) : doc.status === "processed" ? (
+                        <span className="flex items-center">
+                          <Check className="text-green-500 mr-1" size={16} />
+                          Processed
+                        </span>
+                      ) : (
+                        doc.status
+                      )}
+                    </td>
+                    <td className="p-2">
+                      {doc.status === "uploaded" ? (
+                        <button
+                          onClick={() => handleProcessDocument(doc.id)}
+                          className="text-blue-500 hover:text-blue-700"
+                        >
+                          Process
+                        </button>
+                      ) : (
+                        <button className="text-blue-500 hover:text-blue-700">
+                          View
+                        </button>
+                      )}
                     </td>
                   </tr>
                 ))
               ) : (
                 <tr>
-                  <td colSpan="4" className="text-center py-4">
+                  <td colSpan="5" className="text-center py-4">
                     <div className="flex flex-col items-center text-gray-400">
                       <FileText size={48} />
                       <p className="mt-2">No data</p>

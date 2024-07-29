@@ -8,15 +8,13 @@ import os
 import uuid
 from src.dependencies import get_db_manager
 from src.database.manager import DatabaseManager
+from src.database.models import DocumentStatus
 from api.models.knowledge_base import KnowledgeBaseCreate, KnowledgeBaseResponse, KnowledgeBaseUpdate
 from api.services.knowledge_base import KnowledgeBaseService
 from typing import List
 
 kb_router = APIRouter()
 UPLOAD_DIR = "uploads"
-
-# assistant = AssistantService()
-
 
 # --- API Endpoints ---
 def get_current_user_id(db_manager: DatabaseManager = Depends(get_db_manager)):
@@ -54,15 +52,16 @@ async def upload_document(
             buffer.write(content)
         
         # Add document to database
-        document_id = db_manager.add_document(
+        document_id, document_type, documented_created = db_manager.add_document(
             knowledge_base_id=knowledge_base_id,
             file_name=unique_filename,
             file_type=file_extension,
-            file_path=file_path
+            file_path=file_path,
+            status=DocumentStatus.UPLOADED
         )
         
         # Process the document asynchronously
-        task = process_document.delay(file_path, document_id)
+        # task = process_document.delay(file_path, document_id)
         
         return JSONResponse(
             content={
@@ -70,7 +69,9 @@ async def upload_document(
                 "file_name": unique_filename,
                 "file_path": file_path,
                 "document_id": document_id,
-                "task_id": task.id
+                "created_at": documented_created.isoformat(),
+                "file_type": document_type
+                # "task_id": task.id
             },
             status_code=202
         )
@@ -80,7 +81,72 @@ async def upload_document(
         print(e)
         raise HTTPException(status_code=500, detail=f"An error occurred: {str(e)}")
         
-        
+
+@kb_router.get("/document_status/{document_id}")
+async def get_document_status(
+    document_id: int,
+    db_manager: DatabaseManager = Depends(get_db_manager)
+):
+    document = db_manager.get_document(document_id)
+    if not document:
+        raise HTTPException(status_code=404, detail="Document not found")
+
+    response = {
+        "document_id": document_id,
+        "status": document.status.value,
+        "file_name": document.file_name,
+        "created_at": document.created_at.isoformat(),
+        "updated_at": document.updated_at.isoformat()
+    }
+
+    if document.status == DocumentStatus.PROCESSING:
+        # Check Celery task status
+        task_id = db_manager.get_document_task_id(document_id)
+        if task_id:
+            task_result = AsyncResult(task_id)
+            if task_result.state == 'PROGRESS':
+                response["progress"] = task_result.info
+            elif task_result.ready():
+                if task_result.successful():
+                    response["status"] = DocumentStatus.PROCESSED.value
+                    db_manager.update_document_status(document_id, DocumentStatus.PROCESSED)
+                else:
+                    response["status"] = DocumentStatus.FAILED.value
+                    response["error"] = str(task_result.result)
+                    db_manager.update_document_status(document_id, DocumentStatus.FAILED)
+
+    return JSONResponse(content=response)
+
+
+@kb_router.post("/process_document/{document_id}")
+async def process_uploaded_document(
+    document_id: int,
+    db_manager: DatabaseManager = Depends(get_db_manager)
+):
+    document = db_manager.get_document(document_id)
+    if not document:
+        raise HTTPException(status_code=404, detail="Document not found")
+    
+    if document.status != DocumentStatus.UPLOADED:
+        raise HTTPException(status_code=400, detail="Document is not in 'uploaded' status")
+    
+    db_manager.update_document_status(document_id, DocumentStatus.PROCESSING)
+    
+    # Start processing...
+    task = process_document.delay(document.file_path, document_id)
+    
+    # Store the task_id
+    db_manager.set_document_task_id(document_id, task.id)
+    
+    return JSONResponse(
+        content={
+            "message": "Document processing started",
+            "document_id": document_id,
+            "task_id": task.id
+        },
+        status_code=202
+    )
+
 @kb_router.post("/", response_model=KnowledgeBaseResponse)
 async def create_knowledge_base(
     kb: KnowledgeBaseCreate,

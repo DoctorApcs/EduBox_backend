@@ -1,8 +1,9 @@
 from fastapi import HTTPException
 from sqlalchemy import create_engine, or_
 from sqlalchemy.orm import sessionmaker
-from .models import Base, User, KnowledgeBase, Document, DocumentChunk, Assistant, Conversation, Message
+from .models import Base, User, KnowledgeBase, Document, DocumentChunk, Assistant, Conversation, Message, DocumentStatus
 from .vector_store import VectorDB, QdrantVectorDB
+from datetime import datetime
 import uuid 
 
 # Database manager class
@@ -13,6 +14,7 @@ class DatabaseManager:
         self.Session = sessionmaker(bind=self.engine)
         self.vector_db = vector_db
 
+    ## User methods
     def create_user(self, username, email, password_hash):
         with self.Session() as session:
             user = User(username=username, email=email, password_hash=password_hash)
@@ -30,6 +32,7 @@ class DatabaseManager:
     def get_current_user_id(self):
         return 1  # Placeholder implementation
 
+    ## Knowledge Base methods
     def create_knowledge_base(self, user_id, name, description):
         with self.Session() as session:
             kb = KnowledgeBase(user_id=user_id, name=name, description=description)
@@ -50,13 +53,15 @@ class DatabaseManager:
             kb = session.query(KnowledgeBase).filter_by(name=knowledge_base_name, user_id=user_id).first()
             return kb
 
-    def add_document(self, knowledge_base_id, file_name, file_type, file_path):
+
+    ## Document and DocumentChunk methods
+    def add_document(self, knowledge_base_id, file_name, file_type, file_path, status=DocumentStatus.UPLOADED):
         with self.Session() as session:
             doc = Document(knowledge_base_id=knowledge_base_id, file_name=file_name,
-                           file_type=file_type, file_path=file_path)
+                           file_type=file_type, file_path=file_path, status=status)
             session.add(doc)
             session.commit()
-            return doc.id
+            return doc.id, doc.file_type, doc.created_at
 
     def add_document_chunk(self, document_id, chunk_index, content, vector):
         vector_id = str(uuid.uuid4())
@@ -86,7 +91,21 @@ class DatabaseManager:
                 }
             )
             return chunk.id
-        
+
+    def update_document_status(self, document_id: int, status: DocumentStatus):
+        with self.Session() as session:
+            document = session.query(Document).filter_by(id=document_id).first()
+            if not document:
+                raise ValueError("Document not found")
+            document.status = status
+            document.updated_at = datetime.utcnow()
+            session.commit()
+
+    def get_document(self, document_id: int):
+        with self.Session() as session:
+            document = session.query(Document).filter_by(id=document_id).first()
+            return document
+
     def get_document_by_name(self, knowledge_base_id: int, file_name: str):
         with self.Session() as session:
             document = session.query(Document).filter_by(
@@ -103,6 +122,19 @@ class DatabaseManager:
         )
         return [(hit.payload["document_chunk_id"], hit.payload["content"]) for hit in search_result]
 
+    def get_document_task_id(self, document_id: int):
+        with self.Session() as session:
+            document = session.query(Document).filter_by(id=document_id).first()
+            return document.task_id if document else None
+
+    def set_document_task_id(self, document_id: int, task_id: str):
+        with self.Session() as session:
+            document = session.query(Document).filter_by(id=document_id).first()
+            if document:
+                document.task_id = task_id
+                session.commit()
+
+    ## Assistant and Conversation methods
     def create_assistant(self, user_id, name, description, knowledge_base_id, configuration):
         with self.Session() as session:
             assistant = Assistant(user_id=user_id, name=name, description=description,

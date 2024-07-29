@@ -1,9 +1,16 @@
-from sqlalchemy import Column, Integer, String, ForeignKey, DateTime, Text, JSON
+from sqlalchemy import Column, Integer, String, ForeignKey, DateTime, Text, JSON, Enum
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import relationship
 from datetime import datetime
+import enum
 
 Base = declarative_base()
+
+class DocumentStatus(enum.Enum):
+    UPLOADED = "uploaded"
+    PROCESSING = "processing"
+    PROCESSED = "processed"
+    FAILED = "failed"
 
 # SQLAlchemy models
 class User(Base):
@@ -44,10 +51,13 @@ class Document(Base):
     file_name = Column(String(255), nullable=False)
     file_type = Column(String(50), nullable=False)
     file_path = Column(String(255), nullable=False)
+    status = Column(Enum(DocumentStatus), default=DocumentStatus.UPLOADED)
     created_at = Column(DateTime, default=datetime.utcnow)
+    updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
     knowledge_base = relationship("KnowledgeBase", back_populates="documents")
     chunks = relationship("DocumentChunk", back_populates="document")
-    knowledge_base = relationship("KnowledgeBase")  # Add this line
+    task_id = Column(String(255))
+
 
 class DocumentChunk(Base):
     __tablename__ = 'document_chunks'
