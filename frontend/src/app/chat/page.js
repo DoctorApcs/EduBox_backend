@@ -7,6 +7,7 @@ import TopBar from "@/components/chat/TopBar";
 import CreateAssistantModal from "@/components/chat/CreateAssistantModal";
 import LoadingSpinner from "@/components/LoadingSpinner";
 import ErrorComponent from "@/components/Error";
+import AssistantCards from "@/components/chat/AssistantCards";
 
 const API_BASE_URL =
   process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:8000";
@@ -153,23 +154,6 @@ const Chat = () => {
         onCreateSuccess={fetchAssistants}
       />
     </>
-  );
-};
-
-const AssistantCards = ({ assistants, onSelect }) => {
-  return (
-    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 p-4">
-      {assistants.map((assistant) => (
-        <div
-          key={assistant.id}
-          className="bg-white p-4 rounded-lg shadow cursor-pointer hover:shadow-md transition-shadow"
-          onClick={() => onSelect(assistant)}
-        >
-          <h3 className="font-semibold text-lg">{assistant.name}</h3>
-          <p className="text-gray-600">{assistant.description}</p>
-        </div>
-      ))}
-    </div>
   );
 };
 

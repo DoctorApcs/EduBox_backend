@@ -6,6 +6,7 @@ import { X, Upload, File as FileIcon } from "lucide-react";
 
 const UploadFileModal = ({ isOpen, onClose, onUpload }) => {
   const [files, setFiles] = useState([]);
+  const [uploading, setUploading] = useState(false);
 
   const onDrop = useCallback((acceptedFiles) => {
     setFiles(acceptedFiles);
@@ -15,8 +16,10 @@ const UploadFileModal = ({ isOpen, onClose, onUpload }) => {
 
   if (!isOpen) return null;
 
-  const handleUpload = () => {
-    onUpload(files);
+  const handleUpload = async () => {
+    setUploading(true);
+    await onUpload(files);
+    setUploading(false);
     setFiles([]);
     onClose();
   };
@@ -76,15 +79,16 @@ const UploadFileModal = ({ isOpen, onClose, onUpload }) => {
           <button
             onClick={onClose}
             className="px-4 py-2 text-gray-600 hover:bg-gray-100 rounded"
+            disabled={uploading}
           >
             Cancel
           </button>
           <button
             onClick={handleUpload}
             className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600"
-            disabled={files.length === 0}
+            disabled={files.length === 0 || uploading}
           >
-            OK
+            {uploading ? "Uploading..." : "OK"}
           </button>
         </div>
       </div>
