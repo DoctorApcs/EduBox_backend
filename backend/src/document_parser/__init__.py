@@ -6,6 +6,7 @@ from llama_index.core.text_splitter import SentenceSplitter
 from src.document_parser.readers import PDFReader, DocxReader
 from src.document_parser.embedding import get_embedding
 from src.database.manager import DatabaseManager
+from src.database.models import DocumentStatus
 from src.dependencies import get_database_manager
 
 
@@ -16,9 +17,10 @@ def detect_file_type(file_path):
     return file_type
 
 # Celery Tasks
-@celery.task
-def process_document(file_path: str, document_id: int, db_manager : DatabaseManager = get_database_manager()):
+@celery.task(bind=True)
+def process_document(self, file_path: str, document_id: int, db_manager: DatabaseManager = get_database_manager()):
     try:
+        db_manager.update_document_status(document_id, DocumentStatus.PROCESSING)
         
         file_type = detect_file_type(file_path)
         if file_type.startswith('application/pdf'):
@@ -31,9 +33,10 @@ def process_document(file_path: str, document_id: int, db_manager : DatabaseMana
             result = process_generic(file_path)
         
         chunks = result['content']
+        total_chunks = len(chunks)
         
         for i, chunk in enumerate(chunks):
-            print(f"Processing chunk {i}")
+            print(f"Processing chunk {i+1} of {total_chunks}")
             # Add document chunk to database and vector store
             db_manager.add_document_chunk(
                 document_id=document_id,
@@ -41,16 +44,18 @@ def process_document(file_path: str, document_id: int, db_manager : DatabaseMana
                 content=chunk,
                 vector=get_embedding(chunk)
             )
-        
+            
+            # Update progress
+            self.update_state(state='PROGRESS',
+                              meta={'current': i + 1, 'total': total_chunks})
         
         # Update document status to processed
-        # Note: You might need to add a method to DatabaseManager to update document status
-        # db_manager.update_document_status(document_id, "processed")
+        db_manager.update_document_status(document_id, DocumentStatus.PROCESSED)
         
-        return {"status": "success", "message": "Document processed successfully"}
+        return {"status": "success", "message": "Document processed successfully", "total_chunks": total_chunks}
     except Exception as e:
         # Update document status to failed
-        # db_manager.update_document_status(document_id, "failed")
+        db_manager.update_document_status(document_id, DocumentStatus.FAILED)
         raise e
 
 @celery.task
