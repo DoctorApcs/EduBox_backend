@@ -14,7 +14,7 @@ from api.models.assistant import (
     MessageResponse
 )
 from llama_index.llms.openai import OpenAI
-from typing import List, Dict
+from typing import List, Dict, Optional
 from llama_index.core.base.llms.types import ChatMessage as LLamaIndexChatMessage
 
 
@@ -70,6 +70,17 @@ class AssistantService:
         except Exception as e:
             raise HTTPException(status_code=500, detail=f"An error occurred while creating the conversation: {str(e)}")
 
+    def get_assistant_conversations(self, assistant_id: int, user_id: int) -> Optional[List[ConversationResponse]]:
+        try:
+            with self.db_manager.Session() as session:
+                assistant = session.query(Assistant).filter_by(id=assistant_id, user_id=user_id).first()
+                if not assistant:
+                    return None
+                
+                conversations = session.query(Conversation).filter_by(assistant_id=assistant_id).all()
+                return [ConversationResponse.model_validate(conversation) for conversation in conversations]
+        except Exception as e:
+            raise HTTPException(status_code=500, detail=f"An error occurred while fetching conversations: {str(e)}")
 
     def chat_with_assistant(self, conversation_id: int, user_id: int, message: ChatMessage) -> ChatResponse:
         try:

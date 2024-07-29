@@ -51,7 +51,7 @@ def process_document(file_path: str, document_id: int, db_manager : DatabaseMana
     except Exception as e:
         # Update document status to failed
         # db_manager.update_document_status(document_id, "failed")
-        return {"status": "error", "message": str(e)}
+        raise e
 
 @celery.task
 def process_pdf(file_path: str):

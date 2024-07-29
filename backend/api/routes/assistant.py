@@ -1,4 +1,4 @@
-from fastapi import APIRouter, HTTPException, Depends
+from fastapi import APIRouter, HTTPException, Depends, Query
 from typing import List
 from api.models.assistant import AssistantCreate, AssistantResponse, ChatMessage, ChatResponse, ConversationCreate, ConversationResponse, MessageResponse
 from api.services.assistant import AssistantService
@@ -31,6 +31,17 @@ async def delete_assistant(
     if not success:
         raise HTTPException(status_code=404, detail="Assistant not found")
     return {"message": "Assistant deleted successfully"}
+
+@assistant_router.get("/conversations", response_model=List[ConversationResponse])
+async def get_assistant_conversations(
+    assistant_id: int = Query(..., description="ID of the assistant"),
+    current_user_id: int = Depends(get_current_user_id),
+    assistant_service: AssistantService = Depends()
+):
+    conversations = assistant_service.get_assistant_conversations(assistant_id, current_user_id)
+    if conversations is None:
+        raise HTTPException(status_code=404, detail="Assistant not found")
+    return conversations
 
 @assistant_router.post("/conversations", response_model=ConversationResponse)
 async def create_conversation(
