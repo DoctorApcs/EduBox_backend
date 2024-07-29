@@ -20,8 +20,11 @@ const TopBar = ({
         </button>
         <div className="relative">
           <select
-            value={selectedAssistant}
-            onChange={(e) => setSelectedAssistant(e.target.value)}
+            value={selectedAssistant ? selectedAssistant.id : ""}
+            onChange={(e) => {
+              const assistant = assistants.find((a) => a.id === e.target.value);
+              setSelectedAssistant(assistant || null);
+            }}
             className="appearance-none bg-gray-100 border border-gray-300 rounded-md py-2 pl-3 pr-10 text-sm leading-5 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
           >
             <option value="">Select an assistant</option>
