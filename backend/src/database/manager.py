@@ -13,7 +13,6 @@ class DatabaseManager:
         self.Session = sessionmaker(bind=self.engine)
         self.vector_db = vector_db
 
-    #### User operations ####
     def create_user(self, username, email, password_hash):
         with self.Session() as session:
             user = User(username=username, email=email, password_hash=password_hash)
@@ -22,12 +21,6 @@ class DatabaseManager:
             return user.id
 
     def find_user(self, identifier):
-        """
-        Find a user by username or email.
-        
-        :param identifier: The username or email to search for
-        :return: User object if found, None otherwise
-        """
         with self.Session() as session:
             user = session.query(User).filter(
                 or_(User.username == identifier, User.email == identifier)
@@ -35,41 +28,28 @@ class DatabaseManager:
             return user
 
     def get_current_user_id(self):
-        """
-        For now, this method always returns 1 as the admin user ID.
-        In a real application, this would typically involve checking session data or tokens.
-        """
-        return 1
+        return 1  # Placeholder implementation
 
-    #### Knowledge base operations ####
     def create_knowledge_base(self, user_id, name, description):
         with self.Session() as session:
             kb = KnowledgeBase(user_id=user_id, name=name, description=description)
             session.add(kb)
             session.commit()
+            self.vector_db.create_collection(f"kb_{kb.id}")
             return kb.id
-        
+
     def get_knowledge_base(self, knowledge_base_id: int, user_id: int):
-        """
-        Retrieve a knowledge base by ID and check if it belongs to the user.
-        """
         with self.Session() as session:
             kb = session.query(KnowledgeBase).filter_by(id=knowledge_base_id, user_id=user_id).first()
             if not kb:
                 raise HTTPException(status_code=404, detail="Knowledge base not found or access denied")
             return kb
-        
+
     def find_knowledge_base(self, knowledge_base_name: str, user_id: int):
-        """
-        Retrieve a knowledge base by name and check if it belongs to the user.
-        """
         with self.Session() as session:
             kb = session.query(KnowledgeBase).filter_by(name=knowledge_base_name, user_id=user_id).first()
-            if not kb:
-                return None
             return kb
-        
-    #### Document operations ####
+
     def add_document(self, knowledge_base_id, file_name, file_type, file_path):
         with self.Session() as session:
             doc = Document(knowledge_base_id=knowledge_base_id, file_name=file_name,
@@ -96,27 +76,33 @@ class DatabaseManager:
             session.add(chunk)
             session.commit()
             
-            # Add vector to VectorDB
             self.vector_db.add_vector(
+                collection_name=f"kb_{knowledge_base_id}",
                 vector_id=vector_id,
                 vector=vector,
                 payload={
                     "document_chunk_id": chunk.id,
-                    "knowledge_base_id": knowledge_base_id,
-                    "content": content
+                    "text": content
                 }
             )
             return chunk.id
         
+    def get_document_by_name(self, knowledge_base_id: int, file_name: str):
+        with self.Session() as session:
+            document = session.query(Document).filter_by(
+                knowledge_base_id=knowledge_base_id,
+                file_name=file_name
+            ).first()
+            return document
+
     def search_similar_chunks(self, query_vector, knowledge_base_id, limit=5):
         search_result = self.vector_db.search_vectors(
+            collection_name=f"kb_{knowledge_base_id}",
             query_vector=query_vector,
-            filter_condition=("knowledge_base_id", knowledge_base_id),
             limit=limit
         )
         return [(hit.payload["document_chunk_id"], hit.payload["content"]) for hit in search_result]
 
-    #### Assistant operations ####
     def create_assistant(self, user_id, name, description, knowledge_base_id, configuration):
         with self.Session() as session:
             assistant = Assistant(user_id=user_id, name=name, description=description,
@@ -124,22 +110,6 @@ class DatabaseManager:
             session.add(assistant)
             session.commit()
             return assistant
-        
-    def delete_assistant(self, assistant_id, user_id):
-        with self.Session() as session:
-            assistant = session.query(Assistant).filter_by(id=assistant_id, user_id=user_id).first()
-            if not assistant:
-                return False
-            
-            # Delete all conversations associated with this assistant
-            conversations = session.query(Conversation).filter_by(assistant_id=assistant_id).all()
-            for conversation in conversations:
-                session.delete(conversation)
-            
-            # Delete the assistant
-            session.delete(assistant)
-            session.commit()
-            return True
 
     def start_conversation(self, user_id, assistant_id):
         with self.Session() as session:
@@ -153,9 +123,7 @@ class DatabaseManager:
             message = Message(conversation_id=conversation_id, sender_type=sender_type, content=content)
             session.add(message)
             session.commit()
-            return message.id
-    
-    
+            return message.id    
 
 
 # Usage example

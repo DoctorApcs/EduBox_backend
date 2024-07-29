@@ -13,7 +13,7 @@ from llama_index.agent.openai import OpenAIAgent
 from llama_index.core.agent import ReActAgent
 # from src.agents.gemini_agent import GeminiForFunctionCalling
 from llama_index.core import Settings
-from src.tools.paper_search_tool import load_paper_search_tool, load_daily_paper_tool, load_get_time_tool
+from src.tools.kb_search_tool import load_paper_search_tool, load_daily_paper_tool, load_get_time_tool
 from src.tools.web_search_tool import load_web_search_tool
 from src.tools.summarize_tool import load_summarize_tool
 from src.tasks.question_recommend_task import QuestionRecommender

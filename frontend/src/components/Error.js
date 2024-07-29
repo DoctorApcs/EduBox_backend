@@ -1,7 +1,7 @@
 import React from "react";
 import { AlertTriangle } from "lucide-react";
 
-const Error = ({ message }) => {
+const ErrorComponent = ({ message }) => {
   return (
     <div className="flex items-center justify-center h-screen bg-gray-100">
       <div className="bg-white p-8 rounded-lg shadow-md max-w-md w-full">
@@ -26,4 +26,4 @@ const Error = ({ message }) => {
   );
 };
 
-export default Error;
+export default ErrorComponent;

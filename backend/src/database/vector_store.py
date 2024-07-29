@@ -4,59 +4,55 @@ from qdrant_client.http import models
 from chromadb import Client as ChromaClient
 from typing import Optional, List, Dict, Any
 
-DEFAULT_COLLECTION_NAME = "document_vectors"
-DEFAULT_VECTOR_SIZE = 4
 DEFAULT_DISTANCE = models.Distance.COSINE
 
 class VectorDB(ABC):
     @abstractmethod
-    def initialize(self):
+    def create_collection(self, collection_name: str):
         pass
 
     @abstractmethod
-    def add_vector(self, vector_id, vector, payload):
+    def add_vector(self, collection_name: str, vector_id: str, vector: List[float], payload: Dict[str, Any]):
         pass
 
     @abstractmethod
-    def search_vectors(self, query_vector, filter_condition, limit):
+    def search_vectors(self, collection_name: str, query_vector: List[float], limit: int):
         pass
 
-class QdrantVectorDB:
-    def __init__(self,
-                 url: str,
-                 collection_name: str = DEFAULT_COLLECTION_NAME,
-                 distance: str = DEFAULT_DISTANCE):
+class QdrantVectorDB(VectorDB):
+    def __init__(self, url: str, distance: str = DEFAULT_DISTANCE):
         self.client = QdrantClient(url)
-        self.collection_name = collection_name
         self.distance = distance
-        self.is_initialized = False
-        self.vector_size: Optional[int] = None
+        self.initialized_collections = set()
+        self.pending_collections = set()
 
-    def _initialize(self, vector_size: int):
-        if not self.is_initialized:
-            self.vector_size = vector_size
-            self.client.recreate_collection(
-                collection_name=self.collection_name,
-                vectors_config=models.VectorParams(size=self.vector_size, distance=self.distance),
-            )
-            self.client.create_payload_index(
-                collection_name=self.collection_name,
-                field_name="document_chunk_id",
-                field_schema=models.PayloadSchemaType.INTEGER
-            )
-            self.client.create_payload_index(
-                collection_name=self.collection_name,
-                field_name="knowledge_base_id",
-                field_schema=models.PayloadSchemaType.INTEGER
-            )
-            self.is_initialized = True
+    def create_collection(self, collection_name: str):
+        if collection_name not in self.pending_collections:
+            self.pending_collections.add(collection_name)
 
-    def add_vector(self, vector_id: int, vector: List[float], payload: Dict[str, Any]):
-        if not self.is_initialized:
-            self._initialize(len(vector))
-        
+    def _initialize_collection(self, collection_name: str, vector_size: int):
+        self.client.recreate_collection(
+            collection_name=collection_name,
+            vectors_config=models.VectorParams(size=vector_size, distance=self.distance),
+        )
+        self.client.create_payload_index(
+            collection_name=collection_name,
+            field_name="document_chunk_id",
+            field_schema=models.PayloadSchemaType.INTEGER
+        )
+        self.initialized_collections.add(collection_name)
+        self.pending_collections.remove(collection_name)
+
+    def add_vector(self, collection_name: str, vector_id: str, vector: List[float], payload: Dict[str, Any]):
+        if collection_name not in self.initialized_collections:
+            if collection_name not in self.pending_collections:
+                self.create_collection(collection_name)
+            
+            if collection_name in self.pending_collections:
+                self._initialize_collection(collection_name, len(vector))
+
         self.client.upsert(
-            collection_name=self.collection_name,
+            collection_name=collection_name,
             points=[
                 models.PointStruct(
                     id=vector_id,
@@ -66,47 +62,43 @@ class QdrantVectorDB:
             ]
         )
 
-    def search_vectors(self, query_vector: List[float], filter_condition: tuple, limit: int):
-        if not self.is_initialized:
-            raise ValueError("The collection has not been initialized. Add a vector first.")
+    def search_vectors(self, collection_name: str, query_vector: List[float], limit: int):
+        if collection_name not in self.initialized_collections:
+            raise ValueError(f"Collection {collection_name} has not been initialized.")
         
         search_result = self.client.search(
-            collection_name=self.collection_name,
+            collection_name=collection_name,
             query_vector=query_vector,
-            query_filter=models.Filter(
-                must=[
-                    models.FieldCondition(
-                        key=filter_condition[0],
-                        match=models.MatchValue(value=filter_condition[1])
-                    )
-                ]
-            ),
             limit=limit
         )
         return search_result
-
     
     
-
 class ChromaVectorDB(VectorDB):
     def __init__(self, settings):
         self.client = ChromaClient(settings)
-        self.collection_name = "document_vectors"
+        self.collections = {}
 
-    def initialize(self):
-        self.collection = self.client.create_collection(name=self.collection_name)
+    def create_collection(self, collection_name: str):
+        if collection_name not in self.collections:
+            self.collections[collection_name] = self.client.create_collection(name=collection_name)
 
-    def add_vector(self, vector_id, vector, payload):
-        self.collection.add(
+    def add_vector(self, collection_name: str, vector_id: str, vector: List[float], payload: Dict[str, Any]):
+        if collection_name not in self.collections:
+            self.create_collection(collection_name)
+        
+        self.collections[collection_name].add(
             ids=[vector_id],
             embeddings=[vector],
             metadatas=[payload]
         )
 
-    def search_vectors(self, query_vector, filter_condition, limit):
-        results = self.collection.query(
+    def search_vectors(self, collection_name: str, query_vector: List[float], limit: int):
+        if collection_name not in self.collections:
+            raise ValueError(f"Collection {collection_name} has not been initialized.")
+        
+        results = self.collections[collection_name].query(
             query_embeddings=[query_vector],
-            n_results=limit,
-            where={filter_condition[0]: filter_condition[1]}
+            n_results=limit
         )
         return results

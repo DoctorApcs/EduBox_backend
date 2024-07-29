@@ -38,10 +38,14 @@ async def upload_document(
     db_manager : DatabaseManager = Depends(get_db_manager)
 ):
     try:
-                
+        # Check if a file with the same name already exists in the database
+        existing_document = db_manager.get_document_by_name(knowledge_base_id, file.filename)
+        if existing_document:
+            raise HTTPException(status_code=400, detail="A file with this name already exists in the knowledge base")
+
         # Create a unique filename
         file_extension = os.path.splitext(file.filename)[1]
-        unique_filename = f"{uuid.uuid4()}{file_extension}"
+        unique_filename = file.filename
         
         # Save the file
         file_path = os.path.join(UPLOAD_DIR, unique_filename)
@@ -70,6 +74,8 @@ async def upload_document(
             },
             status_code=202
         )
+    except HTTPException as he:
+        raise he
     except Exception as e:
         print(e)
         raise HTTPException(status_code=500, detail=f"An error occurred: {str(e)}")
