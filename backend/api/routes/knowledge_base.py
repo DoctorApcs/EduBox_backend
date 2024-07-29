@@ -52,7 +52,7 @@ async def upload_document(
             buffer.write(content)
         
         # Add document to database
-        document_id = db_manager.add_document(
+        document_id, document_type, documented_created = db_manager.add_document(
             knowledge_base_id=knowledge_base_id,
             file_name=unique_filename,
             file_type=file_extension,
@@ -61,7 +61,7 @@ async def upload_document(
         )
         
         # Process the document asynchronously
-        task = process_document.delay(file_path, document_id)
+        # task = process_document.delay(file_path, document_id)
         
         return JSONResponse(
             content={
@@ -69,7 +69,9 @@ async def upload_document(
                 "file_name": unique_filename,
                 "file_path": file_path,
                 "document_id": document_id,
-                "task_id": task.id
+                "created_at": documented_created.isoformat(),
+                "file_type": document_type
+                # "task_id": task.id
             },
             status_code=202
         )

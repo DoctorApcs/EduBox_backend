@@ -61,7 +61,7 @@ class DatabaseManager:
                            file_type=file_type, file_path=file_path, status=status)
             session.add(doc)
             session.commit()
-            return doc.id
+            return doc.id, doc.file_type, doc.created_at
 
     def add_document_chunk(self, document_id, chunk_index, content, vector):
         vector_id = str(uuid.uuid4())
