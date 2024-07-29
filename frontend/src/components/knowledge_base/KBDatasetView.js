@@ -158,12 +158,7 @@ const DatasetView = ({ knowledgeBaseID }) => {
             <FileText className="inline-block mr-2" size={20} />
             Dataset
           </a>
-          <a
-            href="#"
-            className="block py-2 px-4 text-gray-600 hover:bg-gray-100"
-          >
-            Retrieval testing
-          </a>
+
           <a
             href="#"
             className="block py-2 px-4 text-gray-600 hover:bg-gray-100"
