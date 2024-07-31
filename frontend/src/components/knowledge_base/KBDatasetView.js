@@ -47,20 +47,32 @@ const DatasetView = ({ knowledgeBaseID }) => {
   }, [knowledgeBaseID]);
 
   useEffect(() => {
-    const checkDocumentStatuses = async () => {
-      const updatedDocuments = await Promise.all(
-        documents.map(async (doc) => {
-          const response = await fetch(
-            `${API_BASE_URL}/api/knowledge_base/document_status/${doc.id}`
-          );
-          const status = await response.json();
-          return { ...doc, status: status.status, progress: status.progress };
-        })
+    const checkProcessingDocuments = async () => {
+      const processingDocs = documents.filter(
+        (doc) => doc.status === "processing"
       );
-      setDocuments(updatedDocuments);
+      if (processingDocs.length > 0) {
+        const updatedStatuses = await Promise.all(
+          processingDocs.map(async (doc) => {
+            const response = await fetch(
+              `${API_BASE_URL}/api/knowledge_base/document_status/${doc.id}`
+            );
+            const status = await response.json();
+            return { id: doc.id, ...status };
+          })
+        );
+
+        setDocuments((prevDocs) =>
+          prevDocs.map((doc) => {
+            const updatedStatus = updatedStatuses.find((s) => s.id === doc.id);
+            return updatedStatus ? { ...doc, ...updatedStatus } : doc;
+          })
+        );
+      }
     };
 
-    const intervalId = setInterval(checkDocumentStatuses, 5000);
+    const intervalId = setInterval(checkProcessingDocuments, 5000);
+
     return () => clearInterval(intervalId);
   }, [documents]);
 
