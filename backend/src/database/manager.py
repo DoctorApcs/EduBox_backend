@@ -142,6 +142,22 @@ class DatabaseManager:
             session.add(assistant)
             session.commit()
             return assistant
+        
+    def delete_assistant(self, assistant_id, user_id):
+        with self.Session() as session:
+            assistant = session.query(Assistant).filter_by(id=assistant_id, user_id=user_id).first()
+            if not assistant:
+                return False
+            # Delete the messages associated with the conversation
+            session.query(Message).filter_by(conversation_id=assistant_id).delete()
+            
+            # Delete the conversation
+            session.query(Conversation).filter_by(assistant_id=assistant_id).delete()
+            
+            # Delete the assistant
+            session.delete(assistant)
+            session.commit()
+            return True
 
     def start_conversation(self, user_id, assistant_id):
         with self.Session() as session:
