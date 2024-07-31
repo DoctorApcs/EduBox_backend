@@ -1,6 +1,5 @@
 from fastapi import APIRouter, File, UploadFile, HTTPException
-from fastapi.responses import JSONResponse
-# from .service import AssistantService
+from fastapi.responses import JSONResponse, FileResponse
 from src.document_parser import process_document
 from celery.result import AsyncResult
 from fastapi import Depends
@@ -146,6 +145,42 @@ async def process_uploaded_document(
         },
         status_code=202
     )
+    
+@kb_router.get("/download_document/{document_id}")
+async def download_document(
+    document_id: int,
+    db_manager: DatabaseManager = Depends(get_db_manager)
+):
+    document = db_manager.get_document(document_id)
+    if not document:
+        raise HTTPException(status_code=404, detail="Document not found")
+    
+    file_path = document.file_path
+    if not os.path.exists(file_path):
+        raise HTTPException(status_code=404, detail="File not found")
+    
+    return FileResponse(file_path, filename=document.file_name, media_type='application/octet-stream')
+
+@kb_router.delete("/delete_document/{document_id}")
+async def delete_document(
+    document_id: int,
+    db_manager: DatabaseManager = Depends(get_db_manager)
+):
+    document = db_manager.get_document(document_id)
+    if not document:
+        raise HTTPException(status_code=404, detail="Document not found")
+    
+    # Delete the file from the filesystem
+    if os.path.exists(document.file_path):
+        os.remove(document.file_path)
+    
+    # Delete the document from the database
+    db_manager.delete_document(document_id)
+    
+    return JSONResponse(content={"message": "Document deleted successfully"}, status_code=200)
+
+# ... (rest of the existing code remains the same)
+
 
 @kb_router.post("/", response_model=KnowledgeBaseResponse)
 async def create_knowledge_base(

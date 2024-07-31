@@ -9,6 +9,8 @@ import {
   Check,
   FileIcon,
   File,
+  Download,
+  Trash2,
 } from "lucide-react";
 import UploadFileModal from "@/components/knowledge_base/UploadFileModal";
 import LoadingSpinner from "@/components/LoadingSpinner";
@@ -47,20 +49,32 @@ const DatasetView = ({ knowledgeBaseID }) => {
   }, [knowledgeBaseID]);
 
   useEffect(() => {
-    const checkDocumentStatuses = async () => {
-      const updatedDocuments = await Promise.all(
-        documents.map(async (doc) => {
-          const response = await fetch(
-            `${API_BASE_URL}/api/knowledge_base/document_status/${doc.id}`
-          );
-          const status = await response.json();
-          return { ...doc, status: status.status, progress: status.progress };
-        })
+    const checkProcessingDocuments = async () => {
+      const processingDocs = documents.filter(
+        (doc) => doc.status === "processing"
       );
-      setDocuments(updatedDocuments);
+      if (processingDocs.length > 0) {
+        const updatedStatuses = await Promise.all(
+          processingDocs.map(async (doc) => {
+            const response = await fetch(
+              `${API_BASE_URL}/api/knowledge_base/document_status/${doc.id}`
+            );
+            const status = await response.json();
+            return { id: doc.id, ...status };
+          })
+        );
+
+        setDocuments((prevDocs) =>
+          prevDocs.map((doc) => {
+            const updatedStatus = updatedStatuses.find((s) => s.id === doc.id);
+            return updatedStatus ? { ...doc, ...updatedStatus } : doc;
+          })
+        );
+      }
     };
 
-    const intervalId = setInterval(checkDocumentStatuses, 5000);
+    const intervalId = setInterval(checkProcessingDocuments, 5000);
+
     return () => clearInterval(intervalId);
   }, [documents]);
 
@@ -90,6 +104,50 @@ const DatasetView = ({ knowledgeBaseID }) => {
         ]);
       } catch (error) {
         console.error("Error uploading document:", error);
+        setError(error.message);
+      }
+    }
+  };
+
+  const handleDownloadDocument = async (documentId, fileName) => {
+    try {
+      const response = await fetch(
+        `${API_BASE_URL}/api/knowledge_base/download_document/${documentId}`
+      );
+      if (!response.ok) {
+        throw new Error("Failed to download document");
+      }
+      const blob = await response.blob();
+      const url = window.URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = fileName;
+      document.body.appendChild(a);
+      a.click();
+      window.URL.revokeObjectURL(url);
+    } catch (error) {
+      console.error("Error downloading document:", error);
+      setError(error.message);
+    }
+  };
+
+  const handleDeleteDocument = async (documentId) => {
+    if (window.confirm("Are you sure you want to delete this document?")) {
+      try {
+        const response = await fetch(
+          `${API_BASE_URL}/api/knowledge_base/delete_document/${documentId}`,
+          {
+            method: "DELETE",
+          }
+        );
+        if (!response.ok) {
+          throw new Error("Failed to delete document");
+        }
+        setDocuments((prevDocuments) =>
+          prevDocuments.filter((doc) => doc.id !== documentId)
+        );
+      } catch (error) {
+        console.error("Error deleting document:", error);
         setError(error.message);
       }
     }
@@ -223,7 +281,6 @@ const DatasetView = ({ knowledgeBaseID }) => {
               </button>
             </div>
           </div>
-
           <table className="w-full">
             <colgroup>
               <col style={{ width: "40%" }} />
@@ -238,7 +295,7 @@ const DatasetView = ({ knowledgeBaseID }) => {
                 <th className="p-2">File Type</th>
                 <th className="p-2">Upload Date</th>
                 <th className="p-2">Status</th>
-                <th className="p-2">Action</th>
+                <th className="p-2">Actions</th>
               </tr>
             </thead>
             <tbody>
@@ -278,9 +335,24 @@ const DatasetView = ({ knowledgeBaseID }) => {
                           Process
                         </button>
                       ) : (
-                        <button className="text-blue-500 hover:text-blue-700">
-                          View
-                        </button>
+                        <div className="flex space-x-2">
+                          <button
+                            onClick={() =>
+                              handleDownloadDocument(doc.id, doc.file_name)
+                            }
+                            className="text-blue-500 hover:text-blue-700"
+                            title="Download"
+                          >
+                            <Download size={16} />
+                          </button>
+                          <button
+                            onClick={() => handleDeleteDocument(doc.id)}
+                            className="text-red-500 hover:text-red-700"
+                            title="Delete"
+                          >
+                            <Trash2 size={16} />
+                          </button>
+                        </div>
                       )}
                     </td>
                   </tr>
