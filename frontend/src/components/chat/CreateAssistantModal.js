@@ -1,15 +1,17 @@
 import React, { useState, useEffect } from "react";
+import { useRouter } from "next/navigation";
 import { X, Upload, Info } from "lucide-react";
 
 const API_BASE_URL =
   process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:8000";
 
-const CreateAssistantModal = ({ isOpen, onClose }) => {
+const CreateAssistantModal = ({ isOpen, onClose, onCreateSuccess }) => {
+  const router = useRouter();
   const [assistantName, setAssistantName] = useState("");
   const [description, setDescription] = useState("");
   const [knowledgeBases, setKnowledgeBases] = useState([]);
   const [selectedKnowledgeBase, setSelectedKnowledgeBase] = useState("");
-  const [model, setModel] = useState("gpt-4-turbo");
+  const [model, setModel] = useState("gpt-4o-mini");
 
   useEffect(() => {
     if (isOpen) {
@@ -53,21 +55,24 @@ const CreateAssistantModal = ({ isOpen, onClose }) => {
       });
 
       if (response.ok) {
+        const data = await response.json();
         onClose();
-        // Handle success (e.g., show a success message)
+        onCreateSuccess(); // Call this to update the assistants list in the parent component
+        router.push(`/chat/${data.id}`); // Navigate to the new assistant's page
       } else {
-        // Handle error (e.g., show an error message)
         console.error("Failed to create assistant");
+        // You might want to show an error message to the user here
       }
     } catch (error) {
       console.error("Error creating assistant:", error);
+      // You might want to show an error message to the user here
     }
   };
 
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-start pt-16">
+    <div className="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-start pt-16 z-50">
       <div className="bg-white rounded-lg shadow-xl w-full max-w-2xl">
         <div className="flex justify-between items-center p-6 border-b">
           <div className="flex items-center space-x-3">

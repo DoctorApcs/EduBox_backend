@@ -75,7 +75,7 @@ const ChatAssistantPage = () => {
   const fetchConversations = async () => {
     try {
       const response = await fetch(
-        `${API_BASE_URL}/api/assistant/conversations?assistant_id=${assistant_id}`
+        `${API_BASE_URL}/api/assistant/${assistant_id}/conversations`
       );
       if (!response.ok) {
         throw new Error("Failed to fetch conversations");
@@ -95,13 +95,12 @@ const ChatAssistantPage = () => {
   const handleCreateConversation = async () => {
     try {
       const response = await fetch(
-        `${API_BASE_URL}/api/assistant/conversations`,
+        `${API_BASE_URL}/api/assistant/${assistant_id}/conversations`,
         {
           method: "POST",
           headers: {
             "Content-Type": "application/json",
           },
-          body: JSON.stringify({ assistant_id: assistant_id }),
         }
       );
 
@@ -126,7 +125,7 @@ const ChatAssistantPage = () => {
   if (error) return <ErrorComponent message={error} />;
 
   return (
-    <div className="flex h-screen bg-gray-100">
+    <div className="flex h-[calc(100vh-4rem)] bg-gray-100">
       <Sidebar
         isVisible={isSideView}
         width={sidebarWidth}
@@ -145,6 +144,8 @@ const ChatAssistantPage = () => {
           setSelectedAssistant={setSelectedAssistant}
           assistants={assistants}
           onCreateAssistant={handleCreateAssistant}
+          showSidebarButton={true}
+          showAssistantSelect={true}
         />
         {selectedConversation ? (
           <ChatArea
