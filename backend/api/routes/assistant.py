@@ -6,6 +6,7 @@ from src.dependencies import get_current_user_id
 
 assistant_router = APIRouter()
 
+## Assistant ##
 @assistant_router.post("/", response_model=AssistantResponse)
 async def create_assistant(
     assistant: AssistantCreate,
@@ -21,6 +22,17 @@ async def get_all_assistants(
 ):
     return assistant_service.get_all_assistants(current_user_id)
 
+@assistant_router.get("/{assistant_id}", response_model=AssistantResponse)
+async def get_assistant(
+    assistant_id: int,
+    current_user_id: int = Depends(get_current_user_id),
+    assistant_service: AssistantService = Depends()
+):
+    assistant = assistant_service.get_assistant(assistant_id, current_user_id)
+    if assistant is None:
+        raise HTTPException(status_code=404, detail="Assistant not found")
+    return assistant
+
 @assistant_router.delete("/{assistant_id}", response_model=dict)
 async def delete_assistant(
     assistant_id: int,
@@ -32,6 +44,8 @@ async def delete_assistant(
         raise HTTPException(status_code=404, detail="Assistant not found")
     return {"message": "Assistant deleted successfully"}
 
+
+### Conversations ###
 @assistant_router.get("/conversations", response_model=List[ConversationResponse])
 async def get_assistant_conversations(
     assistant_id: int = Query(..., description="ID of the assistant"),

@@ -50,6 +50,15 @@ class AssistantService:
         except Exception as e:
             raise HTTPException(status_code=500, detail=f"An error occurred while fetching assistants: {str(e)}")
 
+    def get_assistant(self, assistant_id: int, user_id: int) -> Optional[AssistantResponse]:
+        try:
+            with self.db_manager.Session() as session:
+                assistant = session.query(Assistant).filter_by(id=assistant_id, user_id=user_id).first()
+                if not assistant:
+                    return None
+                return AssistantResponse.model_validate(assistant)
+        except Exception as e:
+            raise HTTPException(status_code=500, detail=f"An error occurred while fetching assistant: {str(e)}")
 
     def create_conversation(self, user_id: int, conversation_data: ConversationCreate) -> ConversationResponse:
         try:
@@ -111,7 +120,7 @@ class AssistantService:
                     "model": configuration["model"],
                     "service": configuration["service"],
                     "temperature": configuration["temperature"],
-                    "embedding_service": "openai", #TODO: Let user choose embeddign model,
+                    "embedding_service": "openai", #TODO: Let user choose embedding model,
                     "embedding_model_name": "text-embedding-3-small",
                     "collection_name": f"kb_{assistant.knowledge_base_id}"
                 }
