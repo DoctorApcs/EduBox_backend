@@ -113,6 +113,18 @@ class DatabaseManager:
                 file_name=file_name
             ).first()
             return document
+        
+    def delete_document(self, document_id: int):
+        with self.Session() as session:
+            document = session.query(Document).filter_by(id=document_id).first()
+            if not document:
+                return False
+            # Delete the document chunks
+            session.query(DocumentChunk).filter_by(document_id=document_id).delete()
+            # Delete the document
+            session.delete(document)
+            session.commit()
+            return True
 
     def search_similar_chunks(self, query_vector, knowledge_base_id, limit=5):
         search_result = self.vector_db.search_vectors(
