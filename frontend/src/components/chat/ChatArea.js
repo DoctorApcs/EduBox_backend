@@ -9,6 +9,7 @@ const ChatArea = ({ conversation, assistantId }) => {
   const [messages, setMessages] = useState([]);
   const [inputMessage, setInputMessage] = useState("");
   const [isLoading, setIsLoading] = useState(false);
+  const [streamingMessage, setStreamingMessage] = useState("");
   const messagesEndRef = useRef(null);
   const textareaRef = useRef(null);
 
@@ -20,7 +21,7 @@ const ChatArea = ({ conversation, assistantId }) => {
 
   useEffect(() => {
     scrollToBottom();
-  }, [messages]);
+  }, [messages, streamingMessage]);
 
   const fetchConversationHistory = async () => {
     try {
@@ -45,10 +46,12 @@ const ChatArea = ({ conversation, assistantId }) => {
     setMessages((prevMessages) => [...prevMessages, newMessage]);
     setInputMessage("");
     setIsLoading(true);
+    setStreamingMessage("");
+    let fullResponse = "";
 
     try {
       const response = await fetch(
-        `${API_BASE_URL}/api/assistant/${assistantId}/conversations/${conversation.id}/chat`,
+        `${API_BASE_URL}/api/assistant/${assistantId}/conversations/${conversation.id}/chat/stream`,
         {
           method: "POST",
           headers: {
@@ -62,12 +65,24 @@ const ChatArea = ({ conversation, assistantId }) => {
         throw new Error("Failed to send message");
       }
 
-      const data = await response.json();
-      const assistantMessage = {
-        sender_type: "assistant",
-        content: data.assistant_message,
-      };
-      setMessages((prevMessages) => [...prevMessages, assistantMessage]);
+      const reader = response.body.getReader();
+      const decoder = new TextDecoder();
+
+      while (true) {
+        const { value, done } = await reader.read();
+        if (done) break;
+
+        const chunk = decoder.decode(value);
+        fullResponse += chunk; // Add the chunk to the full response
+
+        setStreamingMessage((prev) => prev + chunk);
+      }
+
+      setMessages((prevMessages) => [
+        ...prevMessages,
+        { sender_type: "assistant", content: fullResponse },
+      ]);
+      setStreamingMessage("");
     } catch (error) {
       console.error("Error sending message:", error);
     } finally {
@@ -128,6 +143,19 @@ const ChatArea = ({ conversation, assistantId }) => {
             </div>
           </div>
         ))}
+        {streamingMessage && (
+          <div className="flex justify-start mb-4">
+            <div className="max-w-[70%] p-3 rounded-lg bg-gray-200 text-gray-800">
+              <div className="flex items-center mb-1">
+                <Bot size={16} className="mr-2" />
+                <span className="font-semibold">Assistant</span>
+              </div>
+              <ReactMarkdown className="prose prose-sm max-w-none">
+                {streamingMessage}
+              </ReactMarkdown>
+            </div>
+          </div>
+        )}
         <div ref={messagesEndRef} />
       </div>
       <form onSubmit={sendMessage} className="p-4 border-t border-gray-200">

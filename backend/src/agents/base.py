@@ -7,9 +7,10 @@ from src.constants import GlobalConfig
 from llama_index.core.base.llms.types import ChatMessage as LLamaIndexChatMessage
 from llama_index.llms.openai import OpenAI
 from llama_index.agent.openai import OpenAIAgent
-
+from typing import Generator
 
 class ChatAssistant:
+    
     def __init__(self, configuration: dict, db_manager: DatabaseManager = Depends(get_db_manager)):
         self.db_manager = db_manager
         self.configuration = configuration
@@ -57,4 +58,9 @@ class ChatAssistant:
 
     def on_message(self, message, message_history) -> str:
         message_history = [LLamaIndexChatMessage(content=msg["content"], role=msg["role"]) for msg in message_history]
-        return self.agent.chat(message, message_history).response
+        return self.agent.chat(message, message_history)
+    
+    def on_message_stream(self, message, message_history):
+        message_history = [LLamaIndexChatMessage(content=msg["content"], role=msg["role"]) for msg in message_history]
+        return self.agent.stream_chat(message, message_history).response_gen
+        

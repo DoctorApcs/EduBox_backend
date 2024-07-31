@@ -1,5 +1,6 @@
-from fastapi import APIRouter, HTTPException, Depends, Query
-from typing import List
+from fastapi import APIRouter, HTTPException, Depends
+from fastapi.responses import StreamingResponse
+from typing import List, AsyncGenerator, Generator
 from api.models.assistant import AssistantCreate, AssistantResponse, ChatMessage, ChatResponse, ConversationResponse, MessageResponse
 from api.services.assistant import AssistantService
 from src.dependencies import get_current_user_id
@@ -74,6 +75,22 @@ async def chat_with_assistant(
     assistant_service: AssistantService = Depends()
 ):
     return assistant_service.chat_with_assistant(conversation_id, current_user_id, message)
+
+@assistant_router.post("/{assistant_id}/conversations/{conversation_id}/chat/stream")
+async def stream_chat_with_assistant(
+    assistant_id: int,
+    conversation_id: int,
+    message: ChatMessage,
+    current_user_id: int = Depends(get_current_user_id),
+    assistant_service: AssistantService = Depends()
+) -> StreamingResponse:
+    def event_generator() -> Generator[str, None, None]:
+        for chunk in assistant_service.stream_chat_with_assistant(conversation_id, current_user_id, message):
+            print(chunk)
+            yield chunk
+
+    return StreamingResponse(event_generator(), media_type="text/event-stream")
+
 
 @assistant_router.get("/{assistant_id}/conversations/{conversation_id}/history", response_model=List[MessageResponse])
 async def get_conversation_history(
