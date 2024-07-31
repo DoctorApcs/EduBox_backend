@@ -20,9 +20,6 @@ class AssistantResponse(BaseModel):
 
     model_config = ConfigDict(from_attributes=True)
 
-class ConversationCreate(BaseModel):
-    assistant_id: int
-
 class ConversationResponse(BaseModel):
     id: int
     user_id: int

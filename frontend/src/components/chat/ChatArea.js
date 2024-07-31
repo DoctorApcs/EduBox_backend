@@ -25,7 +25,7 @@ const ChatArea = ({ conversation, assistantId }) => {
   const fetchConversationHistory = async () => {
     try {
       const response = await fetch(
-        `${API_BASE_URL}/api/assistant/conversations/${conversation.id}/history`
+        `${API_BASE_URL}/api/assistant/${assistantId}/conversations/${conversation.id}/history`
       );
       if (!response.ok) {
         throw new Error("Failed to fetch conversation history");
@@ -48,7 +48,7 @@ const ChatArea = ({ conversation, assistantId }) => {
 
     try {
       const response = await fetch(
-        `${API_BASE_URL}/api/assistant/conversations/${conversation.id}/chat`,
+        `${API_BASE_URL}/api/assistant/${assistantId}/conversations/${conversation.id}/chat`,
         {
           method: "POST",
           headers: {

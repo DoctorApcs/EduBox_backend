@@ -1,11 +1,12 @@
 from fastapi import APIRouter, HTTPException, Depends, Query
 from typing import List
-from api.models.assistant import AssistantCreate, AssistantResponse, ChatMessage, ChatResponse, ConversationCreate, ConversationResponse, MessageResponse
+from api.models.assistant import AssistantCreate, AssistantResponse, ChatMessage, ChatResponse, ConversationResponse, MessageResponse
 from api.services.assistant import AssistantService
 from src.dependencies import get_current_user_id
 
 assistant_router = APIRouter()
 
+## Assistant ##
 @assistant_router.post("/", response_model=AssistantResponse)
 async def create_assistant(
     assistant: AssistantCreate,
@@ -21,6 +22,17 @@ async def get_all_assistants(
 ):
     return assistant_service.get_all_assistants(current_user_id)
 
+@assistant_router.get("/{assistant_id}", response_model=AssistantResponse)
+async def get_assistant(
+    assistant_id: int,
+    current_user_id: int = Depends(get_current_user_id),
+    assistant_service: AssistantService = Depends()
+):
+    assistant = assistant_service.get_assistant(assistant_id, current_user_id)
+    if assistant is None:
+        raise HTTPException(status_code=404, detail="Assistant not found")
+    return assistant
+
 @assistant_router.delete("/{assistant_id}", response_model=dict)
 async def delete_assistant(
     assistant_id: int,
@@ -32,9 +44,11 @@ async def delete_assistant(
         raise HTTPException(status_code=404, detail="Assistant not found")
     return {"message": "Assistant deleted successfully"}
 
-@assistant_router.get("/conversations", response_model=List[ConversationResponse])
+
+### Conversations ###
+@assistant_router.get("/{assistant_id}/conversations", response_model=List[ConversationResponse])
 async def get_assistant_conversations(
-    assistant_id: int = Query(..., description="ID of the assistant"),
+    assistant_id: int,
     current_user_id: int = Depends(get_current_user_id),
     assistant_service: AssistantService = Depends()
 ):
@@ -43,16 +57,17 @@ async def get_assistant_conversations(
         raise HTTPException(status_code=404, detail="Assistant not found")
     return conversations
 
-@assistant_router.post("/conversations", response_model=ConversationResponse)
+@assistant_router.post("/{assistant_id}/conversations", response_model=ConversationResponse)
 async def create_conversation(
-    conversation_data: ConversationCreate,
+    assistant_id: int,
     current_user_id: int = Depends(get_current_user_id),
     assistant_service: AssistantService = Depends()
 ):
-    return assistant_service.create_conversation(current_user_id, conversation_data)
+    return assistant_service.create_conversation(current_user_id, assistant_id)
 
-@assistant_router.post("/conversations/{conversation_id}/chat", response_model=ChatResponse)
+@assistant_router.post("/{assistant_id}/conversations/{conversation_id}/chat", response_model=ChatResponse)
 async def chat_with_assistant(
+    assistant_id: int,
     conversation_id: int,
     message: ChatMessage,
     current_user_id: int = Depends(get_current_user_id),
@@ -60,8 +75,9 @@ async def chat_with_assistant(
 ):
     return assistant_service.chat_with_assistant(conversation_id, current_user_id, message)
 
-@assistant_router.get("/conversations/{conversation_id}/history", response_model=List[MessageResponse])
+@assistant_router.get("/{assistant_id}/conversations/{conversation_id}/history", response_model=List[MessageResponse])
 async def get_conversation_history(
+    assistant_id: int,
     conversation_id: int,
     current_user_id: int = Depends(get_current_user_id),
     assistant_service: AssistantService = Depends()

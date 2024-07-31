@@ -1,5 +1,5 @@
-import React, { useMemo, useState, useEffect } from "react";
-import { Cpu, Book } from "lucide-react";
+import React, { useMemo, useState, useEffect, useRef } from "react";
+import { Cpu, Book, MoreVertical, Trash2 } from "lucide-react";
 
 const API_BASE_URL =
   process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:8000";
@@ -27,8 +27,10 @@ const getBadgeText = (createdAt, updatedAt) => {
   return null;
 };
 
-const AssistantCard = ({ assistant, onSelect }) => {
+const AssistantCard = ({ assistant, onSelect, onDelete }) => {
   const [knowledgeBase, setKnowledgeBase] = useState(null);
+  const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const menuRef = useRef(null);
   const randomGradient = useMemo(() => getRandomGradient(), []);
   const badgeText = getBadgeText(assistant.created_at, assistant.updated_at);
 
@@ -51,14 +53,40 @@ const AssistantCard = ({ assistant, onSelect }) => {
     fetchKnowledgeBase();
   }, [assistant.knowledge_base_id]);
 
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (menuRef.current && !menuRef.current.contains(event.target)) {
+        setIsMenuOpen(false);
+      }
+    };
+
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
+  }, [menuRef]);
+
+  const handleMenuToggle = (e) => {
+    e.stopPropagation();
+    setIsMenuOpen(!isMenuOpen);
+  };
+
+  const handleDelete = (e) => {
+    e.stopPropagation();
+    setIsMenuOpen(false);
+    if (window.confirm("Are you sure you want to delete this assistant?")) {
+      onDelete(assistant.id);
+    }
+  };
+
   return (
     <div
-      className="max-w-sm w-full bg-white shadow-lg rounded-2xl overflow-hidden cursor-pointer hover:shadow-xl transition-shadow"
+      className="bg-white shadow-lg rounded-2xl overflow-hidden cursor-pointer hover:shadow-xl transition-shadow relative"
       onClick={() => onSelect(assistant)}
     >
       <div className="relative">
         <div
-          className="w-full h-48 rounded-t-2xl"
+          className="w-full h-32 rounded-t-2xl"
           style={{ background: randomGradient }}
         ></div>
         {badgeText && (
@@ -67,36 +95,58 @@ const AssistantCard = ({ assistant, onSelect }) => {
           </div>
         )}
       </div>
-      <div className="px-6 py-4">
-        <div className="font-bold text-xl mb-2 text-gray-800">
+      <div className="p-4">
+        <div className="font-bold text-xl mb-2 text-gray-800 truncate">
           {assistant.name}
         </div>
-        <p className="text-gray-600 text-base">{assistant.description}</p>
+        <p className="text-gray-600 text-sm h-12 overflow-hidden">
+          {assistant.description}
+        </p>
       </div>
-      <div className="px-6 pt-4 pb-2">
+      <div className="px-4 pt-2 pb-4">
         <span className="inline-block bg-gray-200 rounded-full px-3 py-1 text-sm font-semibold text-gray-700 mr-2 mb-2">
           <Cpu size={16} className="inline mr-1" />
           {assistant.configuration.model}
         </span>
+        <div className="flex items-center text-gray-700 text-sm mt-2">
+          <Book size={16} className="mr-2" />
+          <span className="truncate">
+            KB: {knowledgeBase ? knowledgeBase.name : "Loading..."}
+          </span>
+        </div>
       </div>
-      <div className="px-6 py-4 flex items-center text-gray-700">
-        <Book size={20} className="mr-2" />
-        <span>
-          Knowledge Base: {knowledgeBase ? knowledgeBase.name : "Loading..."}
-        </span>
+      <div className="absolute bottom-2 right-2" ref={menuRef}>
+        <button
+          onClick={handleMenuToggle}
+          className="p-1 rounded-full hover:bg-gray-200 transition-colors"
+        >
+          <MoreVertical size={20} />
+        </button>
+        {isMenuOpen && (
+          <div className="absolute bottom-8 right-0 bg-white shadow-lg rounded-lg py-2 w-32">
+            <button
+              onClick={handleDelete}
+              className="w-full text-left px-4 py-2 hover:bg-gray-100 flex items-center text-red-600"
+            >
+              <Trash2 size={16} className="mr-2" />
+              Delete
+            </button>
+          </div>
+        )}
       </div>
     </div>
   );
 };
 
-const AssistantCards = ({ assistants, onSelect }) => {
+const AssistantCards = ({ assistants, onSelect, onDelete }) => {
   return (
-    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 p-6">
+    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
       {assistants.map((assistant) => (
         <AssistantCard
           key={assistant.id}
           assistant={assistant}
           onSelect={onSelect}
+          onDelete={onDelete}
         />
       ))}
     </div>

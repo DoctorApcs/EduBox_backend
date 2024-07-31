@@ -10,7 +10,6 @@ from api.models.assistant import (
     AssistantResponse, 
     ChatMessage, 
     ChatResponse, 
-    ConversationCreate, 
     ConversationResponse,
     MessageResponse
 )
@@ -50,17 +49,26 @@ class AssistantService:
         except Exception as e:
             raise HTTPException(status_code=500, detail=f"An error occurred while fetching assistants: {str(e)}")
 
-
-    def create_conversation(self, user_id: int, conversation_data: ConversationCreate) -> ConversationResponse:
+    def get_assistant(self, assistant_id: int, user_id: int) -> Optional[AssistantResponse]:
         try:
             with self.db_manager.Session() as session:
-                assistant = session.query(Assistant).filter_by(id=conversation_data.assistant_id, user_id=user_id).first()
+                assistant = session.query(Assistant).filter_by(id=assistant_id, user_id=user_id).first()
+                if not assistant:
+                    return None
+                return AssistantResponse.model_validate(assistant)
+        except Exception as e:
+            raise HTTPException(status_code=500, detail=f"An error occurred while fetching assistant: {str(e)}")
+
+    def create_conversation(self, user_id: int, assistant_id: str) -> ConversationResponse:
+        try:
+            with self.db_manager.Session() as session:
+                assistant = session.query(Assistant).filter_by(id=assistant_id, user_id=user_id).first()
                 if not assistant:
                     raise HTTPException(status_code=404, detail="Assistant not found")
                 
                 new_conversation = Conversation(
                     user_id=user_id,
-                    assistant_id=conversation_data.assistant_id
+                    assistant_id=assistant_id
                 )
                 session.add(new_conversation)
                 session.commit()
@@ -111,7 +119,7 @@ class AssistantService:
                     "model": configuration["model"],
                     "service": configuration["service"],
                     "temperature": configuration["temperature"],
-                    "embedding_service": "openai", #TODO: Let user choose embeddign model,
+                    "embedding_service": "openai", #TODO: Let user choose embedding model,
                     "embedding_model_name": "text-embedding-3-small",
                     "collection_name": f"kb_{assistant.knowledge_base_id}"
                 }
