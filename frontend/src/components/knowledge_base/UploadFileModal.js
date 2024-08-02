@@ -1,18 +1,32 @@
-"use client";
-
 import React, { useState, useCallback } from "react";
 import { useDropzone } from "react-dropzone";
 import { X, Upload, File as FileIcon } from "lucide-react";
 
-const UploadFileModal = ({ isOpen, onClose, onUpload }) => {
+const UploadFileModal = ({ isOpen, onClose, onUpload, allowedFileTypes }) => {
   const [files, setFiles] = useState([]);
   const [uploading, setUploading] = useState(false);
+  const [error, setError] = useState(null);
 
-  const onDrop = useCallback((acceptedFiles) => {
+  const onDrop = useCallback((acceptedFiles, rejectedFiles) => {
     setFiles(acceptedFiles);
+    if (rejectedFiles.length > 0) {
+      setError(
+        `Some files were rejected. Allowed types are: ${allowedFileTypes.join(
+          ", "
+        )}`
+      );
+    } else {
+      setError(null);
+    }
   }, []);
 
-  const { getRootProps, getInputProps, isDragActive } = useDropzone({ onDrop });
+  const { getRootProps, getInputProps, isDragActive } = useDropzone({
+    onDrop,
+    accept: allowedFileTypes.reduce((acc, type) => {
+      acc[type] = [];
+      return acc;
+    }, {}),
+  });
 
   if (!isOpen) return null;
 
@@ -60,7 +74,11 @@ const UploadFileModal = ({ isOpen, onClose, onUpload }) => {
               Support for a single or bulk upload. Strictly prohibited from
               uploading company data or other banned files.
             </p>
+            <p className="text-sm text-gray-500 mt-2">
+              Allowed file types: {allowedFileTypes.join(", ")}
+            </p>
           </div>
+          {error && <p className="text-red-500 mt-2">{error}</p>}
           {files.length > 0 && (
             <div className="mt-4">
               {files.map((file) => (

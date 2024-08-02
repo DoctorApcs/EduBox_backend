@@ -19,6 +19,23 @@ import ErrorComponent from "@/components/Error";
 const API_BASE_URL =
   process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:8000";
 
+const ALLOWED_FILE_TYPES = [
+  ".docx",
+  ".hwp",
+  ".pdf",
+  ".epub",
+  ".txt",
+  ".html",
+  ".htm",
+  ".ipynb",
+  ".md",
+  ".mbox",
+  ".pptx",
+  ".csv",
+  ".xml",
+  ".rtf",
+];
+
 const DatasetView = ({ knowledgeBaseID }) => {
   const [isUploadModalOpen, setIsUploadModalOpen] = useState(false);
   const [knowledgeBase, setKnowledgeBase] = useState(null);
@@ -73,13 +90,23 @@ const DatasetView = ({ knowledgeBaseID }) => {
       }
     };
 
-    const intervalId = setInterval(checkProcessingDocuments, 5000);
+    const intervalId = setInterval(checkProcessingDocuments, 1000);
 
     return () => clearInterval(intervalId);
   }, [documents]);
 
   const handleUpload = async (files) => {
     for (const file of files) {
+      const fileExtension = "." + file.name.split(".").pop().toLowerCase();
+      if (!ALLOWED_FILE_TYPES.includes(fileExtension)) {
+        setError(
+          `File type ${fileExtension} is not allowed. Allowed types are: ${ALLOWED_FILE_TYPES.join(
+            ", "
+          )}`
+        );
+        continue;
+      }
+
       const formData = new FormData();
       formData.append("file", file);
 
@@ -100,7 +127,13 @@ const DatasetView = ({ knowledgeBaseID }) => {
         const result = await response.json();
         setDocuments((prevDocuments) => [
           ...prevDocuments,
-          { id: result.document_id, file_name: file.name, status: "uploaded" },
+          {
+            id: result.document_id,
+            file_name: file.name,
+            created_at: result.created_at,
+            file_type: result.file_type,
+            status: "uploaded",
+          },
         ]);
       } catch (error) {
         console.error("Error uploading document:", error);
@@ -375,6 +408,7 @@ const DatasetView = ({ knowledgeBaseID }) => {
         isOpen={isUploadModalOpen}
         onClose={() => setIsUploadModalOpen(false)}
         onUpload={handleUpload}
+        allowedFileTypes={ALLOWED_FILE_TYPES}
       />
     </div>
   );
