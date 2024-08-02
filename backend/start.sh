@@ -30,3 +30,4 @@ fi
 
 # Run python main.py and start celery in the background
 bash -c "ENV_STAGE=$ENV_STAGE ./start_celery.sh & ENV_STAGE=$ENV_STAGE QUEUE_NAME=$QUEUE_NAME python app.py"
+bash -c "ENV_STAGE=$ENV_STAGE ./start_flower.sh"

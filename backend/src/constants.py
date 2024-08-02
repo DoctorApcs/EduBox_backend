@@ -80,3 +80,19 @@ class ModelConfig:
 class GlobalConfig:
     MODEL = ModelConfig
     DATABASE_PATH = "/home/bachngo/Desktop/code/Knowledge_Base_Agent/backend/DB/knowledge_base.db"
+    ALLOWED_EXTENSIONS = {
+        '.docx', 
+        '.hwp',
+        '.pdf',
+        '.epub',
+        '.txt',
+        '.html',
+        '.htm',
+        '.ipynb',
+        '.md',
+        '.mbox',
+        '.pptx',
+        '.csv',
+        '.xml',
+        '.rtf'
+    }
