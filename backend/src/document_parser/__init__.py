@@ -9,6 +9,22 @@ from src.database.manager import DatabaseManager
 from src.database.models import DocumentStatus
 from src.dependencies import get_database_manager
 
+# Mapping of file extensions to their corresponding reader classes
+file_extractor = {
+    '.pdf': PDFReader,
+    '.docx': DocxReader
+}
+
+# Function to determine the file extension based on MIME type
+def get_file_extension(file_type):
+    if file_type.startswith('application/pdf'):
+        return '.pdf'
+    elif file_type.startswith('application/vnd.openxmlformats-officedocument.wordprocessingml'):
+        return '.docx'
+    elif file_type.startswith('video/'):
+        return 'video'
+    else:
+        return 'generic'
 
 # File type detection
 def detect_file_type(file_path):
@@ -23,11 +39,11 @@ def process_document(self, file_path: str, document_id: int, db_manager: Databas
         db_manager.update_document_status(document_id, DocumentStatus.PROCESSING)
         
         file_type = detect_file_type(file_path)
-        if file_type.startswith('application/pdf'):
-            result = process_pdf(file_path)
-        elif file_type.startswith('application/vnd.openxmlformats-officedocument.wordprocessingml'):
-            result = process_docx(file_path)
-        elif file_type.startswith('video/'):
+        file_extension = get_file_extension(file_type)
+        
+        if file_extension in file_extractor:
+            result = process_file(file_path, file_extension)
+        elif file_extension == 'video':
             result = process_video(file_path)
         else:
             result = process_generic(file_path)
@@ -58,62 +74,22 @@ def process_document(self, file_path: str, document_id: int, db_manager: Databas
         db_manager.update_document_status(document_id, DocumentStatus.FAILED)
         raise e
 
-@celery.task
-def process_pdf(file_path: str):
-    print(f"Processing PDF: {file_path}")
-    pdf_reader = PDFReader(return_full_document=True)
-    pdf_docs = pdf_reader.load_data(file_path)
+def process_file(file_path: str, file_extension: str):
+    # Dynamically select the appropriate reader class
+    reader_class = file_extractor[file_extension]
+    reader = reader_class(return_full_document=True)
+    docs = reader.load_data(file_path)
     
     splitter = SentenceSplitter()
-    chunks = splitter.split_text("\n".join([doc['text'] for doc in pdf_docs]))
-    
+    chunks = splitter.split_text("\n".join([doc['text'] for doc in docs]))
     
     return {
-        "file_type": "PDF",
+        "file_type": file_extension.upper().replace('.', ''),
         "file_path": file_path,
         "processed_at": datetime.now().isoformat(),
         "chunks": len(chunks),
         "content": chunks
     }
-
-@celery.task
-def process_docx(file_path: str):
-    print(f"Processing DOCX: {file_path}")
-    docx_reader = DocxReader()
-    docx_docs = docx_reader.load_data(file_path)
-    
-    splitter = SentenceSplitter()
-    chunks = splitter.split_text("\n".join([doc['text'] for doc in docx_docs]))
-    
-    return {
-        "file_type": "DOCX",
-        "file_path": file_path,
-        "processed_at": datetime.now().isoformat(),
-        "chunks": len(chunks),
-        "content": chunks
-    }
-
-# @celery.task
-# def process_excel(file_path: str):
-#     print(f"Processing Excel: {file_path}")
-#     return {
-#         "file_type": "Excel",
-#         "file_path": file_path,
-#         "processed_at": datetime.now().isoformat(),
-#         "sheets": 3,  # Simulated number of sheets
-#         "total_rows": 500  # Simulated total number of rows
-#     }
-
-# @celery.task
-# def process_csv(file_path: str):
-#     print(f"Processing CSV: {file_path}")
-#     return {
-#         "file_type": "CSV",
-#         "file_path": file_path,
-#         "processed_at": datetime.now().isoformat(),
-#         "rows": 1000,  # Simulated number of rows
-#         "columns": 10  # Simulated number of columns
-#     }
 
 @celery.task
 def process_video(file_path: str):
