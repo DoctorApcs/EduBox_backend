@@ -86,7 +86,6 @@ async def stream_chat_with_assistant(
 ) -> StreamingResponse:
     def event_generator() -> Generator[str, None, None]:
         for chunk in assistant_service.stream_chat_with_assistant(conversation_id, current_user_id, message):
-            print(chunk)
             yield chunk
 
     return StreamingResponse(event_generator(), media_type="text/event-stream")
