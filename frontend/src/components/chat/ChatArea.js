@@ -73,7 +73,7 @@ const ChatArea = ({ conversation, assistantId }) => {
         if (done) break;
 
         const chunk = decoder.decode(value);
-        fullResponse += chunk; // Add the chunk to the full response
+        fullResponse += chunk;
 
         setStreamingMessage((prev) => prev + chunk);
       }
@@ -96,7 +96,13 @@ const ChatArea = ({ conversation, assistantId }) => {
 
   const handleInputChange = (e) => {
     setInputMessage(e.target.value);
-    adjustTextareaHeight();
+  };
+
+  const handleKeyDown = (e) => {
+    if (e.key === "Enter" && !e.shiftKey) {
+      e.preventDefault();
+      sendMessage(e);
+    }
   };
 
   const adjustTextareaHeight = () => {
@@ -109,73 +115,78 @@ const ChatArea = ({ conversation, assistantId }) => {
   return (
     <div className="flex flex-col h-full bg-white">
       <div className="flex-1 overflow-y-auto p-4">
-        {messages.map((message, index) => (
-          <div
-            key={index}
-            className={`flex ${
-              message.sender_type === "user" ? "justify-end" : "justify-start"
-            } mb-4`}
-          >
+        <div className="max-w-4xl mx-auto">
+          {messages.map((message, index) => (
             <div
-              className={`max-w-[70%] p-3 rounded-lg ${
-                message.sender_type === "user"
-                  ? "bg-blue-600 text-white"
-                  : "bg-gray-200 text-gray-800"
-              }`}
+              key={index}
+              className={`flex ${
+                message.sender_type === "user" ? "justify-end" : "justify-start"
+              } mb-4`}
             >
-              <div className="flex items-center mb-1">
-                {message.sender_type === "user" ? (
-                  <User size={16} className="mr-2" />
+              <div
+                className={`${
+                  message.sender_type === "user"
+                    ? "max-w-[60%] bg-blue-600 text-white"
+                    : "max-w-[100%] bg-gray-200 text-gray-800"
+                } p-3 rounded-lg`}
+              >
+                <div className="flex items-center mb-1">
+                  {message.sender_type === "user" ? (
+                    <User size={16} className="mr-2" />
+                  ) : (
+                    <Bot size={16} className="mr-2" />
+                  )}
+                  <span className="font-semibold">
+                    {message.sender_type === "user" ? "You" : "Assistant"}
+                  </span>
+                </div>
+                {message.sender_type === "assistant" ? (
+                  <ReactMarkdown className="prose prose-sm max-w-none">
+                    {message.content}
+                  </ReactMarkdown>
                 ) : (
-                  <Bot size={16} className="mr-2" />
+                  <p>{message.content}</p>
                 )}
-                <span className="font-semibold">
-                  {message.sender_type === "user" ? "You" : "Assistant"}
-                </span>
               </div>
-              {message.sender_type === "assistant" ? (
+            </div>
+          ))}
+          {streamingMessage && (
+            <div className="flex justify-start mb-4">
+              <div className="w-[100%] p-3 rounded-lg bg-gray-200 text-gray-800">
+                <div className="flex items-center mb-1">
+                  <Bot size={16} className="mr-2" />
+                  <span className="font-semibold">Assistant</span>
+                </div>
                 <ReactMarkdown className="prose prose-sm max-w-none">
-                  {message.content}
+                  {streamingMessage}
                 </ReactMarkdown>
-              ) : (
-                <p>{message.content}</p>
-              )}
-            </div>
-          </div>
-        ))}
-        {streamingMessage && (
-          <div className="flex justify-start mb-4">
-            <div className="max-w-[70%] p-3 rounded-lg bg-gray-200 text-gray-800">
-              <div className="flex items-center mb-1">
-                <Bot size={16} className="mr-2" />
-                <span className="font-semibold">Assistant</span>
               </div>
-              <ReactMarkdown className="prose prose-sm max-w-none">
-                {streamingMessage}
-              </ReactMarkdown>
             </div>
-          </div>
-        )}
-        <div ref={messagesEndRef} />
+          )}
+          <div ref={messagesEndRef} />
+        </div>
       </div>
       <form onSubmit={sendMessage} className="p-4 border-t border-gray-200">
-        <div className="flex items-end bg-white rounded-3xl shadow-lg border border-gray-300">
-          <textarea
-            ref={textareaRef}
-            value={inputMessage}
-            onChange={handleInputChange}
-            placeholder="Message Assistant"
-            className="flex-1 bg-transparent border-none rounded-3xl py-4 px-5 focus:outline-none resize-none text-gray-800 min-h-[60px]"
-            rows={1}
-            disabled={isLoading}
-          />
-          <button
-            type="submit"
-            className="bg-transparent text-gray-500 p-4 rounded-full hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-gray-300 disabled:opacity-50 mr-2"
-            disabled={isLoading}
-          >
-            <Send size={24} />
-          </button>
+        <div className="max-w-4xl mx-auto">
+          <div className="flex items-end bg-white rounded-3xl shadow-lg border border-gray-300">
+            <textarea
+              ref={textareaRef}
+              value={inputMessage}
+              onChange={handleInputChange}
+              onKeyDown={handleKeyDown}
+              placeholder="Message Assistant (Press Enter to send, Shift+Enter for new line)"
+              className="flex-1 bg-transparent border-none rounded-3xl py-4 px-5 focus:outline-none resize-none text-gray-800 min-h-[60px]"
+              rows={1}
+              disabled={isLoading}
+            />
+            <button
+              type="submit"
+              className="bg-transparent text-gray-500 p-4 rounded-full hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-gray-300 disabled:opacity-50 mr-2"
+              disabled={isLoading}
+            >
+              <Send size={24} />
+            </button>
+          </div>
         </div>
       </form>
     </div>

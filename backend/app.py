@@ -55,3 +55,9 @@ app.add_middleware(
 
 app.include_router(kb_router, prefix="/api/knowledge_base")
 app.include_router(assistant_router, prefix="/api/assistant")
+
+
+if __name__ == "__main__":
+    import uvicorn
+
+    uvicorn.run(app)
