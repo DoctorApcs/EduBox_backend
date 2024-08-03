@@ -1,7 +1,8 @@
 import os
 import magic
+import asyncio
 from abc import ABC, abstractmethod
-from typing import Dict, List, Type
+from typing import Dict, List, Type, Union
 from src.celery import celery
 from datetime import datetime
 from llama_index.core.text_splitter import SentenceSplitter
@@ -10,6 +11,7 @@ from src.document_parser.embedding import get_embedding
 from src.database.manager import DatabaseManager
 from src.database.models import DocumentStatus
 from src.dependencies import get_database_manager
+from llama_index.core.schema import Document
 
 class FileProcessor(ABC):
     @abstractmethod
@@ -22,25 +24,47 @@ class TextFileProcessor(FileProcessor):
 
     def process(self, file_path: str) -> Dict:
         reader = self.reader_class(return_full_document=True)
-        docs = reader.load_data(file_path)
+        docs: List[Document] = reader.load_data(file_path)
         
         splitter = SentenceSplitter()
-        chunks = splitter.split_text("\n".join([doc['text'] for doc in docs]))
+        chunks = splitter.split_text("\n".join([doc.text for doc in docs]))
+        chunks = [Document(text=chunk, metadata=docs[0].metadata) for chunk in chunks]
         
         return {
             "file_type": self.reader_class.__name__.replace('Reader', ''),
             "file_path": file_path,
             "processed_at": datetime.now().isoformat(),
             "chunks": len(chunks),
-            "content": chunks
+            "documents": chunks,
         }
 
+class VideoFileProcessor(FileProcessor):
+    def __init__(self, reader_class):
+        self.reader_class = reader_class
+
+    async def async_process(self, file_path: str) -> Dict:
+        reader = self.reader_class()
+        docs: List[Document] = await reader.load_data(file_path)
+        
+        return {
+            "file_type": "Video",
+            "file_path": file_path,
+            "processed_at": datetime.now().isoformat(),
+            "chunks": len(docs),
+            "documents": docs,
+        }
+
+    def process(self, file_path: str) -> Dict:
+        return asyncio.run(self.async_process(file_path))
+
 def create_processor_class(reader_class):
-    class DynamicProcessor(TextFileProcessor):
-        def __init__(self):
-            super().__init__(reader_class)
-    
-    return DynamicProcessor
+    if reader_class.__name__ == 'VideoReader':
+        return VideoFileProcessor(reader_class)
+    else:
+        class DynamicProcessor(TextFileProcessor):
+            def __init__(self):
+                super().__init__(reader_class)
+        return DynamicProcessor
 
 class FileProcessorFactory:
     _processors: Dict[str, Type[FileProcessor]] = {}
@@ -59,6 +83,7 @@ class FileProcessorFactory:
         '.csv': 'CSV',
         '.xml': 'XML',
         '.rtf': 'RTF',
+        '.mp4': 'Video',
     }
 
     @classmethod
@@ -70,14 +95,14 @@ class FileProcessorFactory:
                 cls._processors[ext] = processor_class
 
     @classmethod
-    def get_processor(cls, file_path: str) -> FileProcessor:
+    def get_processor(cls, file_path: str) -> Union[FileProcessor, VideoFileProcessor]:
         if not cls._processors:
             cls.initialize()
 
         file_extension = os.path.splitext(file_path)[1].lower()
         
         if file_extension in cls._processors:
-            return cls._processors[file_extension]()
+            return cls._processors[file_extension]
         
         # If extension is not recognized, use MIME type detection
         mime_type = cls.detect_mime_type(file_path)
@@ -128,7 +153,7 @@ def process_document(self, file_path: str, document_id: int, db_manager: Databas
         processor = FileProcessorFactory.get_processor(file_path)
         result = processor.process(file_path)
         
-        chunks = result.get('content', [])
+        chunks : List[Document] = result.get('documents', [])
         total_chunks = len(chunks)
         
         for i, chunk in enumerate(chunks):
@@ -136,8 +161,9 @@ def process_document(self, file_path: str, document_id: int, db_manager: Databas
             db_manager.add_document_chunk(
                 document_id=document_id,
                 chunk_index=i,
-                content=chunk,
-                vector=get_embedding(chunk)
+                content=chunk.text,
+                vector=get_embedding(chunk.text),
+                metadata=chunk.metadata
             )
             
             self.update_state(state='PROGRESS',

@@ -63,7 +63,7 @@ class DatabaseManager:
             session.commit()
             return doc.id, doc.file_type, doc.created_at
 
-    def add_document_chunk(self, document_id, chunk_index, content, vector):
+    def add_document_chunk(self, document_id, chunk_index, content, vector, metadata = None):
         vector_id = str(uuid.uuid4())
         with self.Session() as session:
             document = session.query(Document).filter_by(id=document_id).first()
@@ -87,7 +87,8 @@ class DatabaseManager:
                 vector=vector,
                 payload={
                     "document_chunk_id": chunk.id,
-                    "text": content
+                    "text": content,
+                    "metadata": metadata
                 }
             )
             return chunk.id

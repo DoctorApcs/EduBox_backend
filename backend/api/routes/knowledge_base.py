@@ -11,6 +11,7 @@ from src.database.models import DocumentStatus
 from api.models.knowledge_base import KnowledgeBaseCreate, KnowledgeBaseResponse, KnowledgeBaseUpdate
 from api.services.knowledge_base import KnowledgeBaseService
 from typing import List
+from src.constants import GlobalConfig
 
 kb_router = APIRouter()
 UPLOAD_DIR = "uploads"
@@ -32,16 +33,26 @@ def get_knowledge_base_id(
 async def upload_document(
     file: UploadFile = File(...),
     knowledge_base_id: int = Depends(get_knowledge_base_id),
-    db_manager : DatabaseManager = Depends(get_db_manager)
+    db_manager: DatabaseManager = Depends(get_db_manager)
 ):
+    # Define allowed file extensions
+    ALLOWED_EXTENSIONS = GlobalConfig.ALLOWED_EXTENSIONS
+
     try:
+        # Check if the file extension is allowed
+        file_extension = os.path.splitext(file.filename)[1].lower()
+        if file_extension not in ALLOWED_EXTENSIONS:
+            raise HTTPException(
+                status_code=400, 
+                detail=f"File type not allowed. Allowed types are: {', '.join(ALLOWED_EXTENSIONS)}"
+            )
+
         # Check if a file with the same name already exists in the database
         existing_document = db_manager.get_document_by_name(knowledge_base_id, file.filename)
         if existing_document:
             raise HTTPException(status_code=400, detail="A file with this name already exists in the knowledge base")
 
         # Create a unique filename
-        file_extension = os.path.splitext(file.filename)[1]
         unique_filename = file.filename
         
         # Save the file
