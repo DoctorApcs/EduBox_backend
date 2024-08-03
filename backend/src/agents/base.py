@@ -2,11 +2,12 @@ import os
 from fastapi import Depends
 from src.dependencies import get_db_manager
 from src.database.manager import DatabaseManager
-from src.tools.kb_search_tool import load_knowledge_base_search_tool
+from src.tools.manager import ToolManager
 from src.constants import GlobalConfig
 from llama_index.core.base.llms.types import ChatMessage as LLamaIndexChatMessage
 from llama_index.llms.openai import OpenAI
 from llama_index.agent.openai import OpenAIAgent
+from .prompts import ASSISTANT_SYSTEM_PROMPT
 import logging
 
 class ChatAssistant:
@@ -26,7 +27,8 @@ class ChatAssistant:
         self.agent = OpenAIAgent.from_tools(
             tools=self.tools,
             llm=self.llm,
-            verbose=True
+            verbose=True,
+            system_prompt=ASSISTANT_SYSTEM_PROMPT,
         )
         
     def _init_model(self, service, model_id):
@@ -54,7 +56,7 @@ class ChatAssistant:
             raise NotImplementedError("The implementation for other types of LLMs are not ready yet!")
         
     def _init_tools(self):
-        return [load_knowledge_base_search_tool(self.configuration)]    
+        return ToolManager(config=self.configuration).get_tools() 
 
     def on_message(self, message, message_history) -> str:
         message_history = [LLamaIndexChatMessage(content=msg["content"], role=msg["role"]) for msg in message_history]
