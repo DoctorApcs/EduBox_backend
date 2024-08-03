@@ -1,7 +1,6 @@
 import React, { useState, useEffect, useRef, useCallback } from "react";
-import { Send, User, Bot, Loader, LoaderCircle, Loader2 } from "lucide-react";
+import { Send, User, Bot, Loader2 } from "lucide-react";
 import ReactMarkdown from "react-markdown";
-import LoadingSpinner from "../LoadingSpinner";
 
 const API_BASE_URL =
   process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:8000";
@@ -29,32 +28,32 @@ const ChatArea = ({ conversation, assistantId }) => {
       )}/api/assistant/${assistantId}/conversations/${conversation.id}/ws`
     );
 
-    ws.onopen = () => {
-      console.log("WebSocket connected");
-    };
+    ws.onopen = () => console.log("WebSocket connected");
 
     ws.onmessage = (event) => {
       const data = JSON.parse(event.data);
-      if (data.sender_type === "assistant") {
-        if (data.content === "<END>") {
-          const completeMessage = streamingMessage;
-          setMessages((prevMessages) => [
-            ...prevMessages,
-            { sender_type: "assistant", content: completeMessage },
-          ]);
-          setStreamingMessage("");
-          setIsAssistantTyping(false);
-        } else {
-          console.log("Streaming message:", data.content);
 
+      if (data.sender_type === "assistant") {
+        setIsAssistantTyping(false);
+
+        if (data.content === "<END>") {
+          let newMessage = {
+            sender_type: "assistant",
+            content: "",
+          };
+          setStreamingMessage((prev) => {
+            newMessage.content = prev;
+            return "";
+          });
+
+          setMessages((prevMessages) => [...prevMessages, newMessage]);
+        } else {
           setStreamingMessage((prev) => prev + data.content);
         }
       }
     };
 
-    ws.onclose = () => {
-      console.log("WebSocket disconnected");
-    };
+    ws.onclose = () => console.log("WebSocket disconnected");
 
     websocketRef.current = ws;
   }, [assistantId, conversation.id]);
@@ -81,9 +80,7 @@ const ChatArea = ({ conversation, assistantId }) => {
       const response = await fetch(
         `${API_BASE_URL}/api/assistant/${assistantId}/conversations/${conversation.id}/history`
       );
-      if (!response.ok) {
-        throw new Error("Failed to fetch conversation history");
-      }
+      if (!response.ok) throw new Error("Failed to fetch conversation history");
       const data = await response.json();
       setMessages(data);
     } catch (error) {
@@ -99,14 +96,10 @@ const ChatArea = ({ conversation, assistantId }) => {
     setMessages((prevMessages) => [...prevMessages, newMessage]);
     setInputMessage("");
     setIsLoading(true);
-    setStreamingMessage("");
     setIsAssistantTyping(true);
 
     try {
-      if (
-        websocketRef.current &&
-        websocketRef.current.readyState === WebSocket.OPEN
-      ) {
+      if (websocketRef.current?.readyState === WebSocket.OPEN) {
         websocketRef.current.send(JSON.stringify({ content: inputMessage }));
       } else {
         throw new Error("WebSocket is not connected");
@@ -178,10 +171,10 @@ const ChatArea = ({ conversation, assistantId }) => {
               </div>
             </div>
           ))}
-          {isAssistantTyping && <Loader2 className="w-6 h-6" />}
+          {isAssistantTyping && <Loader2 className="w-6 h-6 animate-spin" />}
           {streamingMessage && (
             <div className="flex justify-start mb-4">
-              <div className="w-[100%] p-3 rounded-lg bg-gray-200 text-gray-800">
+              <div className="max-w-[100%] p-3 rounded-lg bg-gray-200 text-gray-800">
                 <div className="flex items-center mb-1">
                   <Bot size={16} className="mr-2" />
                   <span className="font-semibold">Assistant</span>
