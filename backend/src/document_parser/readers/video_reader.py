@@ -15,6 +15,8 @@ from openai.resources.audio.transcriptions import Transcription
 from src.constants import GlobalConfig
 import logging
 from .prompts import VIDEO_PROCESSING_PROMPT
+from llama_index.core.readers.base import BaseReader
+from llama_index.core.schema import Document
 load_dotenv()
 
 class VideoReader:
@@ -25,9 +27,9 @@ class VideoReader:
         self.gemini_model = genai.GenerativeModel(model_name="models/gemini-1.5-flash")
         self.openai_client = OpenAI(api_key=self.OPENAI_API_KEY)
         self.max_concurrent_requests = GlobalConfig.MAX_CONCURRENT_REQUESTS
-        
+        self.output_dir = GlobalConfig.UPLOAD_FOLDER
 
-    async def process_video(self, video_path: str) -> List[Dict]:
+    async def load_data(self, video_path: str) -> List[Dict]:
         logging.info(f"Processing video: {video_path}")
         audio_path = await self._aextract_audio(video_path)
         logging.info("Audio extraction complete.")
@@ -166,13 +168,17 @@ class VideoReader:
     def _cut_video_sections(self, video_path: str, sections: List[Dict]):
         logging.info("Cutting video into sections...")
         video = VideoFileClip(video_path)
+        
+        video_name = os.path.splitext(os.path.basename(video_path))[0]
+
         for i, section in enumerate(sections):
+            
             logging.info(f"Cutting section {i+1}/{len(sections)}")
             start_time = self._time_to_seconds(section["metadata"]["start_time"])
             end_time = self._time_to_seconds(section["metadata"]["end_time"])
             
             section_clip = video.subclip(start_time, end_time)
-            output_path = f"section_{i+1}.mp4"
+            output_path = f"{self.output_dir}/{video_name}_section_{i+1}.mp4"
             section_clip.write_videofile(output_path, verbose=False, logger=None)
             
             section["metadata"]["section_path"] = output_path
@@ -212,10 +218,11 @@ class VideoReader:
         remaining_minutes = int(minutes % 60)
         remaining_seconds = int(seconds % 60)
         return f"{hours:02}:{remaining_minutes:02}:{remaining_seconds:02}"
+    
 # Usage example:
 async def main():
-    video_reader = VideoReader(max_concurrent_requests=5)
-    results = await video_reader.process_video("/home/bachngo/Desktop/code/Knowledge_Base_Agent/backend/notebooks/video_data/input_vid.mp4")
+    video_reader = VideoReader()
+    results = await video_reader.load_data("/home/bachngo/Desktop/code/Knowledge_Base_Agent/backend/notebooks/video_data/input_vid.mp4")
     for i, section in enumerate(results, 1):
         logging.info(f"Section {i}:")
         logging.info(f"Summary: {section['text']}")
