@@ -7,7 +7,7 @@ from src.constants import GlobalConfig
 from llama_index.core.base.llms.types import ChatMessage as LLamaIndexChatMessage
 from llama_index.llms.openai import OpenAI
 from llama_index.agent.openai import OpenAIAgent
-from typing import Generator
+import logging
 
 class ChatAssistant:
     
@@ -40,12 +40,12 @@ class ChatAssistant:
         Raises:
             ValueError: If an unsupported model or device type is provided.
         """
-        print(f"Loading Model: {model_id}")
-        print("This action can take a few minutes!")
+        logging.info(f"Loading Model: {model_id}")
+        logging.info("This action can take a few minutes!")
         # TODO: setup proper logging
 
         if service == "openai":
-            print(f"Loading OpenAI Model: {model_id}")
+            logging.info(f"Loading OpenAI Model: {model_id}")
             return OpenAI(
                 model=model_id, 
                 temperature=self.configuration["temperature"], 

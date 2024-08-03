@@ -3,6 +3,7 @@ from fastapi.responses import StreamingResponse
 from typing import List, AsyncGenerator, Generator
 from api.models.assistant import AssistantCreate, AssistantResponse, ChatMessage, ChatResponse, ConversationResponse, MessageResponse
 from api.services.assistant import AssistantService
+from api.utils.websocket_manager import ws_manager
 from src.dependencies import get_current_user_id
 import logging
 
@@ -110,13 +111,13 @@ async def websocket_endpoint(
     current_user_id: int = Depends(get_current_user_id),
     assistant_service: AssistantService = Depends()
 ):
-    await websocket.accept()
+    await ws_manager.connect(conversation_id, websocket)
     try:
         while True:
             data = await websocket.receive_json()
             message = ChatMessage(content=data["content"])
             async for chunk in assistant_service.astream_chat_with_assistant(conversation_id, current_user_id, message):
-                await websocket.send_json({"content": chunk, "sender_type": "assistant"})
-            await websocket.send_json({"content": "<END>", "sender_type": "assistant"})
+                await ws_manager.send_message(conversation_id, chunk)
+            await ws_manager.send_message(conversation_id, "<END>")
     except WebSocketDisconnect:
-        logging.error(f"WebSocket disconnected for conversation {conversation_id}")
+        ws_manager.disconnect(conversation_id)

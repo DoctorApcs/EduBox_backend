@@ -12,6 +12,7 @@ from src.database.manager import DatabaseManager
 from src.database.models import DocumentStatus
 from src.dependencies import get_database_manager
 from llama_index.core.schema import Document
+import logging
 
 class FileProcessor(ABC):
     @abstractmethod
@@ -157,7 +158,7 @@ def process_document(self, file_path: str, document_id: int, db_manager: Databas
         total_chunks = len(chunks)
         
         for i, chunk in enumerate(chunks):
-            print(f"Processing chunk {i+1} of {total_chunks}")
+            logging.info(f"Processing chunk {i+1} of {total_chunks}")
             db_manager.add_document_chunk(
                 document_id=document_id,
                 chunk_index=i,

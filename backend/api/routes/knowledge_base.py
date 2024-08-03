@@ -4,7 +4,7 @@ from src.document_parser import process_document
 from celery.result import AsyncResult
 from fastapi import Depends
 import os
-import uuid
+import logging
 from src.dependencies import get_db_manager
 from src.database.manager import DatabaseManager
 from src.database.models import DocumentStatus
@@ -88,7 +88,7 @@ async def upload_document(
     except HTTPException as he:
         raise he
     except Exception as e:
-        print(e)
+        logging.error(e)
         raise HTTPException(status_code=500, detail=f"An error occurred: {str(e)}")
         
 
