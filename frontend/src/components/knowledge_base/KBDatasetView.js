@@ -34,6 +34,7 @@ const ALLOWED_FILE_TYPES = [
   ".csv",
   ".xml",
   ".rtf",
+  ".mp4",
 ];
 
 const DatasetView = ({ knowledgeBaseID }) => {

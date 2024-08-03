@@ -46,8 +46,7 @@ class VideoReader:
         sections = self._process_sections(summary, transcript)
         logging.info("Sections processed.")
 
-        await asyncio.to_thread(self._cut_video_sections, video_path, sections)
-        logging.info("Video sections cut and saved.")
+        # await asyncio.to_thread(self._cut_video_sections, video_path, sections)
 
         # Clean up
         await self.__cleanup_resources(audio_path, audio_chunk_filepaths)
@@ -143,7 +142,6 @@ class VideoReader:
         logging.info("Processing video sections...")
         processed_sections = []
         for i, section in enumerate(summary_data['sections']):
-            logging.info(f"Processing section {i+1}/{len(summary_data['sections'])}")
             section_start = self._time_to_seconds(section['start_time'])
             section_end = self._time_to_seconds(section['end_time'])
             

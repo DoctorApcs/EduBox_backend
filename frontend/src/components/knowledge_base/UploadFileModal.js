@@ -1,6 +1,6 @@
 import React, { useState, useCallback } from "react";
 import { useDropzone } from "react-dropzone";
-import { X, Upload, File as FileIcon } from "lucide-react";
+import { X, Upload, FileIcon, Trash2 } from "lucide-react";
 
 const UploadFileModal = ({ isOpen, onClose, onUpload, allowedFileTypes }) => {
   const [files, setFiles] = useState([]);
@@ -8,7 +8,7 @@ const UploadFileModal = ({ isOpen, onClose, onUpload, allowedFileTypes }) => {
   const [error, setError] = useState(null);
 
   const onDrop = useCallback((acceptedFiles, rejectedFiles) => {
-    setFiles(acceptedFiles);
+    setFiles((prevFiles) => [...prevFiles, ...acceptedFiles]);
     if (rejectedFiles.length > 0) {
       setError(
         `Some files were rejected. Allowed types are: ${allowedFileTypes.join(
@@ -26,6 +26,7 @@ const UploadFileModal = ({ isOpen, onClose, onUpload, allowedFileTypes }) => {
       acc[type] = [];
       return acc;
     }, {}),
+    multiple: true,
   });
 
   if (!isOpen) return null;
@@ -38,11 +39,15 @@ const UploadFileModal = ({ isOpen, onClose, onUpload, allowedFileTypes }) => {
     onClose();
   };
 
+  const removeFile = (index) => {
+    setFiles((prevFiles) => prevFiles.filter((_, i) => i !== index));
+  };
+
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-start pt-16">
       <div className="bg-white rounded-lg shadow-xl w-full max-w-3xl">
         <div className="flex justify-between items-center p-6 border-b">
-          <h2 className="text-xl font-semibold">Upload File</h2>
+          <h2 className="text-xl font-semibold">Upload Files</h2>
           <button
             onClick={onClose}
             className="text-gray-400 hover:text-gray-600"
@@ -68,10 +73,10 @@ const UploadFileModal = ({ isOpen, onClose, onUpload, allowedFileTypes }) => {
             {isDragActive ? (
               <p>Drop the files here ...</p>
             ) : (
-              <p>Click or drag file to this area to upload</p>
+              <p>Click or drag files to this area to upload</p>
             )}
             <p className="text-sm text-gray-500 mt-2">
-              Support for a single or bulk upload. Strictly prohibited from
+              Support for multiple file upload. Strictly prohibited from
               uploading company data or other banned files.
             </p>
             <p className="text-sm text-gray-500 mt-2">
@@ -81,13 +86,21 @@ const UploadFileModal = ({ isOpen, onClose, onUpload, allowedFileTypes }) => {
           {error && <p className="text-red-500 mt-2">{error}</p>}
           {files.length > 0 && (
             <div className="mt-4">
-              {files.map((file) => (
+              {files.map((file, index) => (
                 <div
-                  key={file.name}
-                  className="flex items-center text-sm text-gray-600"
+                  key={`${file.name}-${index}`}
+                  className="flex items-center justify-between text-sm text-gray-600 my-1"
                 >
-                  <FileIcon size={16} className="mr-2" />
-                  {file.name}
+                  <div className="flex items-center">
+                    <FileIcon size={16} className="mr-2" />
+                    {file.name}
+                  </div>
+                  <button
+                    onClick={() => removeFile(index)}
+                    className="text-red-500 hover:text-red-700"
+                  >
+                    <Trash2 size={16} />
+                  </button>
                 </div>
               ))}
             </div>
@@ -106,7 +119,7 @@ const UploadFileModal = ({ isOpen, onClose, onUpload, allowedFileTypes }) => {
             className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600"
             disabled={files.length === 0 || uploading}
           >
-            {uploading ? "Uploading..." : "OK"}
+            {uploading ? "Uploading..." : "Upload"}
           </button>
         </div>
       </div>
