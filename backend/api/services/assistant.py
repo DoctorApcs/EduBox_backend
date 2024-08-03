@@ -13,7 +13,7 @@ from api.models.assistant import (
     ConversationResponse,
     MessageResponse
 )
-from typing import List, Dict, Optional, Generator
+from typing import List, Dict, Optional, Generator, AsyncGenerator
 
 
 class AssistantService:
@@ -174,7 +174,52 @@ class AssistantService:
             assistant_instance = ChatAssistant(assistant_config)
             
             full_response = ""
-            for chunk in assistant_instance.on_message_stream(message.content, message_history):
+            for chunk in assistant_instance.stream_chat(message.content, message_history):
+                full_response += chunk
+                yield chunk
+            
+            assistant_message = Message(
+                conversation_id=conversation_id,
+                sender_type="assistant",
+                content=full_response
+            )
+            session.add(assistant_message)
+            session.commit()
+            
+    async def astream_chat_with_assistant(self, conversation_id: int, user_id: int, message: ChatMessage):
+        with self.db_manager.Session() as session:
+            conversation = session.query(Conversation).filter_by(id=conversation_id, user_id=user_id).first()
+            if not conversation:
+                raise HTTPException(status_code=404, detail="Conversation not found")
+            
+            message_history = self._get_message_history(session, conversation_id)
+            
+            user_message = Message(
+                conversation_id=conversation_id,
+                sender_type="user",
+                content=message.content
+            )
+            session.add(user_message)
+            session.flush()
+
+            assistant = conversation.assistant
+            configuration = assistant.configuration
+            
+            assistant_config = {
+                "model": configuration["model"],
+                "service": configuration["service"],
+                "temperature": configuration["temperature"],
+                "embedding_service": "openai",
+                "embedding_model_name": "text-embedding-3-small",
+                "collection_name": f"kb_{assistant.knowledge_base_id}"
+            }
+            
+            assistant_instance = ChatAssistant(assistant_config)
+            
+            full_response = ""
+            response = await assistant_instance.astream_chat(message.content, message_history)
+
+            async for chunk in response.async_response_gen():
                 full_response += chunk
                 yield chunk
             

@@ -60,7 +60,12 @@ class ChatAssistant:
         message_history = [LLamaIndexChatMessage(content=msg["content"], role=msg["role"]) for msg in message_history]
         return self.agent.chat(message, message_history)
     
-    def on_message_stream(self, message, message_history):
+    def stream_chat(self, message, message_history):
         message_history = [LLamaIndexChatMessage(content=msg["content"], role=msg["role"]) for msg in message_history]
         return self.agent.stream_chat(message, message_history).response_gen
-        
+    
+    
+    async def astream_chat(self, message, message_history):
+        message_history = [LLamaIndexChatMessage(content=msg["content"], role=msg["role"]) for msg in message_history]
+        response = await self.agent.astream_chat(message, message_history)
+        return response

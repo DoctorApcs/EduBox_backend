@@ -1,9 +1,10 @@
-from fastapi import APIRouter, HTTPException, Depends
+from fastapi import APIRouter, HTTPException, Depends, WebSocket, WebSocketDisconnect
 from fastapi.responses import StreamingResponse
 from typing import List, AsyncGenerator, Generator
 from api.models.assistant import AssistantCreate, AssistantResponse, ChatMessage, ChatResponse, ConversationResponse, MessageResponse
 from api.services.assistant import AssistantService
 from src.dependencies import get_current_user_id
+import logging
 
 assistant_router = APIRouter()
 
@@ -99,3 +100,23 @@ async def get_conversation_history(
     assistant_service: AssistantService = Depends()
 ):
     return assistant_service.get_conversation_history(conversation_id, current_user_id)
+
+
+@assistant_router.websocket("/{assistant_id}/conversations/{conversation_id}/ws")
+async def websocket_endpoint(
+    websocket: WebSocket,
+    assistant_id: int,
+    conversation_id: int,
+    current_user_id: int = Depends(get_current_user_id),
+    assistant_service: AssistantService = Depends()
+):
+    await websocket.accept()
+    try:
+        while True:
+            data = await websocket.receive_json()
+            message = ChatMessage(content=data["content"])
+            async for chunk in assistant_service.astream_chat_with_assistant(conversation_id, current_user_id, message):
+                await websocket.send_json({"content": chunk, "sender_type": "assistant"})
+            await websocket.send_json({"content": "<END>", "sender_type": "assistant"})
+    except WebSocketDisconnect:
+        logging.error(f"WebSocket disconnected for conversation {conversation_id}")
