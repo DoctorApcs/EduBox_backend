@@ -53,7 +53,7 @@ class VideoReader:
         await self.__cleanup_resources(audio_path, audio_chunk_filepaths)
         logging.info("Temporary files removed.")
 
-        return sections
+        return [Document(text=section["text"], metadata=section["metadata"]) for section in sections]
 
     async def _aextract_audio(self, video_file_path: str) -> str:
         logging.info("Extracting audio from video...")

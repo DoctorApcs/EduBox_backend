@@ -8,7 +8,6 @@ from llama_index.core.base.llms.types import ChatMessage as LLamaIndexChatMessag
 from llama_index.llms.openai import OpenAI
 from llama_index.agent.openai import OpenAIAgent
 from typing import Generator
-from llama_index.core.agent.react_multimodal.step import MultimodalReActAgentWorker
 
 class ChatAssistant:
     
