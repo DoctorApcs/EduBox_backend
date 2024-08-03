@@ -1,5 +1,5 @@
-import React, { useState, useEffect, useRef } from "react";
-import { Send, User, Bot } from "lucide-react";
+import React, { useState, useEffect, useRef, useCallback } from "react";
+import { Send, User, Bot, Loader2 } from "lucide-react";
 import ReactMarkdown from "react-markdown";
 
 const API_BASE_URL =
@@ -10,14 +10,66 @@ const ChatArea = ({ conversation, assistantId }) => {
   const [inputMessage, setInputMessage] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [streamingMessage, setStreamingMessage] = useState("");
+  const [isAssistantTyping, setIsAssistantTyping] = useState(false);
+
   const messagesEndRef = useRef(null);
   const textareaRef = useRef(null);
+  const websocketRef = useRef(null);
+
+  const connectWebSocket = useCallback(() => {
+    if (websocketRef.current) {
+      websocketRef.current.close();
+    }
+
+    const ws = new WebSocket(
+      `ws://${API_BASE_URL.replace(
+        /^https?:\/\//,
+        ""
+      )}/api/assistant/${assistantId}/conversations/${conversation.id}/ws`
+    );
+
+    ws.onopen = () => console.log("WebSocket connected");
+
+    ws.onmessage = (event) => {
+      const data = JSON.parse(event.data);
+
+      if (data.sender_type === "assistant") {
+        setIsAssistantTyping(false);
+
+        if (data.content === "<END>") {
+          let newMessage = {
+            sender_type: "assistant",
+            content: "",
+          };
+          setStreamingMessage((prev) => {
+            newMessage.content = prev;
+            return "";
+          });
+
+          setMessages((prevMessages) => [...prevMessages, newMessage]);
+        } else {
+          setStreamingMessage((prev) => prev + data.content);
+        }
+      }
+    };
+
+    ws.onclose = () => console.log("WebSocket disconnected");
+
+    websocketRef.current = ws;
+  }, [assistantId, conversation.id]);
 
   useEffect(() => {
     if (conversation) {
       fetchConversationHistory();
+      connectWebSocket();
     }
-  }, [conversation]);
+
+    return () => {
+      if (websocketRef.current) {
+        websocketRef.current.close();
+      }
+    };
+  }, [conversation, assistantId, connectWebSocket]);
 
   useEffect(() => {
     scrollToBottom();
@@ -28,9 +80,7 @@ const ChatArea = ({ conversation, assistantId }) => {
       const response = await fetch(
         `${API_BASE_URL}/api/assistant/${assistantId}/conversations/${conversation.id}/history`
       );
-      if (!response.ok) {
-        throw new Error("Failed to fetch conversation history");
-      }
+      if (!response.ok) throw new Error("Failed to fetch conversation history");
       const data = await response.json();
       setMessages(data);
     } catch (error) {
@@ -46,43 +96,14 @@ const ChatArea = ({ conversation, assistantId }) => {
     setMessages((prevMessages) => [...prevMessages, newMessage]);
     setInputMessage("");
     setIsLoading(true);
-    setStreamingMessage("");
-    let fullResponse = "";
+    setIsAssistantTyping(true);
 
     try {
-      const response = await fetch(
-        `${API_BASE_URL}/api/assistant/${assistantId}/conversations/${conversation.id}/chat/stream`,
-        {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({ content: inputMessage }),
-        }
-      );
-
-      if (!response.ok) {
-        throw new Error("Failed to send message");
+      if (websocketRef.current?.readyState === WebSocket.OPEN) {
+        websocketRef.current.send(JSON.stringify({ content: inputMessage }));
+      } else {
+        throw new Error("WebSocket is not connected");
       }
-
-      const reader = response.body.getReader();
-      const decoder = new TextDecoder();
-
-      while (true) {
-        const { value, done } = await reader.read();
-        if (done) break;
-
-        const chunk = decoder.decode(value);
-        fullResponse += chunk;
-
-        setStreamingMessage((prev) => prev + chunk);
-      }
-
-      setMessages((prevMessages) => [
-        ...prevMessages,
-        { sender_type: "assistant", content: fullResponse },
-      ]);
-      setStreamingMessage("");
     } catch (error) {
       console.error("Error sending message:", error);
     } finally {
@@ -150,9 +171,10 @@ const ChatArea = ({ conversation, assistantId }) => {
               </div>
             </div>
           ))}
+          {isAssistantTyping && <Loader2 className="w-6 h-6 animate-spin" />}
           {streamingMessage && (
             <div className="flex justify-start mb-4">
-              <div className="w-[100%] p-3 rounded-lg bg-gray-200 text-gray-800">
+              <div className="max-w-[100%] p-3 rounded-lg bg-gray-200 text-gray-800">
                 <div className="flex items-center mb-1">
                   <Bot size={16} className="mr-2" />
                   <span className="font-semibold">Assistant</span>
@@ -163,6 +185,7 @@ const ChatArea = ({ conversation, assistantId }) => {
               </div>
             </div>
           )}
+
           <div ref={messagesEndRef} />
         </div>
       </div>
