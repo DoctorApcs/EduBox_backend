@@ -33,23 +33,44 @@ const ChatArea = ({ conversation, assistantId }) => {
     ws.onmessage = (event) => {
       const data = JSON.parse(event.data);
 
-      if (data.sender_type === "assistant") {
-        setIsAssistantTyping(false);
-
-        if (data.content === "<END>") {
-          let newMessage = {
-            sender_type: "assistant",
-            content: "",
-          };
-          setStreamingMessage((prev) => {
-            newMessage.content = prev;
-            return "";
-          });
-
-          setMessages((prevMessages) => [...prevMessages, newMessage]);
-        } else {
-          setStreamingMessage((prev) => prev + data.content);
-        }
+      switch (data.type) {
+        case "message":
+          setIsAssistantTyping(false);
+          if (data.media_type === "text") {
+            setStreamingMessage((prev) => ({
+              ...prev,
+              content: (prev?.content || "") + data.content,
+              type: "text",
+            }));
+          } else if (data.media_type === "video") {
+            setStreamingMessage({
+              type: "video",
+              content: data.content, // This should be the video URL
+              metadata: data.metadata,
+            });
+          }
+          break;
+        case "status":
+          console.log("Status update:", data.content);
+          break;
+        case "error":
+          console.error("Error:", data.content);
+          break;
+        case "end":
+          setIsAssistantTyping(false);
+          if (streamingMessage) {
+            setMessages((prevMessages) => [
+              ...prevMessages,
+              {
+                sender_type: "assistant",
+                ...streamingMessage,
+              },
+            ]);
+            setStreamingMessage(null);
+          }
+          break;
+        default:
+          console.log("Unknown message type:", data.type);
       }
     };
 
@@ -117,6 +138,7 @@ const ChatArea = ({ conversation, assistantId }) => {
 
   const handleInputChange = (e) => {
     setInputMessage(e.target.value);
+    adjustTextareaHeight();
   };
 
   const handleKeyDown = (e) => {
@@ -131,6 +153,23 @@ const ChatArea = ({ conversation, assistantId }) => {
       textareaRef.current.style.height = "auto";
       textareaRef.current.style.height = `${textareaRef.current.scrollHeight}px`;
     }
+  };
+  const renderMessage = (message) => {
+    if (message.type === "text") {
+      return (
+        <ReactMarkdown className="prose prose-sm max-w-none">
+          {message.content}
+        </ReactMarkdown>
+      );
+    } else if (message.type === "video") {
+      return (
+        <video controls className="w-full max-w-lg mt-2">
+          <source src={message.content} type="video/mp4" />
+          Your browser does not support the video tag.
+        </video>
+      );
+    }
+    return null;
   };
 
   return (
@@ -161,13 +200,7 @@ const ChatArea = ({ conversation, assistantId }) => {
                     {message.sender_type === "user" ? "You" : "Assistant"}
                   </span>
                 </div>
-                {message.sender_type === "assistant" ? (
-                  <ReactMarkdown className="prose prose-sm max-w-none">
-                    {message.content}
-                  </ReactMarkdown>
-                ) : (
-                  <p>{message.content}</p>
-                )}
+                {renderMessage(message)}
               </div>
             </div>
           ))}
@@ -179,13 +212,10 @@ const ChatArea = ({ conversation, assistantId }) => {
                   <Bot size={16} className="mr-2" />
                   <span className="font-semibold">Assistant</span>
                 </div>
-                <ReactMarkdown className="prose prose-sm max-w-none">
-                  {streamingMessage}
-                </ReactMarkdown>
+                {renderMessage(streamingMessage)}
               </div>
             </div>
           )}
-
           <div ref={messagesEndRef} />
         </div>
       </div>
