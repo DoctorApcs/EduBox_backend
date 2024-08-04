@@ -45,14 +45,14 @@ class VideoReader:
 
         sections = self._process_sections(summary, transcript)
         logging.info("Sections processed.")
-
+        
         # await asyncio.to_thread(self._cut_video_sections, video_path, sections)
 
         # Clean up
         await self.__cleanup_resources(audio_path, audio_chunk_filepaths)
         logging.info("Temporary files removed.")
 
-        return [Document(text=section["text"], metadata=section["metadata"]) for section in sections]
+        return [Document(text=section["text"], metadata={**section["metadata"], "video_path": video_path}) for section in sections]
 
     async def _aextract_audio(self, video_file_path: str) -> str:
         logging.info("Extracting audio from video...")

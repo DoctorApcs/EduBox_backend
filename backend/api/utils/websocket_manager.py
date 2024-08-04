@@ -1,5 +1,48 @@
 from fastapi import WebSocket
-from typing import Dict
+from typing import Dict, Any, Optional, Literal
+from src.constants import GlobalConfig
+import base64
+from enum import Enum
+
+class MediaType(str, Enum):
+    TEXT = "text"
+    VIDEO = "video"
+    AUDIO = "audio"
+    IMAGE = "image"
+
+class MessageType(str, Enum):
+    MESSAGE = "message"
+    STATUS = "status"
+    ERROR = "error"
+    END = "end"
+
+class EndStatus(str, Enum):
+    COMPLETE = "complete"
+    INTERRUPTED = "interrupted"
+    ERROR = "error"
+    TIMEOUT = "timeout"
+
+class Message:
+    def __init__(self, message_type: MessageType, media_type: MediaType, 
+                 content: Any, metadata: Dict[str, Any]):
+        self.message_type = message_type
+        self.media_type = media_type
+        self.content = content
+        self.metadata = metadata
+
+    def to_dict(self):
+        payload = {
+            "type": self.message_type,
+            "media_type": self.media_type,
+            "metadata": self.metadata
+        }
+        
+        if isinstance(self.content, bytes):
+            payload["content"] = base64.b64encode(self.content).decode('utf-8')
+        else:
+            payload["content"] = self.content
+        
+        return payload
 
 class ConnectionManager:
     def __init__(self):
@@ -12,8 +55,68 @@ class ConnectionManager:
     def disconnect(self, conversation_id: int):
         self.active_connections.pop(conversation_id, None)
 
-    async def send_message(self, conversation_id: int, message: str, sender_type: str = "assistant"):
+    async def send_chat_message(self, conversation_id: int, message: Message):
         if websocket := self.active_connections.get(conversation_id):
-            await websocket.send_json({"content": message, "sender_type": sender_type})
-            
+            await websocket.send_json(message.to_dict())
+
+    async def send_text_message(self, conversation_id: int, text: str, 
+                                sender_type: str = "assistant", 
+                                extra_metadata: Optional[Dict[str, Any]] = None):
+        metadata = {"sender_type": sender_type, **(extra_metadata or {})}
+        message = Message(
+            message_type=MessageType.MESSAGE,
+            media_type=MediaType.TEXT,
+            content=text,
+            metadata=metadata
+        )
+        await self.send_chat_message(conversation_id, message)
+
+    async def send_media_chunk(self, conversation_id: int, media_type: MediaType, 
+                               chunk: bytes, chunk_metadata: Dict[str, Any]):
+        message = Message(
+            message_type=MessageType.MESSAGE,
+            media_type=media_type,
+            content=chunk,
+            metadata=chunk_metadata
+        )
+        await self.send_chat_message(conversation_id, message)
+
+    async def send_status(self, conversation_id: int, status: str, 
+                          extra_metadata: Optional[Dict[str, Any]] = None):
+        metadata = {"status": status, **(extra_metadata or {})}
+        message = Message(
+            message_type=MessageType.STATUS,
+            media_type=MediaType.TEXT,
+            content=status,
+            metadata=metadata
+        )
+        await self.send_chat_message(conversation_id, message)
+
+    async def send_error(self, conversation_id: int, error_message: str, 
+                         extra_metadata: Optional[Dict[str, Any]] = None):
+        metadata = {"error": error_message, **(extra_metadata or {})}
+        message = Message(
+            message_type=MessageType.ERROR,
+            media_type=MediaType.TEXT,
+            content=error_message,
+            metadata=metadata
+        )
+        await self.send_chat_message(conversation_id, message)
+
+    async def send_end_message(self, conversation_id: int, media_type: MediaType, 
+                               end_status: EndStatus,
+                               extra_metadata: Optional[Dict[str, Any]] = None):
+        metadata = {
+            "end_token": GlobalConfig.END_TOKEN, 
+            "end_status": end_status,
+            **(extra_metadata or {})
+        }
+        message = Message(
+            message_type=MessageType.END,
+            media_type=media_type,
+            content=f"{media_type}_end",
+            metadata=metadata
+        )
+        await self.send_chat_message(conversation_id, message)
+
 ws_manager = ConnectionManager()

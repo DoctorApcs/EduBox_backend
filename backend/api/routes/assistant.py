@@ -3,7 +3,7 @@ from fastapi.responses import StreamingResponse
 from typing import List, AsyncGenerator, Generator
 from api.models.assistant import AssistantCreate, AssistantResponse, ChatMessage, ChatResponse, ConversationResponse, MessageResponse
 from api.services.assistant import AssistantService
-from api.utils.websocket_manager import ws_manager
+from api.utils.websocket_manager import ws_manager, MediaType, EndStatus
 from src.dependencies import get_current_user_id
 import logging
 
@@ -115,9 +115,56 @@ async def websocket_endpoint(
     try:
         while True:
             data = await websocket.receive_json()
+            
+            # Send acknowledgement of received message
+            await ws_manager.send_status(conversation_id, "message_received")
+
+            # Process the incoming message
             message = ChatMessage(content=data["content"])
-            async for chunk in assistant_service.astream_chat_with_assistant(conversation_id, current_user_id, message):
-                await ws_manager.send_message(conversation_id, chunk)
-            await ws_manager.send_message(conversation_id, "<END>")
+            
+            try:
+                async for chunk in assistant_service.astream_chat_with_assistant(conversation_id, current_user_id, message):
+                    # Assume chunk is a string. If it's a different structure, adjust accordingly.
+                    await ws_manager.send_text_message(
+                        conversation_id,
+                        chunk,
+                        sender_type="assistant",
+                        extra_metadata={"assistant_id": assistant_id}
+                    )
+
+                # Send end message for successful completion
+                await ws_manager.send_end_message(
+                    conversation_id,
+                    MediaType.TEXT,
+                    EndStatus.COMPLETE,
+                    {"assistant_id": assistant_id}
+                )
+
+            except Exception as e:
+                # Handle any errors during message processing
+                error_message = f"Error processing message: {str(e)}"
+                await ws_manager.send_error(conversation_id, error_message)
+                await ws_manager.send_end_message(
+                    conversation_id,
+                    MediaType.TEXT,
+                    EndStatus.ERROR,
+                    {"error_message": error_message, "assistant_id": assistant_id}
+                )
+
     except WebSocketDisconnect:
+        # Handle WebSocket disconnect
+        ws_manager.disconnect(conversation_id)
+        # You might want to log this disconnect or perform any cleanup
+        logging.info(f"WebSocket disconnected for conversation {conversation_id}")
+
+    except Exception as e:
+        # Handle any other unexpected errors
+        error_message = f"Unexpected error in WebSocket connection: {str(e)}"
+        await ws_manager.send_error(conversation_id, error_message)
+        await ws_manager.send_end_message(
+            conversation_id,
+            MediaType.TEXT,
+            EndStatus.ERROR,
+            {"error_message": error_message, "assistant_id": assistant_id}
+        )
         ws_manager.disconnect(conversation_id)
