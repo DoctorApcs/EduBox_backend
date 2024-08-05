@@ -1,5 +1,5 @@
 from fastapi import WebSocket
-from typing import Dict, Any, Optional, Literal
+from typing import Dict, Any, Optional
 from src.constants import GlobalConfig
 import base64
 from enum import Enum
@@ -48,16 +48,20 @@ class ConnectionManager:
     def __init__(self):
         self.active_connections: Dict[int, WebSocket] = {}
 
+
     async def connect(self, conversation_id: int, websocket: WebSocket):
         await websocket.accept()
         self.active_connections[conversation_id] = websocket
 
+
     def disconnect(self, conversation_id: int):
         self.active_connections.pop(conversation_id, None)
+
 
     async def send_chat_message(self, conversation_id: int, message: Message):
         if websocket := self.active_connections.get(conversation_id):
             await websocket.send_json(message.to_dict())
+
 
     async def send_text_message(self, conversation_id: int, text: str, 
                                 sender_type: str = "assistant", 
@@ -71,6 +75,7 @@ class ConnectionManager:
         )
         await self.send_chat_message(conversation_id, message)
 
+
     async def send_media_chunk(self, conversation_id: int, media_type: MediaType, 
                                chunk: bytes, chunk_metadata: Dict[str, Any]):
         message = Message(
@@ -80,6 +85,7 @@ class ConnectionManager:
             metadata=chunk_metadata
         )
         await self.send_chat_message(conversation_id, message)
+
 
     async def send_status(self, conversation_id: int, status: str, 
                           extra_metadata: Optional[Dict[str, Any]] = None):
@@ -92,6 +98,7 @@ class ConnectionManager:
         )
         await self.send_chat_message(conversation_id, message)
 
+
     async def send_error(self, conversation_id: int, error_message: str, 
                          extra_metadata: Optional[Dict[str, Any]] = None):
         metadata = {"error": error_message, **(extra_metadata or {})}
@@ -102,6 +109,7 @@ class ConnectionManager:
             metadata=metadata
         )
         await self.send_chat_message(conversation_id, message)
+
 
     async def send_end_message(self, conversation_id: int, media_type: MediaType, 
                                end_status: EndStatus,
