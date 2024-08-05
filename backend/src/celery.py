@@ -3,7 +3,7 @@ from celery import Celery
 celery = Celery('document_parser', 
                 broker='redis://localhost:6379/0',
                 include=[
-                    "src.document_parser"
+                    "src.tasks.document_parser_tasks",
                 ])
 
 # Optional: Configure Celery

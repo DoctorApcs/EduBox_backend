@@ -1,6 +1,6 @@
 from fastapi import APIRouter, File, UploadFile, HTTPException
 from fastapi.responses import JSONResponse, FileResponse
-from src.document_parser import process_document
+from src.tasks.document_parser_tasks import process_document
 from celery.result import AsyncResult
 from fastapi import Depends
 import os

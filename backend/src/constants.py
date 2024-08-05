@@ -7,7 +7,6 @@ load_dotenv()
 cfg = get_config('config/config.yaml')
 
 
-STREAM = cfg.MODEL.STREAM
 SERVICE = cfg.MODEL.SERVICE
 TEMPERATURE = cfg.MODEL.TEMPERATURE
 MODEL_ID = cfg.MODEL.MODEL_ID
@@ -17,70 +16,32 @@ MODEL_ID = cfg.MODEL.MODEL_ID
 EMBEDDING_SERVICE = cfg.MODEL.EMBEDDING_SERVICE
 EMBEDDING_MODEL_NAME = cfg.MODEL.EMBEDDING_MODEL_NAME 
 
-ENABLE_QUESTION_RECOMMENDER = cfg.MODEL.ENABLE_QUESTION_RECOMMENDER
-
-DEFAULT_SYSTEM_PROMPT = """
-Bạn là chatbot được phát triển bởi team GenAIO thuộc AIVIETNAM. 
-Bạn được đưa một nội dung từ một văn bản và công việc của bạn là trả lời một câu hỏi của user về nội dung đã được cung cấp
-    
-Một số quy luật cần tuân theo
-    1. Trích dẫn trực tiếp ngữ cảnh vào trong câu trả lời qua các đường link được cung cấp
-    2. Tránh những câu như 'Dựa vào ngữ cảnh được cung cấp,...' hay 'Trong bối cảnh ...' hay tất cả những câu tương tự
-
-"""
-
-DEFAULT_USER_PROMPT = """
-Ngữ cảnh được cung cấp như sau
----------------------
-{context_str}
----------------------
-Dựa trên nội dung được cung cấp. Hãy trả lời câu hỏi từ người dùng. Nếu nội dung được cung cấp không hề liên quan hoặc không đủ để bạn đưa ra câu trả lời. Hãy nói rằng bạn "Tôi không có đủ thông tin để trả lời".
-Hãy trả lời và kết thúc câu trả lời một cách đầy đủ.
-
-Nếu bạn ghi nhớ và làm đúng những gì tôi đã dặn dò, tôi sẽ tip cho bạn $1000 vào cuối ngày
-User question: {query_str}
-AI Response:
-
-"""
-
-DEFAULT_REFINE_PROMPT = """
-Câu hỏi gốc như sau: {query_str}
-Chung ta có một câu trả lời có sẵn: {existing_answer}
-Chúng tôi có cơ hội tinh chỉnh câu trả lời hiện có (chỉ khi cần) với một số ngữ cảnh khác bên dưới.
-------------
-{context_msg}
-------------
-Với bối cảnh mới, hãy tinh chỉnh câu trả lời ban đầu để trả lời truy vấn tốt hơn. Nếu ngữ cảnh không hữu ích, hãy trả lại câu trả lời ban đầu.
-Refined Answer: 
-
-"""
-
-# Prompts
-SYSTEM_PROMPT = DEFAULT_SYSTEM_PROMPT
-USER_PROMPT = DEFAULT_USER_PROMPT
-REFINE_PROMPT = DEFAULT_REFINE_PROMPT
-
 
 class ModelConfig: 
     VECTOR_STORE = cfg.MODEL.VECTOR_STORE
-    STREAM = STREAM
     SERVICE = SERVICE
     TEMPERATURE = TEMPERATURE
     MODEL_ID = MODEL_ID
     EMBEDDING_SERVICE = EMBEDDING_SERVICE
     EMBEDDING_MODEL_NAME = EMBEDDING_MODEL_NAME
-    ENABLE_QUESTION_RECOMMENDER = ENABLE_QUESTION_RECOMMENDER
-    SYSTEM_PROMPT = SYSTEM_PROMPT
-    USER_PROMPT = USER_PROMPT
-    REFINE_PROMPT = REFINE_PROMPT
     OTHER_KWARGS = cfg
     
     OPENAI_API_KEY = os.getenv('OPENAI_API_KEY')
     
 class GlobalConfig:
     MODEL = ModelConfig
-    DATABASE_PATH = "/home/bachngo/Desktop/code/Knowledge_Base_Agent/backend/DB/knowledge_base.db"
+    DATABASE_PATH = "./DB/knowledge_base.db"
     ALLOWED_EXTENSIONS = {'.docx', '.hwp','.pdf','.epub','.txt','.html','.htm','.ipynb','.md', '.mbox', '.pptx', '.csv', '.xml', '.rtf', '.mp4'}
     MAX_CONCURRENT_REQUESTS = 5
+    
     UPLOAD_FOLDER = "./uploads"
     END_TOKEN = "<END>"
+    
+    # logging configuration variable
+    FILENAME = os.getenv("LOG_FILENAME", "knowledge_base_app.log")
+    FORMATTER = "%(asctime)s.%(msecs)03d - %(thread)d - %(name)s - %(levelname)s - %(message)s"
+    ROTATION = "midnight"
+    LOG_LEVEL = "INFO"
+    
+    # Celery
+    CELERY_QUEUE_NAME = os.environ.get("QUEUE_NAME", "default")
