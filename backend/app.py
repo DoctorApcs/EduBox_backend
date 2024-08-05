@@ -4,8 +4,12 @@ from api.routes.knowledge_base import kb_router
 from api.routes.assistant import assistant_router
 from fastapi.middleware.cors import CORSMiddleware
 from celery.result import AsyncResult
-from fastapi.responses import JSONResponse
+from fastapi.responses import JSONResponse, FileResponse
+from fastapi import FastAPI, HTTPException
+import os
+from pathlib import Path
 
+BASE_DIR = Path(__file__).parent.absolute()
 
 load_dotenv(override=True)
 app = FastAPI()
@@ -43,6 +47,26 @@ async def get_task_status(task_id: str):
             }
         )
         
+
+@app.get("/getfile/{file_path:path}")
+async def get_file(file_path: str):
+    # Define the base directory where your video files are stored
+    base_dir = BASE_DIR
+    
+    # Construct the full file path
+    full_path = os.path.join(base_dir, file_path)
+    
+    # Check if the file exists
+    if not os.path.isfile(full_path):
+        raise HTTPException(status_code=404, detail="File not found")
+    
+    # Check if the file is within the base directory (for security)
+    if not os.path.abspath(full_path).startswith(os.path.abspath(base_dir)):
+        raise HTTPException(status_code=403, detail="Access forbidden")
+    
+    # Return the file
+    return FileResponse(full_path)
+
 
 app.add_middleware(
     CORSMiddleware,
