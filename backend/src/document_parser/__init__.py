@@ -12,6 +12,7 @@ from src.database.manager import DatabaseManager
 from src.database.models import DocumentStatus
 from src.dependencies import get_database_manager
 from llama_index.core.schema import Document
+import logging
 
 class FileProcessor(ABC):
     @abstractmethod
@@ -64,7 +65,7 @@ def create_processor_class(reader_class):
         class DynamicProcessor(TextFileProcessor):
             def __init__(self):
                 super().__init__(reader_class)
-        return DynamicProcessor
+        return DynamicProcessor()
 
 class FileProcessorFactory:
     _processors: Dict[str, Type[FileProcessor]] = {}
@@ -149,7 +150,7 @@ class FileProcessorFactory:
 def process_document(self, file_path: str, document_id: int, db_manager: DatabaseManager = get_database_manager()):
     try:
         db_manager.update_document_status(document_id, DocumentStatus.PROCESSING)
-        
+        logging.info(f"Processing document {document_id} at {file_path}")
         processor = FileProcessorFactory.get_processor(file_path)
         result = processor.process(file_path)
         
