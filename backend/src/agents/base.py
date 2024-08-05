@@ -2,12 +2,13 @@ import os
 from fastapi import Depends
 from src.dependencies import get_db_manager
 from src.database.manager import DatabaseManager
-from src.tools.kb_search_tool import load_knowledge_base_search_tool
+from src.tools.manager import ToolManager
 from src.constants import GlobalConfig
 from llama_index.core.base.llms.types import ChatMessage as LLamaIndexChatMessage
 from llama_index.llms.openai import OpenAI
 from llama_index.agent.openai import OpenAIAgent
-from typing import Generator
+from .prompts import ASSISTANT_SYSTEM_PROMPT
+import logging
 
 class ChatAssistant:
     
@@ -26,7 +27,8 @@ class ChatAssistant:
         self.agent = OpenAIAgent.from_tools(
             tools=self.tools,
             llm=self.llm,
-            verbose=True
+            verbose=True,
+            system_prompt=ASSISTANT_SYSTEM_PROMPT,
         )
         
     def _init_model(self, service, model_id):
@@ -40,12 +42,12 @@ class ChatAssistant:
         Raises:
             ValueError: If an unsupported model or device type is provided.
         """
-        print(f"Loading Model: {model_id}")
-        print("This action can take a few minutes!")
+        logging.info(f"Loading Model: {model_id}")
+        logging.info("This action can take a few minutes!")
         # TODO: setup proper logging
 
         if service == "openai":
-            print(f"Loading OpenAI Model: {model_id}")
+            logging.info(f"Loading OpenAI Model: {model_id}")
             return OpenAI(
                 model=model_id, 
                 temperature=self.configuration["temperature"], 
@@ -54,7 +56,7 @@ class ChatAssistant:
             raise NotImplementedError("The implementation for other types of LLMs are not ready yet!")
         
     def _init_tools(self):
-        return [load_knowledge_base_search_tool(self.configuration)]    
+        return ToolManager(config=self.configuration).get_tools() 
 
     def on_message(self, message, message_history) -> str:
         message_history = [LLamaIndexChatMessage(content=msg["content"], role=msg["role"]) for msg in message_history]

@@ -30,5 +30,4 @@ def get_website_info(url):
 
         return website_name, favicon_url
     except Exception as _:
-        print(DEFAULT_FAVICON_URL)
         return website_name, DEFAULT_FAVICON_URL

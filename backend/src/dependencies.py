@@ -2,6 +2,7 @@ from functools import lru_cache
 from fastapi import Depends
 from src.database.manager import DatabaseManager, QdrantVectorDB
 from src.constants import GlobalConfig
+import logging
 
 def initialize_database(db_manager: DatabaseManager):
     # Check if admin user exists
@@ -10,7 +11,7 @@ def initialize_database(db_manager: DatabaseManager):
     if not admin_user:
         # Create admin user
         user_id = db_manager.create_user("admin", "admin@example.com", "123")
-        print("Admin user created.")
+        logging.info("Admin user created.")
     else:
         user_id = admin_user.id
 
@@ -19,7 +20,7 @@ def initialize_database(db_manager: DatabaseManager):
     if not default_kb:
         # Create default knowledge base
         db_manager.create_knowledge_base(user_id, "Default", "Default knowledge base")
-        print("Default knowledge base created.")
+        logging.info("Default knowledge base created.")
 
 def get_database_manager() -> DatabaseManager:
     # You could load these configurations from environment variables or a config file

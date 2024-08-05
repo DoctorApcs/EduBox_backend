@@ -41,6 +41,7 @@ from llama_index.core.schema import ImageDocument
 from llama_index.core.tools import BaseTool, ToolOutput, adapt_to_async_tool
 from llama_index.core.tools.types import AsyncBaseTool
 from llama_index.core.utils import print_text
+import logging
 
 DEFAULT_MODEL_NAME = "gpt-3.5-turbo-0613"
 

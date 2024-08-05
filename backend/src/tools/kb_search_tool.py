@@ -6,6 +6,7 @@ from llama_index.core.schema import MetadataMode
 from llama_index.embeddings.openai import OpenAIEmbedding
 from llama_index.core.tools import FunctionTool
 from src.constants import GlobalConfig 
+import logging
 
 def load_knowledge_base_search_tool(config: dict):
     embedding_service = config.get("embedding_service", "openai")
@@ -47,7 +48,7 @@ def load_knowledge_base_search_tool(config: dict):
         
         
         retriever_response = retriever.retrieve(query_str)
-        print("Retrieval Content: ", [n.node.get_content(metadata_mode=MetadataMode.LLM) for n in retriever_response])
+        logging.info("Retrieval Content: ", [n.node.get_content(metadata_mode=MetadataMode.LLM) for n in retriever_response])
         return [n.node.get_content(metadata_mode=MetadataMode.LLM) for n in retriever_response]
     
     return FunctionTool.from_defaults(retrieve_knowledge_base)

@@ -121,7 +121,8 @@ class AssistantService:
                     "temperature": configuration["temperature"],
                     "embedding_service": "openai", #TODO: Let user choose embedding model,
                     "embedding_model_name": "text-embedding-3-small",
-                    "collection_name": f"kb_{assistant.knowledge_base_id}"
+                    "collection_name": f"kb_{assistant.knowledge_base_id}",
+                    "conversation_id": conversation_id
                 }
                 
                 assistant_instance = ChatAssistant(assistant_config)
@@ -168,7 +169,8 @@ class AssistantService:
                 "temperature": configuration["temperature"],
                 "embedding_service": "openai",
                 "embedding_model_name": "text-embedding-3-small",
-                "collection_name": f"kb_{assistant.knowledge_base_id}"
+                "collection_name": f"kb_{assistant.knowledge_base_id}",
+                "conversation_id": conversation_id
             }
             
             assistant_instance = ChatAssistant(assistant_config)
@@ -211,7 +213,8 @@ class AssistantService:
                 "temperature": configuration["temperature"],
                 "embedding_service": "openai",
                 "embedding_model_name": "text-embedding-3-small",
-                "collection_name": f"kb_{assistant.knowledge_base_id}"
+                "collection_name": f"kb_{assistant.knowledge_base_id}",
+                "conversation_id": conversation_id
             }
             
             assistant_instance = ChatAssistant(assistant_config)

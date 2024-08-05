@@ -83,3 +83,4 @@ class GlobalConfig:
     ALLOWED_EXTENSIONS = {'.docx', '.hwp','.pdf','.epub','.txt','.html','.htm','.ipynb','.md', '.mbox', '.pptx', '.csv', '.xml', '.rtf', '.mp4'}
     MAX_CONCURRENT_REQUESTS = 5
     UPLOAD_FOLDER = "./uploads"
+    END_TOKEN = "<END>"
