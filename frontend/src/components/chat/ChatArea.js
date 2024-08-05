@@ -58,16 +58,23 @@ const ChatArea = ({ conversation, assistantId }) => {
           break;
         case "end":
           setIsAssistantTyping(false);
-          if (streamingMessage) {
-            setMessages((prevMessages) => [
-              ...prevMessages,
-              {
-                sender_type: "assistant",
-                ...streamingMessage,
-              },
-            ]);
-            setStreamingMessage(null);
-          }
+          console.log("END MESSAGE");
+
+          let newMessage = {
+            sender_type: "assistant",
+            media_type: "",
+            content: "",
+            metadata: {},
+          };
+          setStreamingMessage((prev) => {
+            newMessage.type = prev.type;
+            newMessage.content = prev.content;
+            newMessage.metadata = prev.metadata;
+            return null;
+          });
+
+          setMessages((prevMessages) => [...prevMessages, newMessage]);
+
           break;
         default:
           console.log("Unknown message type:", data.type);
@@ -113,7 +120,11 @@ const ChatArea = ({ conversation, assistantId }) => {
     e.preventDefault();
     if (!inputMessage.trim()) return;
 
-    const newMessage = { sender_type: "user", content: inputMessage };
+    const newMessage = {
+      sender_type: "user",
+      content: inputMessage,
+      type: "text",
+    };
     setMessages((prevMessages) => [...prevMessages, newMessage]);
     setInputMessage("");
     setIsLoading(true);
@@ -154,22 +165,38 @@ const ChatArea = ({ conversation, assistantId }) => {
       textareaRef.current.style.height = `${textareaRef.current.scrollHeight}px`;
     }
   };
+
   const renderMessage = (message) => {
-    if (message.type === "text") {
-      return (
-        <ReactMarkdown className="prose prose-sm max-w-none">
-          {message.content}
-        </ReactMarkdown>
-      );
-    } else if (message.type === "video") {
-      return (
-        <video controls className="w-full max-w-lg mt-2">
-          <source src={message.content} type="video/mp4" />
-          Your browser does not support the video tag.
-        </video>
-      );
+    switch (message.type) {
+      case "text":
+        return (
+          <ReactMarkdown className="prose prose-sm max-w-none">
+            {message.content}
+          </ReactMarkdown>
+        );
+      case "video":
+        const fullVideoUrl = `${API_BASE_URL}/getfile/${message.content}`;
+        return (
+          <video controls className="w-full max-w-lg mt-2">
+            <source src={fullVideoUrl} type="video/mp4" />
+            Your browser does not support the video tag.
+          </video>
+        );
+      case "image":
+        return (
+          <img
+            src={message.content}
+            alt="Assistant generated image"
+            className="w-full max-w-lg mt-2"
+          />
+        );
+      default:
+        return (
+          <ReactMarkdown className="prose prose-sm max-w-none">
+            {message.content}
+          </ReactMarkdown>
+        );
     }
-    return null;
   };
 
   return (
