@@ -1,14 +1,13 @@
 data/*
 outputs/*
 models/*
-DB/*
+DB/*.db
 venv/*
 .env
 __pycache__
 lib/*
 *.ipynb
 
-config/config.yaml
 wandb/*
 lib/*
 .files/*
