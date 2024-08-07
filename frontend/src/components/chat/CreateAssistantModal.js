@@ -9,6 +9,7 @@ const CreateAssistantModal = ({ isOpen, onClose, onCreateSuccess }) => {
   const router = useRouter();
   const [assistantName, setAssistantName] = useState("");
   const [description, setDescription] = useState("");
+  const [systemPrompt, setSystemPrompt] = useState("");
   const [knowledgeBases, setKnowledgeBases] = useState([]);
   const [selectedKnowledgeBase, setSelectedKnowledgeBase] = useState("");
   const [model, setModel] = useState("gpt-4o-mini");
@@ -37,6 +38,7 @@ const CreateAssistantModal = ({ isOpen, onClose, onCreateSuccess }) => {
     const payload = {
       name: assistantName,
       description: description,
+      systemPrompt: systemPrompt,
       knowledge_base_id: parseInt(selectedKnowledgeBase),
       configuration: {
         model: model,
@@ -117,6 +119,16 @@ const CreateAssistantModal = ({ isOpen, onClose, onCreateSuccess }) => {
             <textarea
               value={description}
               onChange={(e) => setDescription(e.target.value)}
+              rows={3}
+              className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-300 focus:ring focus:ring-blue-200 focus:ring-opacity-50 p-2"
+            />
+            <label className="block text-sm font-medium text-gray-700">
+              systemPrompt{" "}
+              <Info className="inline-block w-4 h-4 text-gray-400" />
+            </label>
+            <textarea
+              value={systemPrompt}
+              onChange={(e) => setSystemPrompt(e.target.value)}
               rows={3}
               className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-300 focus:ring focus:ring-blue-200 focus:ring-opacity-50 p-2"
             />
