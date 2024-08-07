@@ -5,6 +5,7 @@ from datetime import datetime
 class AssistantCreate(BaseModel):
     name: str
     description: Optional[str] = None
+    systemprompt: Optional[str] = None
     knowledge_base_id: int
     configuration: Dict[str, str]
 
@@ -13,6 +14,7 @@ class AssistantResponse(BaseModel):
     user_id: int
     name: str
     description: Optional[str]
+    systemprompt: Optional[str]
     knowledge_base_id: int
     configuration: Dict[str, str]
     created_at: datetime

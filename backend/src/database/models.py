@@ -75,6 +75,7 @@ class Assistant(Base):
     user_id = Column(Integer, ForeignKey('users.id'))
     name = Column(String(100), nullable=False)
     description = Column(Text)
+    systemprompt = Column(Text)
     knowledge_base_id = Column(Integer, ForeignKey('knowledge_bases.id'))
     configuration = Column(JSON)
     created_at = Column(DateTime, default=datetime.utcnow)

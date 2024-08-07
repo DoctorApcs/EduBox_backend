@@ -148,9 +148,9 @@ class DatabaseManager:
                 session.commit()
 
     ## Assistant and Conversation methods
-    def create_assistant(self, user_id, name, description, knowledge_base_id, configuration):
+    def create_assistant(self, user_id, name, description, systemprompt, knowledge_base_id, configuration):
         with self.Session() as session:
-            assistant = Assistant(user_id=user_id, name=name, description=description,
+            assistant = Assistant(user_id=user_id, name=name, description=description, systemprompt=systemprompt,
                                   knowledge_base_id=knowledge_base_id, configuration=configuration)
             session.add(assistant)
             session.commit()

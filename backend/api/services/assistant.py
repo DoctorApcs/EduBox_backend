@@ -27,6 +27,7 @@ class AssistantService:
                 user_id=user_id, 
                 name=assistant_data.name, 
                 description=assistant_data.description,
+                systemprompt=assistant_data.systemprompt,
                 knowledge_base_id=assistant_data.knowledge_base_id, 
                 configuration=assistant_data.configuration
             )
