@@ -38,7 +38,7 @@ const CreateAssistantModal = ({ isOpen, onClose, onCreateSuccess }) => {
     const payload = {
       name: assistantName,
       description: description,
-      systemPrompt: systemPrompt,
+      systemprompt: systemPrompt,
       knowledge_base_id: parseInt(selectedKnowledgeBase),
       configuration: {
         model: model,
@@ -70,6 +70,7 @@ const CreateAssistantModal = ({ isOpen, onClose, onCreateSuccess }) => {
       // You might want to show an error message to the user here
     }
   };
+  console.log(systemPrompt);
 
   if (!isOpen) return null;
 
@@ -123,7 +124,7 @@ const CreateAssistantModal = ({ isOpen, onClose, onCreateSuccess }) => {
               className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-300 focus:ring focus:ring-blue-200 focus:ring-opacity-50 p-2"
             />
             <label className="block text-sm font-medium text-gray-700">
-              systemPrompt{" "}
+              System Prompt
               <Info className="inline-block w-4 h-4 text-gray-400" />
             </label>
             <textarea
