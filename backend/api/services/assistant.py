@@ -23,10 +23,12 @@ class AssistantService:
     def create_assistant(self, user_id: int, assistant_data: AssistantCreate) -> AssistantResponse:
 
         with self.db_manager.Session() as session:
+            print(assistant_data.systemprompt)
             new_assistant = Assistant(
                 user_id=user_id, 
                 name=assistant_data.name, 
                 description=assistant_data.description,
+                systemprompt=assistant_data.systemprompt,
                 knowledge_base_id=assistant_data.knowledge_base_id, 
                 configuration=assistant_data.configuration
             )
