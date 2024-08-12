@@ -16,4 +16,4 @@ qdrant_storage/*
 uploads/*
 uploads/!.keep
 notebooks/*
-myEnv/g
+myEnv/
