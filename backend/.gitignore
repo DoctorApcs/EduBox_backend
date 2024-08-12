@@ -14,5 +14,6 @@ lib/*
 qdrant_storage/*
 .venv/*
 uploads/*
+uploads/!.keep
 notebooks/*
-myEnv/
+myEnv/g
