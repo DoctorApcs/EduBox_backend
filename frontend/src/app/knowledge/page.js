@@ -18,6 +18,8 @@ const KnowledgeBasePage = () => {
   const [error, setError] = useState(null);
   const router = useRouter();
 
+  console.log(process.env.NEXT_PUBLIC_API_BASE_URL);
+
   useEffect(() => {
     const fetchKnowledgeBases = async () => {
       try {
