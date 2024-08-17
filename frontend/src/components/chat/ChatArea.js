@@ -1,10 +1,71 @@
-import React, { useState, useEffect, useRef, useCallback } from "react";
+import React, {
+  useState,
+  useEffect,
+  useRef,
+  useCallback,
+  useMemo,
+} from "react";
 import { Send, User, Bot, Loader2 } from "lucide-react";
 import ReactMarkdown from "@/components/Markdown";
 import ErrorMessage from "@/components/chat/ErrorMessage"; // Import the new ErrorMessage component
 
 const API_BASE_URL =
   process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:8000";
+
+const Message = React.memo(({ message }) => {
+  const renderMessage = (message) => {
+    switch (message.type) {
+      case "text":
+        return <ReactMarkdown>{message.content}</ReactMarkdown>;
+      case "video":
+        const fullVideoUrl = `${API_BASE_URL}/getfile/${message.content}`;
+        return (
+          <video controls className="w-full max-w-lg mt-2">
+            <source src={fullVideoUrl} type="video/mp4" />
+            Your browser does not support the video tag.
+          </video>
+        );
+      case "image":
+        return (
+          <img
+            src={message.content}
+            alt="Assistant generated image"
+            className="w-full max-w-lg mt-2"
+          />
+        );
+      default:
+        return <ReactMarkdown>{message.content}</ReactMarkdown>;
+    }
+  };
+
+  return (
+    <div
+      className={`flex ${
+        message.sender_type === "user" ? "justify-end" : "justify-start"
+      } mb-4`}
+    >
+      <div
+        className={`${
+          message.sender_type === "user"
+            ? "max-w-[60%] bg-blue-600 text-white"
+            : "max-w-[100%] bg-gray-200 text-gray-800"
+        } p-3 rounded-lg`}
+      >
+        <div className="flex items-center mb-1">
+          {message.sender_type === "user" ? (
+            <User size={16} className="mr-2" />
+          ) : (
+            <Bot size={16} className="mr-2" />
+          )}
+          <span className="font-semibold">
+            {message.sender_type === "user" ? "You" : "Assistant"}
+          </span>
+        </div>
+        {renderMessage(message)}
+      </div>
+    </div>
+  );
+});
 
 const ChatArea = ({ conversation, assistantId }) => {
   const [messages, setMessages] = useState([]);
@@ -97,7 +158,7 @@ const ChatArea = ({ conversation, assistantId }) => {
     if (conversation) {
       fetchConversationHistory();
       connectWebSocket();
-      setError(""); // Clear any previous errors
+      setError("");
     }
 
     return () => {
@@ -146,6 +207,11 @@ const ChatArea = ({ conversation, assistantId }) => {
     setIsAssistantTyping(true);
     setError(""); // Clear any previous errors
 
+    // Reset textarea height
+    if (textareaRef.current) {
+      textareaRef.current.style.height = "auto";
+    }
+
     try {
       if (websocketRef.current?.readyState === WebSocket.OPEN) {
         websocketRef.current.send(JSON.stringify({ content: inputMessage }));
@@ -177,85 +243,33 @@ const ChatArea = ({ conversation, assistantId }) => {
   };
 
   const adjustTextareaHeight = () => {
+    const MAX_TEXTAREA_HEIGHT = 200;
     if (textareaRef.current) {
       textareaRef.current.style.height = "auto";
-      textareaRef.current.style.height = `${textareaRef.current.scrollHeight}px`;
+      const scrollHeight = textareaRef.current.scrollHeight;
+      textareaRef.current.style.height = `${Math.min(
+        scrollHeight,
+        MAX_TEXTAREA_HEIGHT
+      )}px`;
+
+      // Add scrollbar if content exceeds max height
+      textareaRef.current.style.overflowY =
+        scrollHeight > MAX_TEXTAREA_HEIGHT ? "auto" : "hidden";
     }
   };
 
-  const renderMessage = (message) => {
-    switch (message.type) {
-      case "text":
-        return (
-          // <ReactMarkdown className="prose prose-sm max-w-none">
-          <ReactMarkdown>{message.content}</ReactMarkdown>
-        );
-      case "video":
-        const fullVideoUrl = `${API_BASE_URL}/getfile/${message.content}`;
-        return (
-          <video controls className="w-full max-w-lg mt-2">
-            <source src={fullVideoUrl} type="video/mp4" />
-            Your browser does not support the video tag.
-          </video>
-        );
-      case "image":
-        return (
-          <img
-            src={message.content}
-            alt="Assistant generated image"
-            className="w-full max-w-lg mt-2"
-          />
-        );
-      default:
-        return <ReactMarkdown>{message.content}</ReactMarkdown>;
-    }
-  };
+  const memoizedMessages = useMemo(() => messages, [messages]);
 
   return (
     <div className="flex flex-col h-full bg-white">
       <div className="flex-1 overflow-y-auto p-4">
         <div className="max-w-4xl mx-auto">
-          {messages.map((message, index) => (
-            <div
-              key={index}
-              className={`flex ${
-                message.sender_type === "user" ? "justify-end" : "justify-start"
-              } mb-4`}
-            >
-              <div
-                className={`${
-                  message.sender_type === "user"
-                    ? "max-w-[60%] bg-blue-600 text-white"
-                    : "max-w-[100%] bg-gray-200 text-gray-800"
-                } p-3 rounded-lg`}
-              >
-                <div className="flex items-center mb-1">
-                  {message.sender_type === "user" ? (
-                    <User size={16} className="mr-2" />
-                  ) : (
-                    <Bot size={16} className="mr-2" />
-                  )}
-                  <span className="font-semibold">
-                    {message.sender_type === "user" ? "You" : "Assistant"}
-                  </span>
-                </div>
-                {renderMessage(message)}
-              </div>
-            </div>
+          {memoizedMessages.map((message, index) => (
+            <Message key={index} message={message} />
           ))}
           {isAssistantTyping && <Loader2 className="w-6 h-6 animate-spin" />}
-          {streamingMessage && (
-            <div className="flex justify-start mb-4">
-              <div className="max-w-[100%] p-3 rounded-lg bg-gray-200 text-gray-800">
-                <div className="flex items-center mb-1">
-                  <Bot size={16} className="mr-2" />
-                  <span className="font-semibold">Assistant</span>
-                </div>
-                {renderMessage(streamingMessage)}
-              </div>
-            </div>
-          )}
-          {error && <ErrorMessage message={error} />}{" "}
+          {streamingMessage && <Message message={streamingMessage} />}
+          {error && <ErrorMessage message={error} />}
           <div ref={messagesEndRef} style={{ height: "1px" }} />
         </div>
       </div>
@@ -286,4 +300,4 @@ const ChatArea = ({ conversation, assistantId }) => {
   );
 };
 
-export default ChatArea;
+export default React.memo(ChatArea);
