@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useRef, useCallback } from "react";
 import { Send, User, Bot, Loader2 } from "lucide-react";
 import ReactMarkdown from "@/components/Markdown";
+import ErrorMessage from "@/components/chat/ErrorMessage"; // Import the new ErrorMessage component
 
 const API_BASE_URL =
   process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:8000";
@@ -11,6 +12,7 @@ const ChatArea = ({ conversation, assistantId }) => {
   const [isLoading, setIsLoading] = useState(false);
   const [streamingMessage, setStreamingMessage] = useState("");
   const [isAssistantTyping, setIsAssistantTyping] = useState(false);
+  const [error, setError] = useState(""); // New state for error messages
 
   const messagesEndRef = useRef(null);
   const textareaRef = useRef(null);
@@ -45,7 +47,7 @@ const ChatArea = ({ conversation, assistantId }) => {
           } else if (data.media_type === "video") {
             setStreamingMessage({
               type: "video",
-              content: data.content, // This should be the video URL
+              content: data.content,
               metadata: data.metadata,
             });
           }
@@ -55,6 +57,7 @@ const ChatArea = ({ conversation, assistantId }) => {
           break;
         case "error":
           console.error("Error:", data.content);
+          setError(data.content); // Set the error message
           break;
         case "end":
           setIsAssistantTyping(false);
@@ -66,13 +69,17 @@ const ChatArea = ({ conversation, assistantId }) => {
             content: "",
             metadata: {},
           };
+          let addNewMessage = false;
+
           setStreamingMessage((prev) => {
-            newMessage.type = prev.type;
-            newMessage.content = prev.content;
-            newMessage.metadata = prev.metadata;
+            if (prev) {
+              newMessage.type = prev.type;
+              newMessage.content = prev.content;
+              newMessage.metadata = prev.metadata;
+              addNewMessage = true;
+            }
             return null;
           });
-
           setMessages((prevMessages) => [...prevMessages, newMessage]);
 
           break;
@@ -90,6 +97,7 @@ const ChatArea = ({ conversation, assistantId }) => {
     if (conversation) {
       fetchConversationHistory();
       connectWebSocket();
+      setError(""); // Clear any previous errors
     }
 
     return () => {
@@ -119,6 +127,7 @@ const ChatArea = ({ conversation, assistantId }) => {
       setMessages(data);
     } catch (error) {
       console.error("Error fetching conversation history:", error);
+      setError("Failed to load conversation history. Please try again."); // Set error message
     }
   };
 
@@ -135,6 +144,7 @@ const ChatArea = ({ conversation, assistantId }) => {
     setInputMessage("");
     setIsLoading(true);
     setIsAssistantTyping(true);
+    setError(""); // Clear any previous errors
 
     try {
       if (websocketRef.current?.readyState === WebSocket.OPEN) {
@@ -144,6 +154,7 @@ const ChatArea = ({ conversation, assistantId }) => {
       }
     } catch (error) {
       console.error("Error sending message:", error);
+      setError("Failed to send message. Please try again."); // Set error message
     } finally {
       setIsLoading(false);
     }
@@ -244,6 +255,7 @@ const ChatArea = ({ conversation, assistantId }) => {
               </div>
             </div>
           )}
+          {error && <ErrorMessage message={error} />}{" "}
           <div ref={messagesEndRef} style={{ height: "1px" }} />
         </div>
       </div>

@@ -7,11 +7,14 @@ import { Prism as SyntaxHighlighter } from "react-syntax-highlighter";
 import { vscDarkPlus } from "react-syntax-highlighter/dist/esm/styles/prism";
 
 const CustomMarkdown = ({ children }) => {
-  const processedContent = children
-    .replace(/\\\(/g, "$")
-    .replace(/\\\)/g, "$")
-    .replace(/\\\[/g, "$$")
-    .replace(/\\\]/g, "$$");
+  let processedContent = "";
+  if (children) {
+    processedContent = children
+      .replace(/\\\(/g, "$")
+      .replace(/\\\)/g, "$")
+      .replace(/\\\[/g, "$$")
+      .replace(/\\\]/g, "$$");
+  }
 
   return (
     <div className="custom-markdown overflow-x-auto">

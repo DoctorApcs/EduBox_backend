@@ -17,7 +17,7 @@ import logging
 from .prompts import VIDEO_PROCESSING_PROMPT
 from llama_index.core.readers.base import BaseReader
 from llama_index.core.schema import Document
-load_dotenv()
+load_dotenv(override=True)
 
 class VideoReader:
     def __init__(self):

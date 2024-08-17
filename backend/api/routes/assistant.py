@@ -121,6 +121,7 @@ async def websocket_endpoint(
 
             # Process the incoming message
             message = ChatMessage(content=data["content"])
+            print(message)
             
             try:
                 async for chunk in assistant_service.astream_chat_with_assistant(conversation_id, current_user_id, message):
@@ -143,6 +144,7 @@ async def websocket_endpoint(
             except Exception as e:
                 # Handle any errors during message processing
                 error_message = f"Error processing message: {str(e)}"
+                logging.error("An error occurred: %s", e, exc_info=True)
                 await ws_manager.send_error(conversation_id, error_message)
                 await ws_manager.send_end_message(
                     conversation_id,
