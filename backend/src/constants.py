@@ -2,7 +2,7 @@ import os
 from config.config import get_config
 from dotenv import load_dotenv
 
-load_dotenv()
+load_dotenv(override=True)
 
 cfg = get_config('config/config.yaml')
 
