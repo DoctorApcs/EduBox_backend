@@ -207,6 +207,11 @@ const ChatArea = ({ conversation, assistantId }) => {
     setIsAssistantTyping(true);
     setError(""); // Clear any previous errors
 
+    // Reset textarea height
+    if (textareaRef.current) {
+      textareaRef.current.style.height = "auto";
+    }
+
     try {
       if (websocketRef.current?.readyState === WebSocket.OPEN) {
         websocketRef.current.send(JSON.stringify({ content: inputMessage }));
@@ -238,9 +243,18 @@ const ChatArea = ({ conversation, assistantId }) => {
   };
 
   const adjustTextareaHeight = () => {
+    const MAX_TEXTAREA_HEIGHT = 200;
     if (textareaRef.current) {
       textareaRef.current.style.height = "auto";
-      textareaRef.current.style.height = `${textareaRef.current.scrollHeight}px`;
+      const scrollHeight = textareaRef.current.scrollHeight;
+      textareaRef.current.style.height = `${Math.min(
+        scrollHeight,
+        MAX_TEXTAREA_HEIGHT
+      )}px`;
+
+      // Add scrollbar if content exceeds max height
+      textareaRef.current.style.overflowY =
+        scrollHeight > MAX_TEXTAREA_HEIGHT ? "auto" : "hidden";
     }
   };
 
