@@ -1,21 +1,34 @@
 import React from "react";
 import Markdown from "react-markdown";
 import remarkMath from "remark-math";
-import rehypeKatex from "rehype-katex";
 import remarkGfm from "remark-gfm";
+import rehypeKatex from "rehype-katex";
 import { Prism as SyntaxHighlighter } from "react-syntax-highlighter";
 import { vscDarkPlus } from "react-syntax-highlighter/dist/esm/styles/prism";
-import "katex/dist/katex.min.css";
 
 const CustomMarkdown = ({ children }) => {
-  const processedContent = children;
-  // .replace(/\\\(/g, "$")
-  // .replace(/\\\)/g, "$")
-  // .replace(/\\\[/g, "$$")
-  // .replace(/\\\]/g, "$$");
+  const processedContent = children
+    .replace(/\\\(/g, "$")
+    .replace(/\\\)/g, "$")
+    .replace(/\\\[/g, "$$")
+    .replace(/\\\]/g, "$$");
 
   return (
     <div className="custom-markdown overflow-x-auto">
+      <style jsx global>{`
+        .katex-display {
+          overflow-x: auto;
+          overflow-y: hidden;
+          padding: 0;
+          margin: 1em 0;
+        }
+        .katex {
+          font-size: 1em;
+        }
+        .katex .katex-html {
+          display: none;
+        }
+      `}</style>
       <Markdown
         remarkPlugins={[remarkGfm, remarkMath]}
         rehypePlugins={[rehypeKatex]}
@@ -33,7 +46,7 @@ const CustomMarkdown = ({ children }) => {
             <h4 className="text-lg font-semibold my-2" {...props} />
           ),
           p: ({ node, ...props }) => (
-            <p className="my-2 last:mb-0" {...props} />
+            <p className="my-2 last:mb-0 whitespace-pre-wrap" {...props} />
           ),
           code: ({ node, inline, className, children, ...props }) => {
             const match = /language-(\w+)/.exec(className || "");
