@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef, useCallback } from "react";
 import { Send, User, Bot, Loader2 } from "lucide-react";
-import ReactMarkdown from "react-markdown";
+import ReactMarkdown from "@/components/Markdown";
 
 const API_BASE_URL =
   process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:8000";
@@ -101,7 +101,13 @@ const ChatArea = ({ conversation, assistantId }) => {
 
   useEffect(() => {
     scrollToBottom();
-  }, [messages, streamingMessage]);
+  }, [messages]);
+
+  useEffect(() => {
+    if (streamingMessage) {
+      scrollToBottom();
+    }
+  }, [streamingMessage]);
 
   const fetchConversationHistory = async () => {
     try {
@@ -170,9 +176,8 @@ const ChatArea = ({ conversation, assistantId }) => {
     switch (message.type) {
       case "text":
         return (
-          <ReactMarkdown className="prose prose-sm max-w-none">
-            {message.content}
-          </ReactMarkdown>
+          // <ReactMarkdown className="prose prose-sm max-w-none">
+          <ReactMarkdown>{message.content}</ReactMarkdown>
         );
       case "video":
         const fullVideoUrl = `${API_BASE_URL}/getfile/${message.content}`;
@@ -191,11 +196,7 @@ const ChatArea = ({ conversation, assistantId }) => {
           />
         );
       default:
-        return (
-          <ReactMarkdown className="prose prose-sm max-w-none">
-            {message.content}
-          </ReactMarkdown>
-        );
+        return <ReactMarkdown>{message.content}</ReactMarkdown>;
     }
   };
 
@@ -243,7 +244,7 @@ const ChatArea = ({ conversation, assistantId }) => {
               </div>
             </div>
           )}
-          <div ref={messagesEndRef} />
+          <div ref={messagesEndRef} style={{ height: "1px" }} />
         </div>
       </div>
       <form onSubmit={sendMessage} className="p-4 border-t border-gray-200">
