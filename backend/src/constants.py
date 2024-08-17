@@ -26,7 +26,7 @@ class ModelConfig:
     EMBEDDING_MODEL_NAME = EMBEDDING_MODEL_NAME
     OTHER_KWARGS = cfg
     
-    OPENAI_API_KEY = os.getenv('OPENAI_API_KEY')
+    OPENAI_API_KEY = os.environ.get('OPENAI_API_KEY')
     
 class GlobalConfig:
     MODEL = ModelConfig
