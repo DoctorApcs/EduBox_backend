@@ -11,6 +11,7 @@ import {
   File,
   Download,
   Trash2,
+  Loader,
 } from "lucide-react";
 import UploadFileModal from "@/components/knowledge_base/UploadFileModal";
 import LoadingSpinner from "@/components/LoadingSpinner";
@@ -231,6 +232,75 @@ const DatasetView = ({ knowledgeBaseID }) => {
     return truncatedName + "." + extension;
   };
 
+  const CircularProgress = ({ progress }) => {
+    const circumference = 2 * Math.PI * 9; // 9 is the radius of the circle
+    const strokeDashoffset = circumference - (progress / 100) * circumference;
+
+    return (
+      <svg className="w-5 h-5" viewBox="0 0 20 20">
+        <circle
+          className="text-gray-200"
+          strokeWidth="2"
+          stroke="currentColor"
+          fill="transparent"
+          r="9"
+          cx="10"
+          cy="10"
+        />
+        <circle
+          className="text-blue-600"
+          strokeWidth="2"
+          strokeDasharray={circumference}
+          strokeDashoffset={strokeDashoffset}
+          strokeLinecap="round"
+          stroke="currentColor"
+          fill="transparent"
+          r="9"
+          cx="10"
+          cy="10"
+          style={{
+            transformOrigin: "50% 50%",
+            transform: "rotate(-90deg)",
+            transition: "stroke-dashoffset 0.35s",
+          }}
+        />
+      </svg>
+    );
+  };
+
+  const renderStatus = (doc) => {
+    if (doc.status === "processing") {
+      const progress = doc.progress
+        ? (doc.progress.current / doc.progress.total) * 100
+        : 0;
+      return (
+        <div className="flex items-center">
+          <div className="relative mr-2">
+            {progress === 0 ? (
+              <div className="animate-spin">
+                <CircularProgress progress={25} />
+              </div>
+            ) : (
+              <CircularProgress progress={progress} />
+            )}
+          </div>
+          <span className="text-sm text-gray-600">
+            {progress > 0 ? `${Math.round(progress)}%` : "Processing"}
+          </span>
+        </div>
+      );
+    } else if (doc.status === "processed") {
+      return (
+        <span className="flex items-center text-green-600">
+          <Check className="mr-1" size={16} />
+          Processed
+        </span>
+      );
+    } else {
+      return <span className="text-gray-600">{doc.status}</span>;
+    }
+  };
+
   if (isLoading) return <LoadingSpinner />;
   if (error) return <ErrorComponent message={error} />;
 
@@ -348,18 +418,7 @@ const DatasetView = ({ knowledgeBaseID }) => {
                     <td className="p-2">
                       {new Date(doc.created_at).toLocaleString()}
                     </td>
-                    <td className="p-2">
-                      {doc.status === "processing" && doc.progress ? (
-                        `Processing (${doc.progress.current}/${doc.progress.total})`
-                      ) : doc.status === "processed" ? (
-                        <span className="flex items-center">
-                          <Check className="text-green-500 mr-1" size={16} />
-                          Processed
-                        </span>
-                      ) : (
-                        doc.status
-                      )}
-                    </td>
+                    <td className="p-2">{renderStatus(doc)}</td>
                     <td className="p-2">
                       {doc.status === "uploaded" ? (
                         <button
