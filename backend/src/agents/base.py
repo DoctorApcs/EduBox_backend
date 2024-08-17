@@ -23,12 +23,11 @@ class ChatAssistant:
         
         self.llm = self._init_model(service, model_name)
         self.tools = self._init_tools()
-        
         self.agent = OpenAIAgent.from_tools(
             tools=self.tools,
             llm=self.llm,
             verbose=True,
-            system_prompt=ASSISTANT_SYSTEM_PROMPT,
+            system_prompt=self.configuration.get("system_prompt", ASSISTANT_SYSTEM_PROMPT)
         )
         
     def _init_model(self, service, model_id):
