@@ -44,8 +44,8 @@ const UploadFileModal = ({ isOpen, onClose, onUpload, allowedFileTypes }) => {
   };
 
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-start pt-16">
-      <div className="bg-white rounded-lg shadow-xl w-full max-w-3xl">
+    <div className="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-start pt-16 overflow-y-auto">
+      <div className="bg-white rounded-lg shadow-xl w-full max-w-3xl mb-16">
         <div className="flex justify-between items-center p-6 border-b">
           <h2 className="text-xl font-semibold">Upload Files</h2>
           <button
@@ -85,7 +85,7 @@ const UploadFileModal = ({ isOpen, onClose, onUpload, allowedFileTypes }) => {
           </div>
           {error && <p className="text-red-500 mt-2">{error}</p>}
           {files.length > 0 && (
-            <div className="mt-4">
+            <div className="mt-4 max-h-60 overflow-y-auto">
               {files.map((file, index) => (
                 <div
                   key={`${file.name}-${index}`}
