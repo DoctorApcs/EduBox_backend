@@ -1,4 +1,5 @@
 import io
+import os
 import logging
 from pathlib import Path
 from typing import Any, Dict, List, Optional
@@ -10,7 +11,10 @@ from fsspec import AbstractFileSystem
 from llama_index.core.readers.base import BaseReader
 from llama_index.core.readers.file.base import get_default_fs, is_default_fs
 from llama_index.core.schema import Document
+from llama_parse import LlamaParse
+from dotenv import load_dotenv
 
+load_dotenv(override=True)
 logger = logging.getLogger(__name__)
 
 RETRY_TIMES = 3
@@ -88,3 +92,14 @@ class PDFReader(BaseReader):
 
             return docs
         
+        
+# wrapper around llama parse
+class LlamaParseReader(BaseReader):
+    def __init__(self, return_full_document: Optional[bool] = False) -> None:
+        self.reader = LlamaParse(
+            api_key=os.environ.get("LLAMA_PARSE_API_KEY"),
+            result_type="markdown"
+        )
+        
+    def load_data(self, file: Path, extra_info: Optional[dict] = None) -> List[Document]:
+        return self.reader.load_data(file, extra_info)
