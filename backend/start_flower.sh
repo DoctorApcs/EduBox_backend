@@ -28,9 +28,7 @@ fi
 
 echo 'Starting flower'
 celery -A src flower \
-    --port="$FLOWER_PORT" \
-    --basic-auth="admin:admin123@123,guest:Abc@123123"
-
+    --port="$FLOWER_PORT" 
 
 # celery -A src flower --port=5555 --broker=redis://redis:6379/5
 # "celery", "-A" ,"src.app.celery", "flower", "--port=5555", "--broker=redis://redis:6379/0"
