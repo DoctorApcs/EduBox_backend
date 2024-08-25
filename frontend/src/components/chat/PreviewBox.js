@@ -5,8 +5,8 @@ const PreviewBox = ({ isOpen, onClose, children, title }) => {
   return (
     <div
       className={`
-        right-0 bottom-0 w-1/2 h-full bg-gray-100 flex flex-col shadow-lg
-        transform transition-transform duration-300 ease-in-out mr-4 ml-4 rounded-2xl
+        right-0 bottom-0 w-1/2 bg-gray-100 flex flex-col shadow-lg
+        transform transition-transform duration-300 ease-in-out m-4 rounded-2xl
         ${isOpen ? "translate-y-0" : "translate-y-full"}
       `}
     >

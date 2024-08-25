@@ -267,7 +267,7 @@ const ChatArea = ({ conversation, assistantId }) => {
   const memoizedMessages = useMemo(() => messages, [messages]);
 
   return (
-    <div className="flex flex-col h-full bg-white">
+    <div className="flex flex-col h-full bg-gray-100">
       <div className="flex-grow flex overflow-hidden">
         <div className="flex-grow flex flex-row">
           <div className="flex-grow overflow-y-auto p-4">

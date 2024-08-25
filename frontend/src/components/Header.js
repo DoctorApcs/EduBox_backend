@@ -47,20 +47,29 @@ const Header = () => {
           <span className="font-bold text-xl">EduBox</span>
         </div>
         <nav className="flex-1 flex justify-center">
-          <div className="flex w-full max-w-2xl bg-gray-100 rounded-full p-1">
+          <div className="flex w-full max-w-2xl bg-gray-100 rounded-full p-1 relative">
             {navItems.map((item) => (
               <Link
                 key={item.path}
                 href={item.path}
-                className={`flex-1 px-3 py-2 text-center rounded-full transition-all duration-300 ${
+                className={`flex-1 px-3 py-2 text-center rounded-full transition-all duration-300 ease-in-out z-10 relative ${
                   isActive(item.path)
-                    ? "bg-blue-500 text-white"
-                    : "text-gray-600 hover:bg-gray-200"
+                    ? "text-white"
+                    : "text-gray-600 hover:text-gray-800"
                 }`}
               >
                 {item.name}
               </Link>
             ))}
+            <div
+              className="absolute top-1 left-1 bottom-1 rounded-full bg-blue-500 transition-all duration-300 ease-in-out"
+              style={{
+                width: `${100 / navItems.length}%`,
+                transform: `translateX(${
+                  navItems.findIndex((item) => isActive(item.path)) * 100
+                }%)`,
+              }}
+            ></div>
           </div>
         </nav>
         <div className="flex items-center space-x-4">

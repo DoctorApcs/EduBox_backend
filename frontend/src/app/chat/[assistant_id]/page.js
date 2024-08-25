@@ -137,7 +137,7 @@ const ChatAssistantPage = () => {
         selectedAssistant={selectedAssistant}
       />
       <main className="flex-1 flex flex-col overflow-hidden">
-        <TopBar
+        {/* <TopBar
           isSideView={isSideView}
           setIsSideView={setIsSideView}
           selectedAssistant={selectedAssistant}
@@ -147,7 +147,7 @@ const ChatAssistantPage = () => {
           showSidebarButton={true}
           showAssistantSelect={true}
           showCreateAssistantButton={false}
-        />
+        /> */}
         {selectedConversation ? (
           <ChatArea
             conversation={selectedConversation}
