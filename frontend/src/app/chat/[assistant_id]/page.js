@@ -146,6 +146,7 @@ const ChatAssistantPage = () => {
           onCreateAssistant={handleCreateAssistant}
           showSidebarButton={true}
           showAssistantSelect={true}
+          showCreateAssistantButton={false}
         />
         {selectedConversation ? (
           <ChatArea

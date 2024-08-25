@@ -318,12 +318,12 @@ const ChatArea = ({ conversation, assistantId }) => {
           </div>
         </form>
       </div>
-      {/* <button
+      <button
         onClick={togglePreview}
-        className="fixed top-4 right-4 bg-blue-500 text-white p-2 rounded-full shadow-lg hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-300"
+        className="fixed bottom-4 right-4 bg-blue-500 text-white p-2 rounded-full shadow-lg hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-300"
       >
         <Maximize2 size={24} />
-      </button> */}
+      </button>
     </div>
   );
 };

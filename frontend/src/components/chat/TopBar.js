@@ -14,6 +14,7 @@ const TopBar = ({
   onCreateAssistant,
   showSidebarButton = true,
   showAssistantSelect = true,
+  showCreateAssistantButton = true,
 }) => {
   const router = useRouter();
   const [isLoading, setIsLoading] = useState(false);
@@ -83,13 +84,15 @@ const TopBar = ({
         {isLoading && <span className="text-sm text-gray-500">Loading...</span>}
         {error && <span className="text-sm text-red-500">{error}</span>}
       </div>
-      <button
-        onClick={onCreateAssistant}
-        className="bg-blue-500 text-white px-3 py-2 rounded-md flex items-center text-sm"
-      >
-        <Plus size={16} className="mr-2" />
-        Create Assistant
-      </button>
+      {showCreateAssistantButton && (
+        <button
+          onClick={onCreateAssistant}
+          className="bg-blue-500 text-white px-3 py-2 rounded-md flex items-center text-sm"
+        >
+          <Plus size={16} className="mr-2" />
+          Create Assistant
+        </button>
+      )}
     </div>
   );
 };
