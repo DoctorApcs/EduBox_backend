@@ -267,7 +267,7 @@ const ChatArea = ({ conversation, assistantId }) => {
   const memoizedMessages = useMemo(() => messages, [messages]);
 
   return (
-    <div className="flex flex-col h-full bg-white">
+    <div className="flex flex-col h-full bg-gray-100">
       <div className="flex-grow flex overflow-hidden">
         <div className="flex-grow flex flex-row">
           <div className="flex-grow overflow-y-auto p-4">
@@ -318,12 +318,12 @@ const ChatArea = ({ conversation, assistantId }) => {
           </div>
         </form>
       </div>
-      {/* <button
+      <button
         onClick={togglePreview}
-        className="fixed top-4 right-4 bg-blue-500 text-white p-2 rounded-full shadow-lg hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-300"
+        className="fixed bottom-4 right-4 bg-blue-500 text-white p-2 rounded-full shadow-lg hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-300"
       >
         <Maximize2 size={24} />
-      </button> */}
+      </button>
     </div>
   );
 };
