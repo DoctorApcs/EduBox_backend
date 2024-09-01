@@ -30,4 +30,4 @@ chromadb==0.5.5
 redis==5.0.8
 easydict==1.13
 graspologic==3.4.1
-llama-parse==1.16.0
+llama-parse==0.4.9

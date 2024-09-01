@@ -18,7 +18,7 @@ const PreviewBox = ({ isOpen, onClose, children, title }) => {
       </div>
       <div className="flex-grow overflow-auto p-4 pl-6">{children}</div>
       <div className="bg-gray-200 p-4 rounded-b-2xl">
-        <p className="text-sm text-gray-600 text-center">Preview Footer</p>
+        <p className="text-sm text-gray-600">Preview Footer</p>
       </div>
     </div>
   );

@@ -20,7 +20,7 @@ def load_knowledge_base_search_tool(config: dict):
         raise NotImplementedError()   
     
     if GlobalConfig.MODEL.VECTOR_STORE == "qdrant":
-        client = qdrant_client.QdrantClient(host="localhost", port=6333)
+        client = qdrant_client.QdrantClient(url=GlobalConfig.QDRANT_DB_URL)
         vector_store = QdrantVectorStore(client=client, collection_name=config.get("collection_name", "kb_1"))
     else:
         raise NotImplementedError()
