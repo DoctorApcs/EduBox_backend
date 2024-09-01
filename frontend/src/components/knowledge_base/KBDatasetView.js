@@ -16,6 +16,7 @@ import {
 import UploadFileModal from "@/components/knowledge_base/UploadFileModal";
 import LoadingSpinner from "@/components/LoadingSpinner";
 import ErrorComponent from "@/components/Error";
+import CircularProgress from "@/components/CircularProgress";
 
 const API_BASE_URL =
   process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:8000";
@@ -232,42 +233,6 @@ const DatasetView = ({ knowledgeBaseID }) => {
     return truncatedName + "." + extension;
   };
 
-  const CircularProgress = ({ progress }) => {
-    const circumference = 2 * Math.PI * 9; // 9 is the radius of the circle
-    const strokeDashoffset = circumference - (progress / 100) * circumference;
-
-    return (
-      <svg className="w-5 h-5" viewBox="0 0 20 20">
-        <circle
-          className="text-gray-200"
-          strokeWidth="2"
-          stroke="currentColor"
-          fill="transparent"
-          r="9"
-          cx="10"
-          cy="10"
-        />
-        <circle
-          className="text-blue-600"
-          strokeWidth="2"
-          strokeDasharray={circumference}
-          strokeDashoffset={strokeDashoffset}
-          strokeLinecap="round"
-          stroke="currentColor"
-          fill="transparent"
-          r="9"
-          cx="10"
-          cy="10"
-          style={{
-            transformOrigin: "50% 50%",
-            transform: "rotate(-90deg)",
-            transition: "stroke-dashoffset 0.35s",
-          }}
-        />
-      </svg>
-    );
-  };
-
   const renderStatus = (doc) => {
     if (doc.status === "processing") {
       const progress = doc.progress
@@ -296,6 +261,18 @@ const DatasetView = ({ knowledgeBaseID }) => {
           Processed
         </span>
       );
+    } else if (doc.status === "failed") {
+      return (
+        <span className="text-red-600">
+          Failed{" "}
+          <button
+            onClick={() => handleProcessDocument(doc.id)}
+            className="text-blue-500 hover:text-blue-700"
+          >
+            Retry
+          </button>
+        </span>
+      );
     } else {
       return <span className="text-gray-600">{doc.status}</span>;
     }
@@ -305,7 +282,8 @@ const DatasetView = ({ knowledgeBaseID }) => {
   if (error) return <ErrorComponent message={error} />;
 
   return (
-    <div className="flex h-screen bg-gray-100">
+    // <div className="flex h-screen bg-gray-100">
+    <div className="flex h-[calc(100vh-4rem)]  min-h-full w-full p-4 sm:p-6 lg:p-8 max-w-screen-2xl mx-auto">
       {/* Sidebar */}
       <aside className="w-64 bg-white shadow-md">
         <div className="p-4">
@@ -332,35 +310,37 @@ const DatasetView = ({ knowledgeBaseID }) => {
       </aside>
 
       {/* Main content */}
-      <main className="flex-1 p-8">
-        <div className="mb-4">
-          <h1 className="text-2xl font-bold">Dataset</h1>
-          <p className="text-sm text-gray-600">Knowledge Base / Dataset</p>
-        </div>
+      <main className="flex-1 flex flex-col overflow-hidden">
+        <div className="p-8">
+          <div className="mb-4">
+            <h1 className="text-2xl font-bold">Dataset</h1>
+            <p className="text-sm text-gray-600">Knowledge Base / Dataset</p>
+          </div>
 
-        {error && (
-          <div
-            className="bg-red-100 border-l-4 border-red-500 text-red-700 p-4 mb-6"
+          {error && (
+            <div
+              className="bg-red-100 border-l-4 border-red-500 text-red-700 p-4 mb-6"
+              role="alert"
+            >
+              <p className="font-bold">Error:</p>
+              <p>{error}</p>
+            </div>
+          )}
+
+          {/* <div
+            className="bg-yellow-100 border-l-4 border-yellow-500 text-yellow-700 p-4 mb-6"
             role="alert"
           >
-            <p className="font-bold">Error:</p>
-            <p>{error}</p>
-          </div>
-        )}
-
-        <div
-          className="bg-yellow-100 border-l-4 border-yellow-500 text-yellow-700 p-4 mb-6"
-          role="alert"
-        >
-          <p className="font-bold">Note:</p>
-          <p>
-            Questions and answers can only be answered after the parsing is
-            successful.
-          </p>
+            <p className="font-bold">Note:</p>
+            <p>
+              Questions and answers can only be answered after the parsing is
+              successful.
+            </p>
+          </div> */}
         </div>
 
-        <div className="bg-white shadow rounded-lg p-6">
-          <div className="flex justify-between mb-4">
+        <div className="flex-1 overflow-hidden flex flex-col bg-white shadow rounded-lg mx-8 mb-8">
+          <div className="flex justify-between p-6">
             <button className="px-4 py-2 bg-gray-100 text-gray-700 rounded">
               Bulk
             </button>
@@ -385,83 +365,85 @@ const DatasetView = ({ knowledgeBaseID }) => {
               </button>
             </div>
           </div>
-          <table className="w-full">
-            <colgroup>
-              <col style={{ width: "40%" }} />
-              <col style={{ width: "15%" }} />
-              <col style={{ width: "20%" }} />
-              <col style={{ width: "15%" }} />
-              <col style={{ width: "10%" }} />
-            </colgroup>
-            <thead>
-              <tr className="text-left text-gray-600 bg-gray-100">
-                <th className="p-2">Name</th>
-                <th className="p-2">File Type</th>
-                <th className="p-2">Upload Date</th>
-                <th className="p-2">Status</th>
-                <th className="p-2">Actions</th>
-              </tr>
-            </thead>
-            <tbody>
-              {documents.length > 0 ? (
-                documents.map((doc) => (
-                  <tr key={doc.id}>
-                    <td className="p-2">
-                      <div className="flex items-center">
-                        {getFileIcon(doc.file_name)}
-                        <span title={doc.file_name} className="truncate">
-                          {truncateFileName(doc.file_name)}
-                        </span>
+          <div className="flex-1 overflow-auto">
+            <table className="w-full">
+              <colgroup>
+                <col style={{ width: "40%" }} />
+                <col style={{ width: "15%" }} />
+                <col style={{ width: "20%" }} />
+                <col style={{ width: "15%" }} />
+                <col style={{ width: "10%" }} />
+              </colgroup>
+              <thead>
+                <tr className="text-left text-gray-600 bg-gray-100">
+                  <th className="p-2">Name</th>
+                  <th className="p-2">File Type</th>
+                  <th className="p-2">Upload Date</th>
+                  <th className="p-2">Status</th>
+                  <th className="p-2">Actions</th>
+                </tr>
+              </thead>
+              <tbody>
+                {documents.length > 0 ? (
+                  documents.map((doc) => (
+                    <tr key={doc.id}>
+                      <td className="p-2">
+                        <div className="flex items-center">
+                          {getFileIcon(doc.file_name)}
+                          <span title={doc.file_name} className="truncate">
+                            {truncateFileName(doc.file_name)}
+                          </span>
+                        </div>
+                      </td>
+                      <td className="p-2">{doc.file_type}</td>
+                      <td className="p-2">
+                        {new Date(doc.created_at).toLocaleString()}
+                      </td>
+                      <td className="p-2">{renderStatus(doc)}</td>
+                      <td className="p-2">
+                        {doc.status === "uploaded" ? (
+                          <button
+                            onClick={() => handleProcessDocument(doc.id)}
+                            className="text-blue-500 hover:text-blue-700"
+                          >
+                            Process
+                          </button>
+                        ) : (
+                          <div className="flex space-x-2">
+                            <button
+                              onClick={() =>
+                                handleDownloadDocument(doc.id, doc.file_name)
+                              }
+                              className="text-blue-500 hover:text-blue-700"
+                              title="Download"
+                            >
+                              <Download size={16} />
+                            </button>
+                            <button
+                              onClick={() => handleDeleteDocument(doc.id)}
+                              className="text-red-500 hover:text-red-700"
+                              title="Delete"
+                            >
+                              <Trash2 size={16} />
+                            </button>
+                          </div>
+                        )}
+                      </td>
+                    </tr>
+                  ))
+                ) : (
+                  <tr>
+                    <td colSpan="5" className="text-center py-4">
+                      <div className="flex flex-col items-center text-gray-400">
+                        <FileText size={48} />
+                        <p className="mt-2">No data</p>
                       </div>
                     </td>
-                    <td className="p-2">{doc.file_type}</td>
-                    <td className="p-2">
-                      {new Date(doc.created_at).toLocaleString()}
-                    </td>
-                    <td className="p-2">{renderStatus(doc)}</td>
-                    <td className="p-2">
-                      {doc.status === "uploaded" ? (
-                        <button
-                          onClick={() => handleProcessDocument(doc.id)}
-                          className="text-blue-500 hover:text-blue-700"
-                        >
-                          Process
-                        </button>
-                      ) : (
-                        <div className="flex space-x-2">
-                          <button
-                            onClick={() =>
-                              handleDownloadDocument(doc.id, doc.file_name)
-                            }
-                            className="text-blue-500 hover:text-blue-700"
-                            title="Download"
-                          >
-                            <Download size={16} />
-                          </button>
-                          <button
-                            onClick={() => handleDeleteDocument(doc.id)}
-                            className="text-red-500 hover:text-red-700"
-                            title="Delete"
-                          >
-                            <Trash2 size={16} />
-                          </button>
-                        </div>
-                      )}
-                    </td>
                   </tr>
-                ))
-              ) : (
-                <tr>
-                  <td colSpan="5" className="text-center py-4">
-                    <div className="flex flex-col items-center text-gray-400">
-                      <FileText size={48} />
-                      <p className="mt-2">No data</p>
-                    </div>
-                  </td>
-                </tr>
-              )}
-            </tbody>
-          </table>
+                )}
+              </tbody>
+            </table>
+          </div>
         </div>
       </main>
       <UploadFileModal

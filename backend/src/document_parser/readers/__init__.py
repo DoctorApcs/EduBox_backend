@@ -12,8 +12,7 @@ from llama_index.readers.file import (
     XMLReader,
     RTFReader,
 )
-
-from .pdf_reader import PDFReader
+from .pdf_reader import PDFReader, LlamaParseReader
 from .video_reader import VideoReader
 
 __all__ = [
@@ -31,4 +30,5 @@ __all__ = [
     "XMLReader",
     "RTFReader",
     "VideoReader",
+    "LlamaParseReader"
 ]

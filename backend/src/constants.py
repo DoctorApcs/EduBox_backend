@@ -2,7 +2,7 @@ import os
 from config.config import get_config
 from dotenv import load_dotenv
 
-load_dotenv()
+load_dotenv(override=True)
 
 cfg = get_config('config/config.yaml')
 
@@ -26,7 +26,7 @@ class ModelConfig:
     EMBEDDING_MODEL_NAME = EMBEDDING_MODEL_NAME
     OTHER_KWARGS = cfg
     
-    OPENAI_API_KEY = os.getenv('OPENAI_API_KEY')
+    OPENAI_API_KEY = os.environ.get('OPENAI_API_KEY')
     
 class GlobalConfig:
     MODEL = ModelConfig
@@ -43,5 +43,20 @@ class GlobalConfig:
     ROTATION = "midnight"
     LOG_LEVEL = "INFO"
     
-    # Celery
+    # config fastapi  
+    CORS_ORIGIN = os.getenv("FASTAPI_ORIGINS", "*")
+    CORS_METHOD = os.getenv("FASTAPI_METHODS", "*")
+    CORS_HEADER = os.getenv("FASTAPI_HEADERS", "*")
+    NUM_WORKERS = int(os.getenv("FASTAPI_WORKER", 1))
+
+    # fastapi server
+    SERVER_HOST = os.getenv("FASTAPI_HOST", "0.0.0.0")
+    SERVER_PORT = int(os.getenv("FASTAPI_PORT", 8000))
+
+    # celery 
     CELERY_QUEUE_NAME = os.environ.get("QUEUE_NAME", "default")
+    CELERY_BROKER_URL = os.getenv("CELERY_BROKER_URL", "redis://localhost:6379/0")
+    CELERY_BACKEND_URL = os.getenv("CELERY_BACKEND_URL", "redis://localhost:6379/0")
+    
+    # VectorDB
+    QDRANT_DB_URL = os.getenv("QDRANT_DB_URL", "http://localhost:6333") 

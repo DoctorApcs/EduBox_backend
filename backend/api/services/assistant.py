@@ -13,7 +13,7 @@ from api.models.assistant import (
     ConversationResponse,
     MessageResponse
 )
-from typing import List, Dict, Optional, Generator, AsyncGenerator
+from typing import List, Dict, Optional, Generator, Any
 
 
 class AssistantService:
@@ -23,7 +23,6 @@ class AssistantService:
     def create_assistant(self, user_id: int, assistant_data: AssistantCreate) -> AssistantResponse:
 
         with self.db_manager.Session() as session:
-            print(assistant_data.systemprompt)
             new_assistant = Assistant(
                 user_id=user_id, 
                 name=assistant_data.name, 
@@ -73,11 +72,23 @@ class AssistantService:
                     assistant_id=assistant_id
                 )
                 session.add(new_conversation)
+                session.flush()  # Flush to get the new conversation ID
+
+                # Add the default initial message from the assistant
+                initial_message = Message(
+                    conversation_id=new_conversation.id,
+                    sender_type="assistant",
+                    content="Hello! How can I help you today?"
+                )
+                session.add(initial_message)
+                
                 session.commit()
                 session.refresh(new_conversation)
+                
                 return ConversationResponse.model_validate(new_conversation)
         except Exception as e:
             raise HTTPException(status_code=500, detail=f"An error occurred while creating the conversation: {str(e)}")
+
 
     def get_assistant_conversations(self, assistant_id: int, user_id: int) -> Optional[List[ConversationResponse]]:
         try:
@@ -110,22 +121,8 @@ class AssistantService:
                 session.add(user_message)
                 session.flush()  # Flush to get the ID of the new message
             
-            
-                # Here we assume that the Assistant class has an on_message method
-                # In a real implementation, you might need to instantiate the assistant with its configuration
                 assistant = conversation.assistant
-                
-                configuration = assistant.configuration
-                                
-                assistant_config = {
-                    "model": configuration["model"],
-                    "service": configuration["service"],
-                    "temperature": configuration["temperature"],
-                    "embedding_service": "openai", #TODO: Let user choose embedding model,
-                    "embedding_model_name": "text-embedding-3-small",
-                    "collection_name": f"kb_{assistant.knowledge_base_id}",
-                    "conversation_id": conversation_id
-                }
+                assistant_config = self._get_assistant_config(assistant, conversation_id)
                 
                 assistant_instance = ChatAssistant(assistant_config)
                 response = assistant_instance.on_message(message.content, message_history)
@@ -144,8 +141,7 @@ class AssistantService:
         
         except Exception as e:
             raise HTTPException(status_code=500, detail=f"An error occurred during the chat: {str(e)}")
-            
-            
+
     def stream_chat_with_assistant(self, conversation_id: int, user_id: int, message: ChatMessage) -> Generator[str, None, None]:
         with self.db_manager.Session() as session:
             conversation = session.query(Conversation).filter_by(id=conversation_id, user_id=user_id).first()
@@ -163,17 +159,7 @@ class AssistantService:
             session.flush()
 
             assistant = conversation.assistant
-            configuration = assistant.configuration
-            
-            assistant_config = {
-                "model": configuration["model"],
-                "service": configuration["service"],
-                "temperature": configuration["temperature"],
-                "embedding_service": "openai",
-                "embedding_model_name": "text-embedding-3-small",
-                "collection_name": f"kb_{assistant.knowledge_base_id}",
-                "conversation_id": conversation_id
-            }
+            assistant_config = self._get_assistant_config(assistant, conversation_id)
             
             assistant_instance = ChatAssistant(assistant_config)
             
@@ -189,7 +175,7 @@ class AssistantService:
             )
             session.add(assistant_message)
             session.commit()
-            
+
     async def astream_chat_with_assistant(self, conversation_id: int, user_id: int, message: ChatMessage):
         with self.db_manager.Session() as session:
             conversation = session.query(Conversation).filter_by(id=conversation_id, user_id=user_id).first()
@@ -207,17 +193,7 @@ class AssistantService:
             session.flush()
 
             assistant = conversation.assistant
-            configuration = assistant.configuration
-            
-            assistant_config = {
-                "model": configuration["model"],
-                "service": configuration["service"],
-                "temperature": configuration["temperature"],
-                "embedding_service": "openai",
-                "embedding_model_name": "text-embedding-3-small",
-                "collection_name": f"kb_{assistant.knowledge_base_id}",
-                "conversation_id": conversation_id
-            }
+            assistant_config = self._get_assistant_config(assistant, conversation_id)
             
             assistant_instance = ChatAssistant(assistant_config)
             
@@ -235,6 +211,7 @@ class AssistantService:
             )
             session.add(assistant_message)
             session.commit()
+
         
     def _get_message_history(self, session: Session, conversation_id: int) -> List[Dict[str, str]]:
         messages = session.query(Message).filter_by(conversation_id=conversation_id).order_by(Message.created_at).all()
@@ -252,3 +229,17 @@ class AssistantService:
                 return [MessageResponse.model_validate(message) for message in messages]
         except Exception as e:
             raise HTTPException(status_code=500, detail=f"An error occurred while fetching conversation history: {str(e)}")
+        
+        
+    def _get_assistant_config(self, assistant: Assistant, conversation_id: int) -> Dict[str, Any]:
+        configuration = assistant.configuration
+        return {
+            "model": configuration["model"],
+            "service": configuration["service"],
+            "temperature": configuration["temperature"],
+            "embedding_service": "openai",  # TODO: Let user choose embedding model
+            "embedding_model_name": "text-embedding-3-small",
+            "collection_name": f"kb_{assistant.knowledge_base_id}",
+            "conversation_id": conversation_id,
+            "system_prompt": assistant.systemprompt
+        }

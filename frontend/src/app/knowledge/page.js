@@ -94,7 +94,7 @@ const KnowledgeBasePage = () => {
         Welcome back, BachNgoH
       </h1>
       <p className="text-gray-600 text-base sm:text-lg mb-6 sm:mb-8 lg:mb-10">
-        Which knowledge base are we going to use today?
+        Which courses are we going to learn today?
       </p>
 
       <div className="flex flex-col sm:flex-row justify-between items-center mb-6 sm:mb-8 lg:mb-10">

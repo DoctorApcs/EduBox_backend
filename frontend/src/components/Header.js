@@ -10,15 +10,11 @@ const Header = () => {
   const navItems = [
     { name: "Knowledge Base", path: "/knowledge" },
     { name: "Chat", path: "/chat" },
-    // { name: "Graph", path: "/graph" },
     { name: "File Management", path: "/file-management" },
   ];
 
   const isActive = (path) => {
-    // If the current path is just "/", it won't match any nav item
     if (pathname === "/") return false;
-
-    // Check if the current pathname starts with the nav item's path
     return pathname.startsWith(path);
   };
 
@@ -48,22 +44,33 @@ const Header = () => {
               strokeLinejoin="round"
             />
           </svg>
-          <span className="font-bold text-xl">Knowledge Base</span>
+          <span className="font-bold text-xl">EduBox</span>
         </div>
-        <nav className="flex space-x-4">
-          {navItems.map((item) => (
-            <Link
-              key={item.path}
-              href={item.path}
-              className={`px-3 py-2 rounded-md ${
-                isActive(item.path)
-                  ? "bg-blue-500 text-white"
-                  : "text-gray-600 hover:bg-gray-100"
-              }`}
-            >
-              {item.name}
-            </Link>
-          ))}
+        <nav className="flex-1 flex justify-center">
+          <div className="flex w-full max-w-2xl bg-gray-100 rounded-full p-1 relative">
+            {navItems.map((item) => (
+              <Link
+                key={item.path}
+                href={item.path}
+                className={`flex-1 px-3 py-2 text-center rounded-full transition-all duration-300 ease-in-out z-10 relative ${
+                  isActive(item.path)
+                    ? "text-white"
+                    : "text-gray-600 hover:text-gray-800"
+                }`}
+              >
+                {item.name}
+              </Link>
+            ))}
+            <div
+              className="absolute top-1 left-1 bottom-1 rounded-full bg-blue-500 transition-all duration-300 ease-in-out"
+              style={{
+                width: `${100 / navItems.length}%`,
+                transform: `translateX(${
+                  navItems.findIndex((item) => isActive(item.path)) * 100
+                }%)`,
+              }}
+            ></div>
+          </div>
         </nav>
         <div className="flex items-center space-x-4">
           <select className="bg-gray-100 rounded-md px-2 py-1">

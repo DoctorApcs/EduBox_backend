@@ -73,7 +73,8 @@ class FileProcessorFactory:
     _file_extensions: Dict[str, str] = {
         '.docx': 'Docx',
         '.hwp': 'HWP',
-        '.pdf': 'PDF',
+        # '.pdf': 'LlamaParse',
+        '.pdf':'PDF', 
         '.epub': 'Epub',
         '.txt': 'Flat',
         '.html': 'HTMLTag',

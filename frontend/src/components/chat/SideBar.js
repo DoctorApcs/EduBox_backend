@@ -50,11 +50,26 @@ const Sidebar = ({
     <>
       <aside
         ref={sidebarRef}
-        className="bg-white shadow-md overflow-y-auto relative flex flex-col p-4"
+        className="bg-white shadow-md overflow-hidden relative flex flex-col"
         style={{ width: `${width}px` }}
       >
-        <h2 className="text-lg font-semibold p-4">Conversations</h2>
-        <div className="flex-grow">
+        <div className="p-4">
+          <button
+            onClick={onCreateConversation}
+            className={`w-full p-3 rounded-lg flex items-center justify-center transition-colors duration-200 ${
+              selectedAssistant
+                ? "bg-blue-500 text-white hover:bg-blue-600"
+                : "bg-gray-300 text-gray-500 cursor-not-allowed"
+            }`}
+            disabled={!selectedAssistant}
+          >
+            <Plus size={16} className="mr-2" />
+            New Conversation
+          </button>
+        </div>
+
+        <div className="flex-grow overflow-y-auto p-4">
+          <h2 className="text-lg font-semibold">Conversations</h2>
           {!selectedAssistant ? (
             <div className="flex flex-col items-center justify-center h-full text-gray-500">
               <HelpCircle size={48} className="mb-2" />
@@ -63,41 +78,32 @@ const Sidebar = ({
               </p>
             </div>
           ) : conversations.length > 0 ? (
-            conversations.map((conversation) => (
-              <div
-                key={conversation.id}
-                className={`m-2 p-3 rounded-lg cursor-pointer transition-colors duration-200 ${
-                  selectedConversation &&
-                  selectedConversation.id === conversation.id
-                    ? "bg-blue-100"
-                    : "bg-gray-50 hover:bg-gray-100"
-                }`}
-                onClick={() => onConversationSelect(conversation)}
-              >
-                <div className="flex items-center">
-                  <MessageSquare size={18} className="mr-2 text-gray-600" />
-                  <p className="text-sm text-gray-800">
-                    Conversation {conversation.id}
-                  </p>
+            conversations
+              .slice()
+              .reverse()
+              .map((conversation) => (
+                <div
+                  key={conversation.id}
+                  className={`m-2 p-3 rounded-lg cursor-pointer transition-colors duration-200 ${
+                    selectedConversation &&
+                    selectedConversation.id === conversation.id
+                      ? "bg-blue-100"
+                      : "bg-gray-50 hover:bg-gray-100"
+                  }`}
+                  onClick={() => onConversationSelect(conversation)}
+                >
+                  <div className="flex items-center">
+                    <MessageSquare size={18} className="mr-2 text-gray-600" />
+                    <p className="text-sm text-gray-800">
+                      Conversation {conversation.id}
+                    </p>
+                  </div>
                 </div>
-              </div>
-            ))
+              ))
           ) : (
             <p className="text-sm text-gray-500 p-4">No conversations yet.</p>
           )}
         </div>
-        <button
-          onClick={onCreateConversation}
-          className={`m-2 p-3 rounded-lg flex items-center justify-center transition-colors duration-200 ${
-            selectedAssistant
-              ? "bg-blue-500 text-white hover:bg-blue-600"
-              : "bg-gray-300 text-gray-500 cursor-not-allowed"
-          }`}
-          disabled={!selectedAssistant}
-        >
-          <Plus size={16} className="mr-2" />
-          New Conversation
-        </button>
       </aside>
       <div
         className="w-1 cursor-col-resize bg-gray-300 hover:bg-gray-400 transition-colors duration-200"
