@@ -1,13 +1,16 @@
-from fastapi import FastAPI
-from dotenv import load_dotenv
-from api.routes.knowledge_base import kb_router
-from api.routes.assistant import assistant_router
-from fastapi.middleware.cors import CORSMiddleware
-from celery.result import AsyncResult
-from fastapi.responses import JSONResponse, FileResponse
-from fastapi import FastAPI, HTTPException
 import os
 from pathlib import Path
+from fastapi import FastAPI
+from dotenv import load_dotenv
+from fastapi.middleware.cors import CORSMiddleware
+from celery.result import AsyncResult
+from fastapi.middleware.cors import CORSMiddleware
+from fastapi.responses import JSONResponse, FileResponse
+from fastapi import FastAPI, HTTPException
+
+from src.constants import GlobalConfig
+from api.routes.knowledge_base import kb_router
+from api.routes.assistant import assistant_router
 
 BASE_DIR = Path(__file__).parent.absolute()
 
@@ -70,12 +73,11 @@ async def get_file(file_path: str):
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],
-    allow_methods=["*"],
-    allow_headers=["*"],
+    allow_origins=GlobalConfig.CORS_ORIGIN,
     allow_credentials=True,
+    allow_methods=GlobalConfig.CORS_METHOD,
+    allow_headers=GlobalConfig.CORS_HEADER,
 )
-
 
 app.include_router(kb_router, prefix="/api/knowledge_base")
 app.include_router(assistant_router, prefix="/api/assistant")
@@ -84,4 +86,9 @@ app.include_router(assistant_router, prefix="/api/assistant")
 if __name__ == "__main__":
     import uvicorn
 
-    uvicorn.run(app)
+    uvicorn.run(
+        app,
+        host=GlobalConfig.SERVER_HOST,
+        port=GlobalConfig.SERVER_PORT,
+        workers=GlobalConfig.NUM_WORKERS,
+    )
