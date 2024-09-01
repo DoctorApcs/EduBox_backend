@@ -31,3 +31,4 @@ redis==5.0.8
 easydict==1.13
 graspologic==3.4.1
 llama-parse==0.4.9
+flower==2.0.1

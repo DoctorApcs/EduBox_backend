@@ -1,7 +1,7 @@
 from functools import lru_cache
 from fastapi import Depends
 
-from config.config import QDRANT_DB_URL
+from src.constants import GlobalConfig
 from src.database.manager import DatabaseManager, QdrantVectorDB
 from src.constants import GlobalConfig
 import logging
@@ -26,7 +26,7 @@ def initialize_database(db_manager: DatabaseManager):
 
 def get_database_manager() -> DatabaseManager:
     # You could load these configurations from environment variables or a config file
-    vector_db = QdrantVectorDB(QDRANT_DB_URL)
+    vector_db = QdrantVectorDB(GlobalConfig.QDRANT_DB_URL)
     db_manager = DatabaseManager(GlobalConfig.DATABASE_PATH, vector_db)
     
     # Create a user
