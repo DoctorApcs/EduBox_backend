@@ -1,7 +1,7 @@
 import os
 from celery import Celery
 
-from config.config import CELERY_BROKER_URL, CELERY_BACKEND_URL
+from src.constants import GlobalConfig
 
 # from kombu import Queue
 # import logging
@@ -11,7 +11,7 @@ from config.config import CELERY_BROKER_URL, CELERY_BACKEND_URL
 
 celery = Celery(
     "document_parser",
-    broker=CELERY_BROKER_URL,
+    broker=GlobalConfig.CELERY_BROKER_URL,
     include=[
         "src.tasks.document_parser_tasks",
     ],
@@ -20,7 +20,7 @@ celery = Celery(
 
 # Optional: Configure Celery
 celery.conf.update(
-    result_backend=CELERY_BACKEND_URL,
+    result_backend=GlobalConfig.CELERY_BACKEND_URL,
     task_serializer="json",
     result_serializer="json",
     accept_content=["json"],
