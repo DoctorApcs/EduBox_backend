@@ -24,25 +24,41 @@ class User(Base):
     assistants = relationship("Assistant", back_populates="user")
 
 class KnowledgeBase(Base):
-    __tablename__ = 'knowledge_bases'
+  __tablename__ = 'knowledge_bases'
+  id = Column(Integer, primary_key=True)
+  user_id = Column(Integer, ForeignKey('users.id'))
+  name = Column(String(100), nullable=False)
+  description = Column(Text)
+  created_at = Column(DateTime, default=datetime.utcnow)
+  updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+  user = relationship("User", back_populates="knowledge_bases")
+  documents = relationship("Document", back_populates="knowledge_base")
+  lessons = relationship("Lesson", back_populates="knowledge_base")
+  
+  @property
+  def document_count(self):
+      return len(self.documents)
+
+  @property
+  def lesson_count(self):
+      return len(self.lessons)
+
+  @property
+  def last_updated(self):
+      all_items = self.documents + self.lessons + [self]
+      return max(item.updated_at for item in all_items)
+
+
+class Lesson(Base):
+    __tablename__ = 'lessons'
     id = Column(Integer, primary_key=True)
-    user_id = Column(Integer, ForeignKey('users.id'))
-    name = Column(String(100), nullable=False)
-    description = Column(Text)
+    knowledge_base_id = Column(Integer, ForeignKey('knowledge_bases.id'))
+    title = Column(String(255), nullable=False)
+    content = Column(Text, nullable=False)
+    order = Column(Integer, nullable=False)
     created_at = Column(DateTime, default=datetime.utcnow)
     updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
-    user = relationship("User", back_populates="knowledge_bases")
-    documents = relationship("Document", back_populates="knowledge_base")
-    
-    @property
-    def document_count(self):
-        return len(self.documents)
-
-    @property
-    def last_updated(self):
-        if not self.documents:
-            return self.updated_at
-        return max(doc.created_at for doc in self.documents + [self])
+    knowledge_base = relationship("KnowledgeBase", back_populates="lessons")
 
 class Document(Base):
     __tablename__ = 'documents'
