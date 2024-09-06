@@ -1,17 +1,19 @@
+import os
+import logging
 from fastapi import APIRouter, File, UploadFile, HTTPException
 from fastapi.responses import JSONResponse, FileResponse
 from src.tasks.document_parser_tasks import process_document
 from celery.result import AsyncResult
 from fastapi import Depends
-import os
-import logging
 from src.dependencies import get_db_manager
 from src.database.manager import DatabaseManager
 from src.database.models import DocumentStatus
-from api.models.knowledge_base import KnowledgeBaseCreate, KnowledgeBaseResponse, KnowledgeBaseUpdate
+from api.models.knowledge_base import KnowledgeBaseCreate, KnowledgeBaseResponse, KnowledgeBaseUpdate, CourseGenerationRequest
 from api.services.knowledge_base import KnowledgeBaseService
 from typing import List
+from src.agents.course_agent import CourseAgent
 from src.constants import GlobalConfig
+
 
 kb_router = APIRouter()
 UPLOAD_DIR = "uploads"
@@ -241,3 +243,38 @@ async def delete_knowledge_base(
     if not success:
         raise HTTPException(status_code=404, detail="Knowledge base not found")
     return {"message": "Knowledge base deleted successfully"}
+
+@kb_router.post("/{kb_id}/generate_course")
+async def generate_course(
+    kb_id: int,
+    request: CourseGenerationRequest,
+    current_user_id: int = Depends(get_current_user_id),
+    kb_service: KnowledgeBaseService = Depends()
+):
+    # Verify that the knowledge base exists and belongs to the current user
+    kb = kb_service.get_knowledge_base(kb_id, current_user_id)
+    if kb is None:
+        raise HTTPException(status_code=404, detail="Knowledge base not found")
+
+    # Create a task dictionary from the request
+    task = {
+        "query": request.query,
+        "max_sections": request.max_sections,
+        "publish_formats": request.publish_formats,
+        "include_human_feedback": request.include_human_feedback,
+        "follow_guidelines": request.follow_guidelines,
+        "model": request.model,
+        "guidelines": request.guidelines,
+        "verbose": request.verbose,
+        "knowledge_base_id": kb_id
+    }
+
+    # Initialize the CourseAgent
+    course_agent = CourseAgent()
+
+    # Run the course generation
+    try:
+        result = await course_agent.run(task)
+        return {"message": "Course generation completed", "result": result}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Course generation failed: {str(e)}")
