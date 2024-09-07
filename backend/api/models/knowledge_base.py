@@ -1,5 +1,5 @@
-from pydantic import BaseModel, ConfigDict
-from typing import Optional
+from pydantic import BaseModel, ConfigDict, Field
+from typing import List, Dict, Optional
 from datetime import datetime
 from typing import List
 
@@ -33,3 +33,13 @@ class KnowledgeBaseResponse(BaseModel):
     documents: List[DocumentInKnowledgeBase]
 
     model_config = ConfigDict(from_attributes=True)
+
+class CourseGenerationRequest(BaseModel):
+    query: str
+    max_sections: int = Field(default=3, ge=1)
+    publish_formats: Dict[str, bool] = Field(default_factory=lambda: {"markdown": True, "pdf": False, "docx": False})
+    include_human_feedback: bool = False
+    follow_guidelines: bool = False
+    model: str = "gpt-4o-mini"
+    guidelines: Optional[List[str]] = None
+    verbose: bool = False

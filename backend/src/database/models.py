@@ -6,15 +6,17 @@ import enum
 
 Base = declarative_base()
 
+
 class DocumentStatus(enum.Enum):
     UPLOADED = "uploaded"
     PROCESSING = "processing"
     PROCESSED = "processed"
     FAILED = "failed"
 
+
 # SQLAlchemy models
 class User(Base):
-    __tablename__ = 'users'
+    __tablename__ = "users"
     id = Column(Integer, primary_key=True)
     username = Column(String(50), unique=True, nullable=False)
     email = Column(String(100), unique=True, nullable=False)
@@ -23,31 +25,49 @@ class User(Base):
     knowledge_bases = relationship("KnowledgeBase", back_populates="user")
     assistants = relationship("Assistant", back_populates="user")
 
+
 class KnowledgeBase(Base):
-    __tablename__ = 'knowledge_bases'
+    __tablename__ = "knowledge_bases"
     id = Column(Integer, primary_key=True)
-    user_id = Column(Integer, ForeignKey('users.id'))
+    user_id = Column(Integer, ForeignKey("users.id"))
     name = Column(String(100), nullable=False)
     description = Column(Text)
     created_at = Column(DateTime, default=datetime.utcnow)
     updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
     user = relationship("User", back_populates="knowledge_bases")
     documents = relationship("Document", back_populates="knowledge_base")
-    
+    lessons = relationship("Lesson", back_populates="knowledge_base")
+
     @property
     def document_count(self):
         return len(self.documents)
 
     @property
+    def lesson_count(self):
+        return len(self.lessons)
+
+    @property
     def last_updated(self):
-        if not self.documents:
-            return self.updated_at
-        return max(doc.created_at for doc in self.documents + [self])
+        all_items = self.documents + self.lessons + [self]
+        return max(item.updated_at for item in all_items)
+
+
+class Lesson(Base):
+    __tablename__ = "lessons"
+    id = Column(Integer, primary_key=True)
+    knowledge_base_id = Column(Integer, ForeignKey("knowledge_bases.id"))
+    title = Column(String(255), nullable=False)
+    content = Column(Text, nullable=False)
+    order = Column(Integer, nullable=False)
+    created_at = Column(DateTime, default=datetime.utcnow)
+    updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+    knowledge_base = relationship("KnowledgeBase", back_populates="lessons")
+
 
 class Document(Base):
-    __tablename__ = 'documents'
+    __tablename__ = "documents"
     id = Column(Integer, primary_key=True)
-    knowledge_base_id = Column(Integer, ForeignKey('knowledge_bases.id'))
+    knowledge_base_id = Column(Integer, ForeignKey("knowledge_bases.id"))
     file_name = Column(String(255), nullable=False)
     file_type = Column(String(50), nullable=False)
     file_path = Column(String(255), nullable=False)
@@ -60,54 +80,58 @@ class Document(Base):
 
 
 class DocumentChunk(Base):
-    __tablename__ = 'document_chunks'
+    __tablename__ = "document_chunks"
     id = Column(Integer, primary_key=True)
-    document_id = Column(Integer, ForeignKey('documents.id'))
+    document_id = Column(Integer, ForeignKey("documents.id"))
     chunk_index = Column(Integer, nullable=False)
     content = Column(Text, nullable=False)
     vector_id = Column(String(36), nullable=False)  # UUID as string
     created_at = Column(DateTime, default=datetime.utcnow)
     document = relationship("Document", back_populates="chunks")
 
+
 class Assistant(Base):
-    __tablename__ = 'assistants'
+    __tablename__ = "assistants"
     id = Column(Integer, primary_key=True)
-    user_id = Column(Integer, ForeignKey('users.id'))
+    user_id = Column(Integer, ForeignKey("users.id"))
     name = Column(String(100), nullable=False)
     description = Column(Text)
     systemprompt = Column(Text)
-    knowledge_base_id = Column(Integer, ForeignKey('knowledge_bases.id'))
+    knowledge_base_id = Column(Integer, ForeignKey("knowledge_bases.id"))
     configuration = Column(JSON)
     created_at = Column(DateTime, default=datetime.utcnow)
     updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
     user = relationship("User", back_populates="assistants")
     knowledge_base = relationship("KnowledgeBase")
 
+
 class Conversation(Base):
-    __tablename__ = 'conversations'
+    __tablename__ = "conversations"
     id = Column(Integer, primary_key=True)
-    user_id = Column(Integer, ForeignKey('users.id'))
-    assistant_id = Column(Integer, ForeignKey('assistants.id'))
+    user_id = Column(Integer, ForeignKey("users.id"))
+    assistant_id = Column(Integer, ForeignKey("assistants.id"))
     started_at = Column(DateTime, default=datetime.utcnow)
     ended_at = Column(DateTime)
     user = relationship("User")
     assistant = relationship("Assistant")
     messages = relationship("Message", back_populates="conversation")
 
+
 class Message(Base):
-    __tablename__ = 'messages'
+    __tablename__ = "messages"
     id = Column(Integer, primary_key=True)
-    conversation_id = Column(Integer, ForeignKey('conversations.id'))
+    conversation_id = Column(Integer, ForeignKey("conversations.id"))
     sender_type = Column(String(10), nullable=False)
     content = Column(Text, nullable=False)
     created_at = Column(DateTime, default=datetime.utcnow)
     conversation = relationship("Conversation", back_populates="messages")
 
+
 class Session(Base):
-    __tablename__ = 'sessions'
+    __tablename__ = "sessions"
     id = Column(Integer, primary_key=True)
-    user_id = Column(Integer, ForeignKey('users.id'))
-    knowledge_base_id = Column(Integer, ForeignKey('knowledge_bases.id'))
+    user_id = Column(Integer, ForeignKey("users.id"))
+    knowledge_base_id = Column(Integer, ForeignKey("knowledge_bases.id"))
     started_at = Column(DateTime, default=datetime.utcnow)
     ended_at = Column(DateTime)
     user = relationship("User")
