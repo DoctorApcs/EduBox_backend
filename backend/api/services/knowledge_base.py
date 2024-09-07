@@ -50,3 +50,21 @@ class KnowledgeBaseService:
             session.delete(kb)
             session.commit()
             return True
+        
+    # API to start a session (when user clicks on a course and start learning)
+    def start_session(self, user_id: int, knowledge_base_id: int):
+        return self.db_manager.start_session(user_id, knowledge_base_id)
+    
+    # API to end a session (when user change course or finish learning)
+    def end_session(self, session_id: int):
+        return self.db_manager.end_session(session_id)
+    
+    # API to get the today's session of a user
+    def get_today_sessions(self, user_id: int):
+        return self.db_manager.get_today_session(user_id)
+    
+    # API to get this week's session of a user
+    def get_this_week_sessions(self, user_id: int):
+        return self.db_manager.get_this_week_session(user_id)
+    
+
