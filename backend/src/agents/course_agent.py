@@ -1,5 +1,6 @@
 import os
 import time
+import logging
 from langgraph.graph import StateGraph, END
 
 # from langgraph.checkpoint.memory import MemorySaver
@@ -8,12 +9,11 @@ from multi_agents.agents.utils.views import print_agent_output
 from multi_agents.memory.research import ResearchState
 from multi_agents.agents.utils.utils import sanitize_filename
 
-
 # Import agent classes
 from multi_agents.agents import (
     WriterAgent,
     EditorAgent,
-    PublisherAgent,
+    # PublisherAgent,
     ResearchAgent,
     HumanAgent,
 )
@@ -43,9 +43,9 @@ class CourseAgent:
         research_agent = ResearchAgent(
             self.websocket, self.stream_output, self.tone, self.headers
         )
-        publisher_agent = PublisherAgent(
-            self.output_dir, self.websocket, self.stream_output, self.headers
-        )
+        # publisher_agent = PublisherAgent(
+        #     self.output_dir, self.websocket, self.stream_output, self.headers
+        # )
         human_agent = HumanAgent(self.websocket, self.stream_output, self.headers)
 
         # Define a Langchain StateGraph with the ResearchState
@@ -55,18 +55,17 @@ class CourseAgent:
         workflow.add_node("browser", research_agent.run_initial_research)
         workflow.add_node("planner", editor_agent.plan_research)
         workflow.add_node("researcher", editor_agent.run_parallel_research)
-        workflow.add_node("writer", writer_agent.run)
-        workflow.add_node("publisher", publisher_agent.run)
+        # workflow.add_node("writer", writer_agent.run)
+        # workflow.add_node("publisher", publisher_agent.run)
         workflow.add_node("human", human_agent.review_plan)
 
         workflow.add_edge("browser", "planner")
         workflow.add_edge("planner", "human")
-        workflow.add_edge("researcher", "writer")
-        workflow.add_edge("writer", "publisher")
+        # workflow.add_edge("researcher", "writer")
 
         # set up start and end nodes
         workflow.set_entry_point("browser")
-        workflow.add_edge("publisher", END)
+        workflow.add_edge("researcher", END)
 
         # Add human in the loop
         workflow.add_conditional_edges(
@@ -104,5 +103,5 @@ class CourseAgent:
         }
 
         result = await chain.ainvoke({"task": self.task}, config=config)
-
+        logging.info(result)
         return result
