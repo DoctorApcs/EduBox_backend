@@ -187,9 +187,11 @@ class ConnectionManager:
             }
 
             # Initialize the CourseAgent
-            course_agent = CourseAgent(websocket=websocket, stream_output=stream_output)
+            course_agent = CourseAgent(
+                task, websocket=websocket, stream_output=stream_output
+            )
 
-            result = await course_agent.run(task)
+            result = await course_agent.run_research_task()
 
             # Send the final result
             await self.send_text_message(
