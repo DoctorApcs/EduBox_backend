@@ -9,7 +9,9 @@ from src.constants import GlobalConfig
 class Handlers:
     def __init__(self):
         self.formatter = logging.Formatter(GlobalConfig.FORMATTER)
-        self.log_filename = Path().joinpath(GlobalConfig.APP_CONFIG.LOGS_DIR, GlobalConfig.FILENAME)
+        self.log_filename = Path().joinpath(
+            GlobalConfig.APP_CONFIG.LOGS_DIR, GlobalConfig.FILENAME
+        )
         self.rotation = GlobalConfig.ROTATION
 
     def get_console_handler(self):
@@ -27,4 +29,8 @@ class Handlers:
         return socket_handler
 
     def get_handlers(self):
-        return [self.get_console_handler(), self.get_file_handler(), self.get_socket_handler()]
+        return [
+            self.get_console_handler(),
+            self.get_file_handler(),
+            self.get_socket_handler(),
+        ]

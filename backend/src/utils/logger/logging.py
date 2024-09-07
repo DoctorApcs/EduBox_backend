@@ -1,7 +1,7 @@
 import logging
 from typing import List
 
-from src.const.config import GlobalConfig
+from src.constants import GlobalConfig
 
 from .handlers import Handlers
 

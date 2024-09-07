@@ -100,5 +100,5 @@ class CourseAgent:
         }
 
         result = await chain.ainvoke({"task": self.task}, config=config)
-        logging.info(result)
+        print(f"Research result: {result}")
         return result
