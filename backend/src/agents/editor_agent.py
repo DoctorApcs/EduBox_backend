@@ -119,6 +119,8 @@ class EditorAgent:
             )
             for query in queries
         ]
-        research_results = [result for result in await asyncio.gather(*final_drafts)]
+        research_results = [
+            result["draft"] for result in await asyncio.gather(*final_drafts)
+        ]
 
         return {"research_data": research_results}

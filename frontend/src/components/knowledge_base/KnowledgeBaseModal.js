@@ -1,8 +1,9 @@
-"use client";
-
 import React, { useState, useEffect, useRef } from "react";
 import { Resizable } from "react-resizable";
 import "react-resizable/css/styles.css";
+// Remove the following import:
+// import { useRouter } from 'next/router';
+import { CheckCircle } from 'lucide-react';
 
 const API_BASE_URL =
   process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:8000";
@@ -25,6 +26,7 @@ const KnowledgeBaseModal = ({ isOpen, onClose, onCreate, kbId }) => {
   const [sections, setSections] = useState([]);
   const [logsHeight, setLogsHeight] = useState(200); // Initial height for logs
   const logsRef = useRef(null);
+  const [isCompleted, setIsCompleted] = useState(false);
 
   useEffect(() => {
     if (isOpen) {
@@ -39,6 +41,11 @@ const KnowledgeBaseModal = ({ isOpen, onClose, onCreate, kbId }) => {
         if (data.type === "human_feedback") {
           setHumanFeedbackRequired(true);
           setSections(data.output.map((section, index) => ({ id: index + 1, title: section })));
+        } else if (data.type === "end") {
+          setIsCompleted(true);
+          setTimeout(() => {
+            onCreate(); // Call onClose instead of router.push
+          }, 2000); // Close modal after 2 seconds
         } else {
           setLogs(prevContent => prevContent + JSON.stringify(data, null, 2) + "\n\n");
         }
@@ -57,7 +64,7 @@ const KnowledgeBaseModal = ({ isOpen, onClose, onCreate, kbId }) => {
         setCourseContent("");
       };
     }
-  }, [isOpen, kbId]);
+  }, [isOpen, kbId, onClose]); // Add onClose to the dependency array
 
   if (!isOpen) return null;
 
@@ -210,6 +217,12 @@ const KnowledgeBaseModal = ({ isOpen, onClose, onCreate, kbId }) => {
         <div className="w-2/3 flex flex-col">
           <div className="flex-grow p-6 bg-white overflow-y-auto">
             <h2 className="text-2xl font-bold mb-6">Course Content</h2>
+            {isCompleted && (
+              <div className="flex items-center justify-center mb-4">
+                <CheckCircle className="h-12 w-12 text-green-500" />
+                <span className="ml-2 text-lg font-semibold">Course creation completed!</span>
+              </div>
+            )}
             <div className="overflow-y-auto">
               {sections.map(section => (
                 <div key={section.id} className="bg-gray-100 p-4 rounded-lg mb-4">

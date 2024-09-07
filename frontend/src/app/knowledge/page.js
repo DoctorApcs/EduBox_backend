@@ -1,8 +1,7 @@
 "use client"
 
 import { useState } from "react";
-import { Input } from "@/components/ui/input"
-import Link from "next/link"
+import { useRouter } from "next/navigation";
 import { Card } from "@/components/ui/card"
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar"
 import { Badge } from "@/components/ui/badge"
@@ -13,8 +12,9 @@ import KnowledgeBaseModal from "@/components/knowledge_base/KnowledgeBaseModal";
 
 ChartJS.register(CategoryScale, LinearScale, BarElement, Title, Tooltip, Legend);
 
-export default function Component() {
+export default function KnowledgeBasePage() {
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const router = useRouter();
 
   const handleOpenModal = () => {
     setIsModalOpen(true);
@@ -24,10 +24,10 @@ export default function Component() {
     setIsModalOpen(false);
   };
 
-  const handleCreateCourse = (formData) => {
-    // Handle the creation of a new course with the formData
-    console.log("New course data:", formData);
-    // You can add your logic here to create a new course
+  const handleCreateCourse = () => {
+    // redirect to knowledge/1
+    setIsModalOpen(false);
+    router.push('/knowledge/1');
   };
 
   return (
