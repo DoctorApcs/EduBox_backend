@@ -1,5 +1,6 @@
 "use client"
 
+import { useState } from "react";
 import { Input } from "@/components/ui/input"
 import Link from "next/link"
 import { Card } from "@/components/ui/card"
@@ -8,10 +9,27 @@ import { Badge } from "@/components/ui/badge"
 import { Calendar } from "@/components/ui/calendar"
 import { Bar } from 'react-chartjs-2';
 import { Chart as ChartJS, CategoryScale, LinearScale, BarElement, Title, Tooltip, Legend } from 'chart.js';
+import KnowledgeBaseModal from "@/components/knowledge_base/KnowledgeBaseModal";
 
 ChartJS.register(CategoryScale, LinearScale, BarElement, Title, Tooltip, Legend);
 
 export default function Component() {
+  const [isModalOpen, setIsModalOpen] = useState(false);
+
+  const handleOpenModal = () => {
+    setIsModalOpen(true);
+  };
+
+  const handleCloseModal = () => {
+    setIsModalOpen(false);
+  };
+
+  const handleCreateCourse = (formData) => {
+    // Handle the creation of a new course with the formData
+    console.log("New course data:", formData);
+    // You can add your logic here to create a new course
+  };
+
   return (
     <div className="flex min-h-screen">
       {/* <aside className="w-64 p-4 bg-white border-r">
@@ -87,7 +105,10 @@ export default function Component() {
                 <p className="text-gray-600">10 Docs</p>
               </div>
             </Card>
-            <Card className="flex items-center justify-center border-2 border-dashed border-purple-600">
+            <Card 
+              className="flex items-center justify-center border-2 border-dashed border-purple-600 cursor-pointer"
+              onClick={handleOpenModal}
+            >
               <PlusIcon className="w-12 h-12 text-purple-600" />
             </Card>
           </div>
@@ -152,6 +173,12 @@ export default function Component() {
           <Calendar mode="single" className="border rounded-md mt-2" />
         </div>
       </aside>
+      
+      <KnowledgeBaseModal
+        isOpen={isModalOpen}
+        onClose={handleCloseModal}
+        onCreate={handleCreateCourse}
+      />
     </div>
   )
 }

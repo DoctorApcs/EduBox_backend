@@ -10,13 +10,10 @@ from multi_agents.memory.research import ResearchState
 from multi_agents.agents.utils.utils import sanitize_filename
 
 # Import agent classes
-from multi_agents.agents import (
-    WriterAgent,
-    EditorAgent,
-    # PublisherAgent,
-    ResearchAgent,
-    HumanAgent,
-)
+from multi_agents.agents import ResearchAgent
+from .human_agent import HumanAgent
+from .editor_agent import EditorAgent
+from .writer_agent import WriterAgent
 
 
 class CourseAgent:
