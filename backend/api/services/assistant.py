@@ -243,3 +243,4 @@ class AssistantService:
             "conversation_id": conversation_id,
             "system_prompt": assistant.systemprompt
         }
+        
