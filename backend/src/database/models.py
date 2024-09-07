@@ -102,3 +102,13 @@ class Message(Base):
     content = Column(Text, nullable=False)
     created_at = Column(DateTime, default=datetime.utcnow)
     conversation = relationship("Conversation", back_populates="messages")
+
+class Session(Base):
+    __tablename__ = 'sessions'
+    id = Column(Integer, primary_key=True)
+    user_id = Column(Integer, ForeignKey('users.id'))
+    knowledge_base_id = Column(Integer, ForeignKey('knowledge_bases.id'))
+    started_at = Column(DateTime, default=datetime.utcnow)
+    ended_at = Column(DateTime)
+    user = relationship("User")
+    knowledge_base = relationship("KnowledgeBase")

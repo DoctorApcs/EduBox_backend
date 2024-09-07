@@ -169,4 +169,7 @@ async def websocket_endpoint(
             EndStatus.ERROR,
             {"error_message": error_message, "assistant_id": assistant_id}
         )
-        ws_manager.disconnect(conversation_id)
+        ws_manager.disconnect(conversation_id)   
+
+
+

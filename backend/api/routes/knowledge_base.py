@@ -241,3 +241,36 @@ async def delete_knowledge_base(
     if not success:
         raise HTTPException(status_code=404, detail="Knowledge base not found")
     return {"message": "Knowledge base deleted successfully"}
+
+# Post endpoint to start a session (when user clicks on a course and start learning)
+@kb_router.post("/{knowledge_base_id}/start_session")
+async def start_session(
+    knowledge_base_id: int,
+    current_user_id: int = Depends(get_current_user_id),
+    kb_service: KnowledgeBaseService = Depends()
+):
+    return kb_service.start_session(current_user_id, knowledge_base_id=knowledge_base_id)
+
+# Post endpoint to end a session (when user change course or finish learning)
+@kb_router.post("/{session_id}/end_session")
+async def end_session(
+    session_id: int,
+    kb_service: KnowledgeBaseService = Depends()
+):
+    return kb_service.end_session(session_id=session_id)       
+
+# Get endpoint to get today sessions of a user
+@kb_router.get("/today_sessions")
+async def get_today_sessions(
+    current_user_id: int = Depends(get_current_user_id),
+    kb_service: KnowledgeBaseService = Depends()
+):
+    return kb_service.get_today_sessions(current_user_id)
+
+# Get endpoint to get this week sessions of a user
+@kb_router.get("/this_week_sessions")
+async def get_this_week_sessions(
+    current_user_id: int = Depends(get_current_user_id),
+    kb_service: KnowledgeBaseService = Depends()
+):
+    return kb_service.get_this_week_sessions(current_user_id)
