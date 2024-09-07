@@ -1,8 +1,14 @@
+import base64
+import json
 from fastapi import WebSocket
 from typing import Dict, Any, Optional
 from src.constants import GlobalConfig
-import base64
 from enum import Enum
+from api.models.knowledge_base import CourseGenerationRequest
+from api.services.knowledge_base import KnowledgeBaseService
+from fastapi import WebSocketDisconnect
+from src.utils.stream import stream_output
+from src.agents.course_agent import CourseAgent
 
 
 class MediaType(str, Enum):
@@ -148,6 +154,54 @@ class ConnectionManager:
             metadata=metadata,
         )
         await self.send_chat_message(websocket, message)
+
+    async def handle_course_generation(
+        self,
+        websocket: WebSocket,
+        kb_id: int,
+        current_user_id: int,
+        kb_service: KnowledgeBaseService,
+    ):
+        try:
+            # Receive the CourseGenerationRequest as a JSON string
+            request_data = await websocket.receive_text()
+            request = CourseGenerationRequest(**json.loads(request_data))
+
+            # Verify that the knowledge base exists and belongs to the current user
+            kb = kb_service.get_knowledge_base(kb_id, current_user_id)
+            if kb is None:
+                await self.send_error(websocket, "Knowledge base not found")
+                return
+
+            # Create a task dictionary from the request
+            task = {
+                "query": request.query,
+                "max_sections": request.max_sections,
+                "publish_formats": request.publish_formats,
+                "include_human_feedback": request.include_human_feedback,
+                "follow_guidelines": request.follow_guidelines,
+                "model": request.model,
+                "guidelines": request.guidelines,
+                "verbose": request.verbose,
+                "knowledge_base_id": kb_id,
+            }
+
+            # Initialize the CourseAgent
+            course_agent = CourseAgent(websocket=websocket, stream_output=stream_output)
+
+            result = await course_agent.run(task)
+
+            # Send the final result
+            await self.send_text_message(
+                websocket,
+                "Course generation completed",
+                extra_metadata={"result": result},
+            )
+
+        except WebSocketDisconnect:
+            print("WebSocket disconnected")
+        except Exception as e:
+            await self.send_error(websocket, f"Course generation failed: {str(e)}")
 
 
 ws_manager = ConnectionManager()

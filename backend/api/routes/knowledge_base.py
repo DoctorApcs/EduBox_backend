@@ -20,13 +20,12 @@ from api.models.knowledge_base import (
     KnowledgeBaseCreate,
     KnowledgeBaseResponse,
     KnowledgeBaseUpdate,
-    CourseGenerationRequest,
 )
 from api.services.knowledge_base import KnowledgeBaseService
 from typing import List
 from src.agents.course_agent import CourseAgent
 from src.constants import GlobalConfig
-from src.utils.stream import stream_output
+from api.utils.websocket_manager import ws_manager
 
 kb_router = APIRouter()
 UPLOAD_DIR = "uploads"
@@ -285,46 +284,10 @@ async def generate_course(
     current_user_id: int = Depends(get_current_user_id),
     kb_service: KnowledgeBaseService = Depends(),
 ):
-    await websocket.accept()
-
+    await ws_manager.connect(websocket)
     try:
-        # Receive the CourseGenerationRequest as a JSON string
-        request_data = await websocket.receive_text()
-        request = CourseGenerationRequest(**json.loads(request_data))
-
-        # Verify that the knowledge base exists and belongs to the current user
-        kb = kb_service.get_knowledge_base(kb_id, current_user_id)
-        if kb is None:
-            await websocket.send_json({"error": "Knowledge base not found"})
-            await websocket.close()
-            return
-
-        # Create a task dictionary from the request
-        task = {
-            "query": request.query,
-            "max_sections": request.max_sections,
-            "publish_formats": request.publish_formats,
-            "include_human_feedback": request.include_human_feedback,
-            "follow_guidelines": request.follow_guidelines,
-            "model": request.model,
-            "guidelines": request.guidelines,
-            "verbose": request.verbose,
-            "knowledge_base_id": kb_id,
-        }
-
-        # Initialize the CourseAgent
-        course_agent = CourseAgent(websocket=websocket, stream_output=stream_output)
-
-        result = await course_agent.run(task)
-
-        # Send the final result
-        await websocket.send_json(
-            {"message": "Course generation completed", "result": result}
+        await ws_manager.handle_course_generation(
+            websocket, kb_id, current_user_id, kb_service
         )
-
-    except WebSocketDisconnect:
-        print("WebSocket disconnected")
-    except Exception as e:
-        await websocket.send_json({"error": f"Course generation failed: {str(e)}"})
     finally:
-        await websocket.close()
+        ws_manager.disconnect(websocket)
