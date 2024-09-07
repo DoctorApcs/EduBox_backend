@@ -5,6 +5,7 @@ from api.models.knowledge_base import (
     KnowledgeBaseCreate,
     KnowledgeBaseUpdate,
     KnowledgeBaseResponse,
+    LessonResponse,
 )
 from src.database.models import KnowledgeBase, Lesson
 from src.dependencies import get_db_manager
@@ -159,3 +160,8 @@ class KnowledgeBaseService:
             for lesson in new_lessons:
                 session.refresh(lesson)
             return new_lessons
+
+    def get_lessons(self, kb_id: int):
+        with self.db_manager.Session() as session:
+            lessons = session.query(Lesson).filter_by(knowledge_base_id=kb_id).all()
+            return [LessonResponse.model_validate(lesson) for lesson in lessons]
