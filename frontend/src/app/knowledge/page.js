@@ -6,6 +6,7 @@ import { Card } from "@/components/ui/card"
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar"
 import { Badge } from "@/components/ui/badge"
 import { Calendar } from "@/components/ui/calendar"
+import KnowledgeBaseCard from "@/components/knowledge_base/KnowledgeBaseCard"
 import { Bar } from 'react-chartjs-2';
 import { Chart as ChartJS, CategoryScale, LinearScale, BarElement, Title, Tooltip, Legend } from 'chart.js';
 import KnowledgeBaseModal from "@/components/knowledge_base/KnowledgeBaseModal";
@@ -31,7 +32,7 @@ export default function KnowledgeBasePage() {
   };
 
   return (
-    <div className="flex min-h-screen">
+    <div className="flex h-full">
       {/* <aside className="w-64 p-4 bg-white border-r">
         <div className="flex items-center mb-6">
           <Input type="search" placeholder="Search your courses, activities, knowledge ..." className="w-full" />
@@ -65,10 +66,10 @@ export default function KnowledgeBasePage() {
           </Link>
         </div>
       </aside> */}
-      <main className="flex-1 p-6 bg-gray-50">
-        <div className="flex items-center justify-between p-6 bg-purple-600 rounded-lg">
+      <main className="flex-1 p-6 bg-custom-background">
+        <div className="flex items-center justify-between p-6 bg-custom-primary rounded-lg">
           <div>
-            <h2 className="text-2xl font-bold text-white">Welcome back, admin!</h2>
+            <h2 className="text-2xl font-semibold text-white">Welcome back, admin!</h2>
             <p className="text-white">You are doing great! Keep it up</p>
           </div>
           <div
@@ -77,34 +78,20 @@ export default function KnowledgeBasePage() {
           />
         </div>
         <section className="mt-6">
-          <h3 className="text-xl font-bold">Your Courses</h3>
+          <h3 className="text-xl font-semibold">Your Courses</h3>
           <div className="grid grid-cols-3 gap-4 mt-4">
-            <Card className="relative">
-              <div className="absolute top-2 right-2">
-                <ArrowUpRightIcon className="w-6 h-6 text-white bg-purple-600 rounded-full p-1" />
-              </div>
-              <div
-                className="w-full h-32 bg-cover bg-center"
-                style={{ backgroundImage: "url('/placeholder.svg?height=128&width=128')" }}
-              />
-              <div className="p-4">
-                <h4 className="font-bold">Calculus 3</h4>
-                <p className="text-gray-600">2 Documents</p>
-              </div>
-            </Card>
-            <Card className="relative">
-              <div className="absolute top-2 right-2">
-                <ArrowUpRightIcon className="w-6 h-6 text-white bg-purple-600 rounded-full p-1" />
-              </div>
-              <div
-                className="w-full h-32 bg-cover bg-center"
-                style={{ backgroundImage: "url('/placeholder.svg?height=128&width=128')" }}
-              />
-              <div className="p-4">
-                <h4 className="font-bold">CS305</h4>
-                <p className="text-gray-600">10 Docs</p>
-              </div>
-            </Card>
+            <KnowledgeBaseCard
+              title="Calculus 3"
+              docCount={2}
+              lastUpdated="2024-01-01"
+              onClick={() => {}}
+            />
+            <KnowledgeBaseCard
+              title="CS305"
+              docCount={2}
+              lastUpdated="2024-01-01"
+              onClick={() => {}}
+            />
             <Card 
               className="flex items-center justify-center border-2 border-dashed border-purple-600 cursor-pointer"
               onClick={handleOpenModal}
@@ -114,14 +101,14 @@ export default function KnowledgeBasePage() {
           </div>
         </section>
         <section className="mt-6">
-          <h3 className="text-xl font-bold">Recent Activities</h3>
+          <h3 className="text-xl font-semibold">Recent Activities</h3>
           <div className="grid grid-cols-3 gap-4 mt-4">
             <Card className="flex items-center p-4">
               <div className="flex-shrink-0 w-12 h-12 bg-purple-600 rounded-full flex items-center justify-center text-white">
                 <FileTextIcon className="w-6 h-6" />
               </div>
               <div className="ml-4">
-                <h4 className="font-bold">Final Revision</h4>
+                <h4 className="font-semibold">Final Revision</h4>
                 <p className="text-gray-600">Calculus 3</p>
                 <p className="text-gray-400 text-sm">45mins ago</p>
               </div>
@@ -134,7 +121,7 @@ export default function KnowledgeBasePage() {
                 <FileTextIcon className="w-6 h-6" />
               </div>
               <div className="ml-4">
-                <h4 className="font-bold">Final Revision</h4>
+                <h4 className="font-semibold">Final Revision</h4>
                 <p className="text-gray-600">Calculus 3</p>
                 <p className="text-gray-400 text-sm">45mins ago</p>
               </div>
@@ -148,19 +135,19 @@ export default function KnowledgeBasePage() {
                 style={{ backgroundImage: "url('/placeholder.svg?height=128&width=128')" }}
               />
               <div className="ml-4">
-                <h4 className="font-bold">Mind map</h4>
+                <h4 className="font-semibold">Mind map</h4>
               </div>
             </Card>
           </div>
         </section>
       </main>
-      <aside className="w-64 p-4 bg-white border-l">
+      <aside className="w-96 p-4 bg-custom-background border-l shadow-lg">
         <div className="flex flex-col items-center">
           <Avatar>
             <AvatarImage src="/placeholder-user.jpg" alt="Admin" />
             <AvatarFallback>AD</AvatarFallback>
           </Avatar>
-          <h4 className="mt-4 font-bold">Admin</h4>
+          <h4 className="mt-4 font-semibold">Admin</h4>
           <Badge variant="secondary" className="mt-2">
             Pro
           </Badge>
@@ -169,7 +156,7 @@ export default function KnowledgeBasePage() {
           <BarChart className="w-full h-32" />
         </div>
         <div className="mt-6">
-          <h4 className="font-bold">Calendar</h4>
+          <h4 className="font-semibold">Calendar</h4>
           <Calendar mode="single" className="border rounded-md mt-2" />
         </div>
       </aside>
