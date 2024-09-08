@@ -4,11 +4,9 @@
 import React, { useState, useEffect } from "react";
 import { useParams } from "next/navigation";
 import DatasetView from "@/components/knowledge_base/KBDatasetView";
-import ReactMarkdown from "react-markdown";
-import Image from "next/image";
+import LessonContent from "@/components/knowledge_base/LessonContent";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
-import CustomMarkdown from "@/components/Markdown";
 
 const API_BASE_URL =
   process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:8000";
@@ -63,6 +61,7 @@ export default function KnowledgeBasePage() {
           <LessonContent
             lesson={selectedLesson}
             onBack={() => setSelectedLesson(null)}
+            kbId={knowledgeBaseID}
           />
         ) : (
           <div className="space-y-4">
@@ -156,23 +155,6 @@ export default function KnowledgeBasePage() {
         </div>
         <div className="content-container">{renderContent()}</div>
       </main>
-    </div>
-  );
-}
-
-function LessonContent({ lesson, onBack }) {
-  return (
-    <div className="bg-white rounded-lg shadow-md p-6">
-      <button
-        onClick={onBack}
-        className="mb-4 text-purple-600 hover:text-purple-800"
-      >
-        ← Back to Lessons
-      </button>
-      <h2 className="text-2xl font-bold mb-4">{lesson.title}</h2>
-      <CustomMarkdown className="prose max-w-none">
-        {lesson.content}
-      </CustomMarkdown>
     </div>
   );
 }

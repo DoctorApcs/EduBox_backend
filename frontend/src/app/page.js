@@ -53,7 +53,7 @@ export default function DashboardPage() {
             id: course.id,
             title: course.name,
             docCount: course.document_count,
-            lastUpdated: course.updated_at,
+            lastUpdated: course.last_updated,
             imageUrl:
               `${API_BASE_URL}/getfile/${course.background_image}` ||
               "https://placehold.co/300x200?text=Course",
@@ -125,16 +125,19 @@ export default function DashboardPage() {
             >
               <PlusIcon className="w-12 h-12 text-purple-600" />
             </Card>
-            {courses.slice(0, 3).map((course) => (
-              <KnowledgeBaseCard
-                key={course.id}
-                title={course.title}
-                docCount={course.docCount}
-                lastUpdated={course.lastUpdated}
-                onClick={() => router.push(`/knowledge/${course.id}`)}
-                imageUrl={course.imageUrl}
-              />
-            ))}
+            {courses
+              .sort((a, b) => new Date(b.lastUpdated) - new Date(a.lastUpdated))
+              .slice(0, 3)
+              .map((course) => (
+                <KnowledgeBaseCard
+                  key={course.id}
+                  title={course.title}
+                  docCount={course.docCount}
+                  lastUpdated={course.lastUpdated}
+                  onClick={() => router.push(`/knowledge/${course.id}`)}
+                  imageUrl={course.imageUrl}
+                />
+              ))}
           </div>
         </section>
         <section className="mt-6">

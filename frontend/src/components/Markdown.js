@@ -10,28 +10,14 @@ const CustomMarkdown = ({ children }) => {
   let processedContent = "";
   if (children) {
     processedContent = children
-      .replace(/\\\(/g, "$")
-      .replace(/\\\)/g, "$")
-      .replace(/\\\[/g, "$$")
-      .replace(/\\\]/g, "$$");
+      .replace(/\\$/g, "$")
+      .replace(/\\$/g, "$")
+      .replace(/\\$/g, "$")
+      .replace(/\\$/g, "$");
   }
 
   return (
     <div className="custom-markdown overflow-x-auto">
-      <style jsx global>{`
-        .katex-display {
-          overflow-x: auto;
-          overflow-y: hidden;
-          padding: 0;
-          margin: 1em 0;
-        }
-        .katex {
-          font-size: 1em;
-        }
-        .katex .katex-html {
-          display: none;
-        }
-      `}</style>
       <Markdown
         remarkPlugins={[remarkGfm, remarkMath]}
         rehypePlugins={[rehypeKatex]}
@@ -89,6 +75,17 @@ const CustomMarkdown = ({ children }) => {
           ),
           td: ({ children }) => (
             <td className="px-4 py-2 border border-gray-300">{children}</td>
+          ),
+          ul: ({ children }) => (
+            <ul className="list-disc pl-6 my-2 space-y-1">{children}</ul>
+          ),
+          ol: ({ children }) => (
+            <ol className="list-decimal pl-6 my-2 space-y-1">{children}</ol>
+          ),
+          li: ({ children }) => (
+            <li className="pl-1">
+              <span className="inline-block align-middle">{children}</span>
+            </li>
           ),
         }}
       >
