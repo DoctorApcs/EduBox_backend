@@ -1,30 +1,24 @@
 import React from "react";
-import { FileText, MoreVertical } from "lucide-react";
+import { Card } from "@/components/ui/card"
+import { ArrowUpRightIcon } from "lucide-react";
 
 const KnowledgeBaseCard = ({ title, docCount, lastUpdated, onClick }) => {
-  return (
-    <div
-      className="bg-white rounded-lg shadow-md p-4 sm:p-6 hover:shadow-lg transition-shadow duration-300 w-full h-full"
-      onClick={onClick}
-    >
-      <div className="flex justify-between items-start mb-4">
-        <div className="w-10 h-10 sm:w-12 sm:h-12 bg-blue-100 rounded-full flex items-center justify-center">
-          <FileText className="w-5 h-5 sm:w-6 sm:h-6 text-blue-500" />
-        </div>
-        <button className="text-gray-400 hover:text-gray-600">
-          <MoreVertical className="w-5 h-5" />
-        </button>
-      </div>
-      <h2 className="text-lg sm:text-xl font-semibold mb-2 sm:mb-3 text-gray-800">
-        {title}
-      </h2>
-      <div className="flex items-center text-sm text-gray-500 mb-2">
-        <FileText className="w-4 h-4 mr-2" />
-        {docCount} {docCount === 1 ? "Document" : "Documents"}
-      </div>
-      <div className="text-sm text-gray-500">Last updated: {lastUpdated}</div>
+return (
+  <Card className="relative rounded-3xl overflow-hidden h-52 w-52 cursor-pointer shadow-lg transition-all duration-300 transform hover:scale-105" onClick={onClick}>
+    <div 
+      className="absolute inset-0 bg-cover bg-center"
+      style={{ backgroundImage: "url('https://placehold.co/600x400')" }}
+    />
+    <div className="absolute inset-0 bg-gradient-to-t from-black via-transparent to-transparent" />
+    <div className="absolute top-2 right-2 w-14 h-14 bg-custom-primary rounded-full flex items-center justify-center hover:bg-custom-cta">
+        <ArrowUpRightIcon className="w-8 h-8 text-white" />
     </div>
-  );
+    <div className="absolute bottom-0 left-0 right-0 p-4 text-white">
+      <h4 className="font-semibold text-lg mb-1">{title}</h4>
+      <p className="text-sm opacity-80">{docCount} Documents</p>
+    </div>
+  </Card>
+);
 };
 
 export default KnowledgeBaseCard;

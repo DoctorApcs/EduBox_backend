@@ -51,6 +51,12 @@ module.exports = {
           DEFAULT: "hsl(var(--card))",
           foreground: "hsl(var(--card-foreground))",
         },
+        'custom-primary-start': '#6B0ACE',
+        'custom-primary-end': '#360568',
+        'custom-secondary': '#6B0ACE',
+        'custom-accent': '#C8ABE6',
+        'custom-background': '#F9F3FF',
+        'custom-cta': '#FFC746',  
       },
       borderRadius: {
         lg: "var(--radius)",
@@ -66,6 +72,9 @@ module.exports = {
           from: { height: "var(--radix-accordion-content-height)" },
           to: { height: "0" },
         },
+      },
+      backgroundImage: {
+        'custom-primary': 'linear-gradient(to right, #6B0ACE, #360568)',
       },
       animation: {
         "accordion-down": "accordion-down 0.2s ease-out",

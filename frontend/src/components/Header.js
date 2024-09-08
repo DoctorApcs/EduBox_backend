@@ -9,48 +9,28 @@ const Header = () => {
   const pathname = usePathname();
 
   const navItems = [
-    { name: "Dashboard", path: "/knowledge", icon: HomeIcon },
-    { name: "Courses", path: "/courses", icon: BookIcon },
+    { name: "Dashboard", path: "/", icon: HomeIcon },
+    { name: "Courses", path: "/knowledge", icon: BookIcon },
     { name: "Chat", path: "/chat", icon: WebcamIcon },
     { name: "Analytics", path: "/analytics", icon: BarChartIcon },
   ];
 
-  const isActive = (path) => pathname === path;
+  const isActive = (path) => {
+    if (path === '/') {
+      return pathname === '/';
+    }
+    return pathname.startsWith(path + '/') || pathname === path;
+  };
 
   return (
-    <aside className="w-64 p-4 bg-white border-r min-h-screen flex flex-col">
-      <div className="flex items-center space-x-4 mb-6">
-        <svg
-          className="w-8 h-8 text-blue-500"
-          viewBox="0 0 24 24"
-          fill="none"
-          xmlns="http://www.w3.org/2000/svg"
-        >
-          <path d="M12 2L2 7L12 12L22 7L12 2Z" fill="currentColor" />
-          <path
-            d="M2 17L12 22L22 17"
-            stroke="currentColor"
-            strokeWidth="2"
-            strokeLinecap="round"
-            strokeLinejoin="round"
-          />
-          <path
-            d="M2 12L12 17L22 12"
-            stroke="currentColor"
-            strokeWidth="2"
-            strokeLinecap="round"
-            strokeLinejoin="round"
-          />
-        </svg>
-        <span className="font-bold text-xl">EduBox</span>
-      </div>
-      <nav className="space-y-4 flex-grow">
+    <aside className="w-72 p-0 bg-white border-r h-full flex flex-col items-center shadow-lg">
+      <nav className="space-y-6 flex-grow mt-32">
         {navItems.map((item) => (
           <Link
             key={item.path}
             href={item.path}
-            className={`flex items-center ${
-              isActive(item.path) ? "text-purple-600" : "text-gray-600"
+            className={`flex items-center font-semibold text-xl ${
+              isActive(item.path) ? "text-custom-primary-start" : "text-custom-accent"
             }`}
           >
             <item.icon className="w-6 h-6 mr-2" />
@@ -58,12 +38,12 @@ const Header = () => {
           </Link>
         ))}
       </nav>
-      <div className="mt-auto space-y-4">
-        <Link href="/settings" className="flex items-center text-gray-600">
+      <div className="mt-auto space-y-6 mb-12 flex flex-col items-center">
+        <Link href="/settings" className="flex items-center text-gray-600 font-medium text-xl">
           <SettingsIcon className="w-6 h-6 mr-2" />
           Settings
         </Link>
-        <Link href="/logout" className="flex items-center text-red-600">
+        <Link href="/logout" className="flex items-center text-red-600 font-medium text-xl">
           <LogOutIcon className="w-6 h-6 mr-2" />
           Logout
         </Link>

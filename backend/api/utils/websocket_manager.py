@@ -10,6 +10,11 @@ from fastapi import WebSocketDisconnect
 from src.utils.stream import stream_output
 from src.agents.course_agent import CourseAgent
 
+# from src.utils.logger.logging import LogHandler
+import logging
+
+# logger = LogHandler().get_logger(__name__)
+
 
 class MediaType(str, Enum):
     TEXT = "text"
@@ -192,17 +197,18 @@ class ConnectionManager:
             )
 
             result = await course_agent.run_research_task()
-
+            logging.info(f"Research result: {result}")
+            kb_service.create_lessons(kb_id, current_user_id, result)
+            logging.info(f"Course generation completed for knowledge base {kb_id}")
             # Send the final result
-            await self.send_text_message(
-                websocket,
-                "Course generation completed",
-                extra_metadata={"result": result},
+            await self.send_end_message(
+                websocket, MediaType.TEXT, EndStatus.COMPLETE, {"result": result}
             )
 
         except WebSocketDisconnect:
             print("WebSocket disconnected")
         except Exception as e:
+            logging.error(f"Course generation failed: {str(e)}", exc_info=True)
             await self.send_error(websocket, f"Course generation failed: {str(e)}")
 
 

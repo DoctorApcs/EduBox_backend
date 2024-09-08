@@ -1,7 +1,7 @@
 from fastapi import HTTPException
 from sqlalchemy import create_engine, or_
 from sqlalchemy.orm import sessionmaker
-from .models import Base, User, KnowledgeBase, Document, DocumentChunk, Assistant, Conversation, Message, DocumentStatus
+from .models import Base, User, KnowledgeBase, Document, DocumentChunk, Assistant, Conversation, Message, DocumentStatus, Session
 from .vector_store import VectorDB, QdrantVectorDB
 from datetime import datetime
 import uuid 
@@ -185,13 +185,46 @@ class DatabaseManager:
             session.add(message)
             session.commit()
             return message.id    
+        
+    # This function is used to save the starting time of a learning session (when the user starts going into the course and interact)    
+    def start_session(self, user_id, knowledge_base_id):
+        with self.Session() as session:
+            new_session = Session(user_id=user_id, knowledge_base_id=knowledge_base_id, started_at=datetime.utcnow(), ended_at=datetime.utcnow())
+            session.add(new_session)
+            session.commit()
+            return new_session.id
+    
+    # This function is used to save the ending time of a learning session (when the user get out of the course)
+    def end_session(self, session_id):
+        with self.Session() as session:
+            found_session = session.query(Session).filter_by(id=session_id).first()
+            if found_session:
+                found_session.ended_at = datetime.utcnow()
+                session.commit()
+                return True
+            return False
+        
+    def get_today_session(self, user_id):
+        with self.Session() as session:
+            today_day = datetime.today().day
+            today_month = datetime.today().month
+            today_year = datetime.today().year    
+            sessions = session.query(Session).filter_by(user_id=user_id).filter_by(Session.started_at.day == today_day).filter_by(Session.started_at.month == today_month).filter_by(Session.started_at.year == today_year).all()
+            return sessions
+        
+    def get_this_week_session(self, user_id):
+        with self.Session() as session:
+            today = datetime.today()
+            week_start = today - today.weekday()
+            sessions = session.query(Session).filter_by(user_id=user_id).filter(Session.started_at >= week_start).all()
+            return sessions
 
 
 # Usage example
 if __name__ == "__main__":
     
     vector_db = QdrantVectorDB("http://localhost:6333")
-    db_manager = DatabaseManager("/home/bachngo/Desktop/code/Knowledge_Base_Agent/backend/DB/knowledge_base.db", vector_db)
+    db_manager = DatabaseManager("/DB/knowledge_base.db", vector_db)
     
     # Create a user
     user_id = db_manager.create_user("admin", "admin@example.com", "123")
