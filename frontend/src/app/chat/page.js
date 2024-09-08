@@ -75,7 +75,7 @@ const ChatMainPage = () => {
   if (error) return <ErrorComponent message={error} />;
 
   return (
-    <div className="flex flex-col h-[calc(100vh-4rem)] bg-gray-100">
+    <div className="flex flex-col h-full bg-purple-50">
       <TopBar
         selectedAssistant={selectedAssistant}
         setSelectedAssistant={setSelectedAssistant}
@@ -100,6 +100,7 @@ const ChatMainPage = () => {
         isOpen={isCreateModalOpen}
         onClose={() => setIsCreateModalOpen(false)}
         onCreateSuccess={fetchAssistants}
+        setIsLoading={setIsLoading}
       />
     </div>
   );
