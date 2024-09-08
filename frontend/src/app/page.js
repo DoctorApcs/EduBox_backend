@@ -140,7 +140,7 @@ export default function DashboardPage() {
               ))}
           </div>
         </section>
-        <section className="mt-6">
+        {/* <section className="mt-6">
           <h3 className="text-xl font-semibold">Recent Activities</h3>
           <div className="grid grid-cols-3 gap-4 mt-4">
             <Card className="flex items-center p-4">
@@ -182,7 +182,7 @@ export default function DashboardPage() {
               </div>
             </Card>
           </div>
-        </section>
+        </section> */}
       </main>
       <aside className="w-96 p-4 bg-custom-background border-l shadow-lg">
         <div className="flex flex-col items-center">
