@@ -11,6 +11,7 @@ const Header = () => {
     { name: "Knowledge Base", path: "/knowledge" },
     { name: "Chat", path: "/chat" },
     { name: "File Management", path: "/file-management" },
+    { name: "Analytics", path: "/analytics" },
   ];
 
   const isActive = (path) => {
