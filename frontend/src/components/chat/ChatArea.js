@@ -48,8 +48,8 @@ const Message = React.memo(({ message }) => {
       <div
         className={`${
           message.sender_type === "user"
-            ? "max-w-[60%] bg-blue-600 text-white"
-            : "max-w-[100%] bg-gray-200 text-gray-800"
+            ? "max-w-[60%] bg-purple-600 text-white"
+            : "max-w-[100%] bg-purple-200 text-gray-800"
         } p-3 rounded-lg`}
       >
         <div className="flex items-center mb-1">
@@ -267,7 +267,7 @@ const ChatArea = ({ conversation, assistantId }) => {
   const memoizedMessages = useMemo(() => messages, [messages]);
 
   return (
-    <div className="flex flex-col h-full bg-gray-100">
+    <div className="flex flex-col h-full bg-purple-50">
       <div className="flex-grow flex overflow-hidden">
         <div className="flex-grow flex flex-row">
           <div className="flex-grow overflow-y-auto p-4">
@@ -320,7 +320,7 @@ const ChatArea = ({ conversation, assistantId }) => {
       </div>
       <button
         onClick={togglePreview}
-        className="fixed bottom-4 right-4 bg-blue-500 text-white p-2 rounded-full shadow-lg hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-300"
+        className="fixed bottom-4 right-4 bg-purple-500 text-white p-2 rounded-full shadow-lg hover:bg-purple-600 focus:outline-none focus:ring-2 focus:ring-blue-300"
       >
         <Maximize2 size={24} />
       </button>

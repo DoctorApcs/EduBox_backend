@@ -10,14 +10,14 @@ const PreviewBox = ({ isOpen, onClose, children, title }) => {
         ${isOpen ? "translate-y-0" : "translate-y-full"}
       `}
     >
-      <div className="bg-gray-200 p-4 flex justify-between items-center rounded-t-2xl">
+      <div className="bg-purple-100 p-4 flex justify-between items-center rounded-t-2xl">
         <h2 className="font-bold">{title}</h2>
         <button onClick={onClose} className="text-gray-500 hover:text-gray-700">
           <X size={24} />
         </button>
       </div>
       <div className="flex-grow overflow-auto p-4 pl-6">{children}</div>
-      <div className="bg-gray-200 p-4 rounded-b-2xl">
+      <div className="bg-purple-100 p-4 rounded-b-2xl">
         <p className="text-sm text-gray-600">Preview Footer</p>
       </div>
     </div>

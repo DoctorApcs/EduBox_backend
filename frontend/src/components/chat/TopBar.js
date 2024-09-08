@@ -50,7 +50,7 @@ const TopBar = ({
   };
 
   return (
-    <div className="bg-white shadow-sm p-4 flex items-center justify-between">
+    <div className="bg-purple-50 p-4 flex items-center justify-between">
       <div className="flex items-center space-x-4">
         {showSidebarButton && (
           <button
@@ -87,9 +87,9 @@ const TopBar = ({
       {showCreateAssistantButton && (
         <button
           onClick={onCreateAssistant}
-          className="bg-blue-500 text-white px-3 py-2 rounded-md flex items-center text-sm"
+          className="bg-purple-600 text-white px-3 py-2 rounded-full flex items-center text-sm hover:bg-purple-700 transition-colors"
         >
-          <Plus size={16} className="mr-2" />
+          {/* <Plus size={16} className="mr-2" /> */}
           Create Assistant
         </button>
       )}

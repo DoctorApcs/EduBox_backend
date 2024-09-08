@@ -13,6 +13,7 @@ const Sidebar = ({
 }) => {
   const sidebarRef = useRef(null);
   const [isResizing, setIsResizing] = useState(false);
+  const [isTransitioning, setIsTransitioning] = useState(false);
 
   const startResizing = useCallback((mouseDownEvent) => {
     mouseDownEvent.preventDefault();
@@ -44,21 +45,28 @@ const Sidebar = ({
     };
   }, [resize, stopResizing]);
 
-  if (!isVisible) return null;
+  useEffect(() => {
+    if (!isVisible) {
+      setIsTransitioning(true);
+      setTimeout(() => setIsTransitioning(false), 300); // Adjust the timeout to match the CSS transition duration
+    }
+  }, [isVisible]);
 
   return (
     <>
       <aside
         ref={sidebarRef}
-        className="bg-white shadow-md overflow-hidden relative flex flex-col"
-        style={{ width: `${width}px` }}
+        className={`bg-white shadow-md overflow-hidden relative flex flex-col transition-width duration-300 ${
+          isVisible ? "w-auto" : "w-0"
+        }`}
+        style={{ width: isVisible ? `${width}px` : "0px" }}
       >
         <div className="p-4">
           <button
             onClick={onCreateConversation}
-            className={`w-full p-3 rounded-lg flex items-center justify-center transition-colors duration-200 ${
+            className={`p-3 rounded-full flex items-center justify-center transition-colors duration-200 ${
               selectedAssistant
-                ? "bg-blue-500 text-white hover:bg-blue-600"
+                ? "bg-purple-100 text-gray-500 hover:bg-purple-100 duration-300"
                 : "bg-gray-300 text-gray-500 cursor-not-allowed"
             }`}
             disabled={!selectedAssistant}
@@ -87,7 +95,7 @@ const Sidebar = ({
                   className={`m-2 p-3 rounded-lg cursor-pointer transition-colors duration-200 ${
                     selectedConversation &&
                     selectedConversation.id === conversation.id
-                      ? "bg-blue-100"
+                      ? "bg-purple-100"
                       : "bg-gray-50 hover:bg-gray-100"
                   }`}
                   onClick={() => onConversationSelect(conversation)}
