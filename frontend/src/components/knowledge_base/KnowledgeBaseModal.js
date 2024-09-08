@@ -1,5 +1,7 @@
 import React, { useState, useEffect, useRef } from "react";
-import { CheckCircle, Loader } from "lucide-react";
+import { CheckCircle, Loader, Globe } from "lucide-react";
+import Image from "next/image";
+import { motion, AnimatePresence } from "framer-motion"; // Add this import
 
 const API_BASE_URL =
   process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:8000";
@@ -21,6 +23,16 @@ const KnowledgeBaseModal = ({ isOpen, onClose, onCreate }) => {
   const [isLoading, setIsLoading] = useState(false);
   const [sections, setSections] = useState([]);
   const [isCompleted, setIsCompleted] = useState(false);
+  const [sources, setSources] = useState([]);
+
+  const getHostname = (url) => {
+    try {
+      return new URL(url).hostname;
+    } catch (error) {
+      console.error("Invalid URL:", url);
+      return "Unknown";
+    }
+  };
 
   useEffect(() => {
     if (isOpen) {
@@ -42,6 +54,8 @@ const KnowledgeBaseModal = ({ isOpen, onClose, onCreate }) => {
               title: section,
             }))
           );
+          setIsLoading(false); // Set loading to false when human feedback is required
+          setLogs(""); // Clear logs when human feedback is required
         } else if (data.type === "end") {
           setIsCompleted(true);
           setIsLoading(false);
@@ -49,7 +63,14 @@ const KnowledgeBaseModal = ({ isOpen, onClose, onCreate }) => {
             onCreate(); // Call onClose instead of router.push
           }, 2000); // Close modal after 2 seconds
         } else if (data.type === "logs") {
-          setLogs(data.message);
+          if (data.content === "added_source_url") {
+            const url = data.output
+              .split("✅ Added source url to research:")[1]
+              .trim();
+            setSources((prevSources) => [url, ...prevSources]);
+          } else {
+            setLogs(data.output);
+          }
         }
       };
 
@@ -82,6 +103,7 @@ const KnowledgeBaseModal = ({ isOpen, onClose, onCreate }) => {
   const handleSubmit = (e) => {
     e.preventDefault();
     setIsLoading(true);
+    setLogs("Creating course...");
     if (
       websocketRef.current &&
       websocketRef.current.readyState === WebSocket.OPEN
@@ -105,6 +127,8 @@ const KnowledgeBaseModal = ({ isOpen, onClose, onCreate }) => {
       websocketRef.current &&
       websocketRef.current.readyState === WebSocket.OPEN
     ) {
+      setIsLoading(true); // Set loading to true when submitting feedback
+      setLogs("Processing feedback..."); // Set logs when submitting feedback
       websocketRef.current.send(
         JSON.stringify({
           type: "human_feedback",
@@ -180,6 +204,7 @@ const KnowledgeBaseModal = ({ isOpen, onClose, onCreate }) => {
                       checked={formData[field]}
                       onChange={handleChange}
                       className="form-checkbox h-4 w-4 text-purple-300 border-purple-400 rounded"
+                      defaultChecked={true}
                     />
                     <span className="ml-2 text-white text-sm">
                       {field.replace(/_/g, " ")}
@@ -248,20 +273,6 @@ const KnowledgeBaseModal = ({ isOpen, onClose, onCreate }) => {
         <div className="w-2/3 flex flex-col">
           <div className="flex-grow p-6 bg-white overflow-y-auto">
             <h2 className="text-2xl font-bold mb-6">Course Content</h2>
-            {isCompleted && (
-              <div className="flex items-center justify-center mb-4">
-                <CheckCircle className="h-12 w-12 text-green-500" />
-                <span className="ml-2 text-lg font-semibold">
-                  Course creation completed!
-                </span>
-              </div>
-            )}
-            {isLoading && (
-              <div className="flex items-center justify-center mb-4">
-                <Loader className="h-8 w-8 text-blue-500 animate-spin" />
-                <span className="ml-2 text-lg font-semibold">{logs}</span>
-              </div>
-            )}
             <div className="overflow-y-auto">
               {sections.map((section) => (
                 <div
@@ -280,6 +291,14 @@ const KnowledgeBaseModal = ({ isOpen, onClose, onCreate }) => {
                 </pre>
               )}
             </div>
+            {isLoading && (
+              <div className="flex items-center justify-start mt-4">
+                <Loader className="h-8 w-8 text-blue-500 animate-spin" />
+                <span className="ml-2 text-lg font-regular truncate">
+                  {logs}
+                </span>
+              </div>
+            )}
             {humanFeedbackRequired && (
               <div className="mt-4 space-y-2">
                 <textarea
@@ -289,12 +308,62 @@ const KnowledgeBaseModal = ({ isOpen, onClose, onCreate }) => {
                   className="w-full p-2 border border-gray-300 rounded-md"
                   rows="3"
                 />
-                <button
-                  onClick={handleFeedback}
-                  className="px-4 py-2 bg-blue-500 text-white rounded-md hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
-                >
-                  Submit Feedback
-                </button>
+                <div className="flex space-x-2">
+                  <button
+                    onClick={handleFeedback}
+                    className="px-4 py-2 bg-custom-primary-start text-white rounded-md hover:bg-custom-primary-end focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+                  >
+                    Submit Feedback
+                  </button>
+                  <button
+                    onClick={() => {
+                      setFeedbackText("");
+                      handleFeedback();
+                    }}
+                    className="px-4 py-2 bg-gray-300 text-gray-700 rounded-md hover:bg-gray-400 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-400"
+                  >
+                    No Feedback
+                  </button>
+                </div>
+              </div>
+            )}
+            {isCompleted && (
+              <div className="flex items-center justify-start mb-4">
+                <CheckCircle className="h-12 w-12 text-green-500" />
+                <span className="ml-2 text-lg font-semibold">
+                  Course creation completed!
+                </span>
+              </div>
+            )}
+
+            {/* Updated Sources section */}
+            {sources.length > 0 && (
+              <div className="mt-6">
+                <h3 className="text-xl font-bold mb-2">Sources</h3>
+                <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+                  <AnimatePresence>
+                    {sources.map((source, index) => (
+                      <motion.a
+                        key={source}
+                        href={source}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="block p-4 bg-white rounded-lg shadow hover:shadow-md transition-shadow duration-300"
+                        initial={{ scale: 0.8, opacity: 0 }}
+                        animate={{ scale: 1, opacity: 1 }}
+                        exit={{ scale: 0.8, opacity: 0 }}
+                        transition={{ duration: 0.3 }}
+                      >
+                        <div className="flex items-center">
+                          <Globe className="w-4 h-4 mr-2 text-gray-500" />
+                          <span className="text-sm text-gray-600 truncate">
+                            {getHostname(source)}
+                          </span>
+                        </div>
+                      </motion.a>
+                    ))}
+                  </AnimatePresence>
+                </div>
               </div>
             )}
           </div>
