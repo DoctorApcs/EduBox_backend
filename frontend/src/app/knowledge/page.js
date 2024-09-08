@@ -124,21 +124,21 @@ export default function KnowledgeBasePage() {
       </main>
       <aside className="w-96 p-4 bg-custom-background border-l shadow-lg">
         <div className="flex flex-col items-center">
-          <Avatar>
+          <Avatar className="w-24 h-24 border-8 border-custom-primary-start">
             <AvatarImage src="/placeholder-user.jpg" alt="Admin" />
             <AvatarFallback>AD</AvatarFallback>
           </Avatar>
           <h4 className="mt-4 font-semibold">Admin</h4>
-          <Badge variant="secondary" className="mt-2">
+          <Badge variant="secondary" className="mt-2 bg-custom-cta">
             Pro
           </Badge>
         </div>
-        <div className="mt-6">
-          <BarChart className="w-full h-32" />
+        <div className="mt-6 flex items-center justify-center">
+          <BarChart className="h-32" />
         </div>
-        <div className="mt-6">
+        <div className="mt-6 flex flex-col items-center">
           <h4 className="font-semibold">Calendar</h4>
-          <Calendar mode="single" className="border rounded-md mt-2" />
+          <Calendar mode="single" className="border rounded-md mt-4" />
         </div>
       </aside>
       
@@ -173,12 +173,12 @@ function ArrowRightIcon(props) {
 
 function BarChart(props) {
   const data = {
-    labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun'],
+    labels: ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'],
     datasets: [
       {
-        label: 'Count',
-        data: [111, 157, 129, 150, 119, 72],
-        backgroundColor: '#2563eb',
+        label: 'Hours',
+        data: [8, 6, 9, 5, 7, 4, 3],
+        backgroundColor: '#6B0ACE',
       },
     ],
   };
@@ -201,11 +201,12 @@ function BarChart(props) {
       },
       y: {
         beginAtZero: true,
+        max: 12,
         grid: {
           color: '#f3f4f6',
         },
         ticks: {
-          stepSize: 50,
+          stepSize: 2,
         },
       },
     },
@@ -242,82 +243,6 @@ function FileTextIcon(props) {
   )
 }
 
-
-
-
-
-function LineChart(props) {
-  return (
-    <div {...props}>
-      <ResponsiveLine
-        data={[
-          {
-            id: "Desktop",
-            data: [
-              { x: "Jan", y: 43 },
-              { x: "Feb", y: 137 },
-              { x: "Mar", y: 61 },
-              { x: "Apr", y: 145 },
-              { x: "May", y: 26 },
-              { x: "Jun", y: 154 },
-            ],
-          },
-          {
-            id: "Mobile",
-            data: [
-              { x: "Jan", y: 60 },
-              { x: "Feb", y: 48 },
-              { x: "Mar", y: 177 },
-              { x: "Apr", y: 78 },
-              { x: "May", y: 96 },
-              { x: "Jun", y: 204 },
-            ],
-          },
-        ]}
-        margin={{ top: 10, right: 10, bottom: 40, left: 40 }}
-        xScale={{
-          type: "point",
-        }}
-        yScale={{
-          type: "linear",
-        }}
-        axisTop={null}
-        axisRight={null}
-        axisBottom={{
-          tickSize: 0,
-          tickPadding: 16,
-        }}
-        axisLeft={{
-          tickSize: 0,
-          tickValues: 5,
-          tickPadding: 16,
-        }}
-        colors={["#2563eb", "#e11d48"]}
-        pointSize={6}
-        useMesh={true}
-        gridYValues={6}
-        theme={{
-          tooltip: {
-            chip: {
-              borderRadius: "9999px",
-            },
-            container: {
-              fontSize: "12px",
-              textTransform: "capitalize",
-              borderRadius: "6px",
-            },
-          },
-          grid: {
-            line: {
-              stroke: "#f3f4f6",
-            },
-          },
-        }}
-        role="application"
-      />
-    </div>
-  )
-}
 
 function PlusIcon(props) {
   return (
