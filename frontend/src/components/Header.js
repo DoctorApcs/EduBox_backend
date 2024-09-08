@@ -9,13 +9,18 @@ const Header = () => {
   const pathname = usePathname();
 
   const navItems = [
-    { name: "Dashboard", path: "/knowledge", icon: HomeIcon },
-    { name: "Courses", path: "/courses", icon: BookIcon },
+    { name: "Dashboard", path: "/", icon: HomeIcon },
+    { name: "Courses", path: "/knowledge", icon: BookIcon },
     { name: "Chat", path: "/chat", icon: WebcamIcon },
     { name: "Analytics", path: "/analytics", icon: BarChartIcon },
   ];
 
-  const isActive = (path) => pathname === path;
+  const isActive = (path) => {
+    if (path === '/') {
+      return pathname === '/';
+    }
+    return pathname.startsWith(path + '/') || pathname === path;
+  };
 
   return (
     <aside className="w-72 p-0 bg-white border-r h-full flex flex-col items-center shadow-lg">
