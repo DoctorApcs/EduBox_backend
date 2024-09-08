@@ -158,3 +158,8 @@ class KnowledgeBaseService:
         with self.db_manager.Session() as session:
             lessons = session.query(Lesson).filter_by(knowledge_base_id=kb_id).all()
             return [LessonResponse.model_validate(lesson) for lesson in lessons]
+
+    def get_lesson_content(self, kb_id: int, lesson_id: int):
+        with self.db_manager.Session() as session:
+            lesson = session.query(Lesson).filter_by(id=lesson_id, knowledge_base_id=kb_id).first()
+            return lesson.content

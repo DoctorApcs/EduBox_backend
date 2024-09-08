@@ -28,6 +28,9 @@ class ModelConfig:
     
     OPENAI_API_KEY = os.environ.get('OPENAI_API_KEY')
     
+    FAST_LLM_MODEL = os.environ.get('FAST_LLM_MODEL', "gpt-4o-mini")
+    SMART_LLM_MODEL = os.environ.get('SMART_LLM_MODEL', "gpt-4o-mini")
+    
 class GlobalConfig:
     MODEL = ModelConfig
     DATABASE_PATH = "./DB/knowledge_base.db"

@@ -9,11 +9,13 @@ import KnowledgeBaseModal from "@/components/knowledge_base/KnowledgeBaseModal";
 import { useState, useEffect } from "react";
 import LoadingSpinner from "@/components/LoadingSpinner";
 import ErrorComponent from "@/components/Error";
+import { useRouter } from "next/navigation";
 
 const API_BASE_URL =
   process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:8000";
 
 export default function KnowledgeBasePage() {
+  const router = useRouter();
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [courses, setCourses] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -35,6 +37,7 @@ export default function KnowledgeBasePage() {
             imageUrl:
               `${API_BASE_URL}/getfile/${course.background_image}` ||
               "https://placehold.co/300x200?text=Course",
+            last_updated: course.last_updated, // Add this line
           }))
         );
         setIsLoading(false);
@@ -49,6 +52,10 @@ export default function KnowledgeBasePage() {
 
   const handleAddCourse = () => {
     setIsModalOpen(true);
+  };
+
+  const handleStartLearning = (id) => {
+    router.push(`/knowledge/${id}`);
   };
 
   const handleCloseModal = () => {
@@ -99,9 +106,15 @@ export default function KnowledgeBasePage() {
         <h2 className="text-2xl font-bold mb-6">Your Courses</h2>
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
           <AddCourseCard onClick={handleAddCourse} />
-          {courses.map((course) => (
-            <CourseCard key={course.id} {...course} />
-          ))}
+          {courses
+            .sort((a, b) => new Date(b.last_updated) - new Date(a.last_updated))
+            .map((course) => (
+              <CourseCard
+                key={course.id}
+                {...course}
+                onClick={handleStartLearning}
+              />
+            ))}
         </div>
 
         {/* <h2 className="text-2xl font-bold mt-12 mb-6">Your Assistants</h2> */}

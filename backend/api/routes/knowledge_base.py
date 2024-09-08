@@ -26,6 +26,7 @@ from typing import List
 from src.agents.course_agent import CourseAgent
 from src.constants import GlobalConfig
 from api.utils.websocket_manager import ws_manager
+from src.agents.quiz_agent import QuizAgent
 
 kb_router = APIRouter()
 UPLOAD_DIR = "uploads"
@@ -334,3 +335,20 @@ async def generate_course(
         )
     finally:
         ws_manager.disconnect(websocket)
+
+@kb_router.get("/{kb_id}/lessons/{lesson_id}/generate_quiz")
+async def generate_quiz(
+    kb_id: int,
+    lesson_id: int,
+    kb_service: KnowledgeBaseService = Depends(),
+):
+    # Retrieve the content for the specified section
+    section_content = kb_service.get_lesson_content(kb_id, lesson_id)
+    
+    # Initialize the QuizAgent
+    quiz_agent = QuizAgent()
+    
+    # Generate the quiz using the QuizAgent
+    quiz = await quiz_agent.run(section_content)
+    
+    return quiz
