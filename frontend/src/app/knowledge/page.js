@@ -33,39 +33,6 @@ export default function KnowledgeBasePage() {
 
   return (
     <div className="flex h-full">
-      {/* <aside className="w-64 p-4 bg-white border-r">
-        <div className="flex items-center mb-6">
-          <Input type="search" placeholder="Search your courses, activities, knowledge ..." className="w-full" />
-        </div>
-        <nav className="space-y-4">
-          <Link href="#" className="flex items-center text-purple-600" prefetch={false}>
-            <HomeIcon className="w-6 h-6 mr-2" />
-            Dashboard
-          </Link>
-          <Link href="#" className="flex items-center text-gray-600" prefetch={false}>
-            <BookIcon className="w-6 h-6 mr-2" />
-            Courses
-          </Link>
-          <Link href="#" className="flex items-center text-gray-600" prefetch={false}>
-            <WebcamIcon className="w-6 h-6 mr-2" />
-            Chat
-          </Link>
-          <Link href="#" className="flex items-center text-gray-600" prefetch={false}>
-            <BarChartIcon className="w-6 h-6 mr-2" />
-            Analytic
-          </Link>
-        </nav>
-        <div className="mt-auto space-y-4">
-          <Link href="#" className="flex items-center text-gray-600" prefetch={false}>
-            <SettingsIcon className="w-6 h-6 mr-2" />
-            Settings
-          </Link>
-          <Link href="#" className="flex items-center text-red-600" prefetch={false}>
-            <LogOutIcon className="w-6 h-6 mr-2" />
-            Logout
-          </Link>
-        </div>
-      </aside> */}
       <main className="flex-1 p-6 bg-custom-background">
         <div className="flex items-center justify-between p-6 bg-custom-primary rounded-lg">
           <div>
@@ -80,6 +47,12 @@ export default function KnowledgeBasePage() {
         <section className="mt-6">
           <h3 className="text-xl font-semibold">Your Courses</h3>
           <div className="grid grid-cols-3 gap-4 mt-4">
+            <Card 
+              className="flex items-center justify-center border-4 border-dashed border-custom-primary-start cursor-pointer bg-transparent rounded-3xl h-52 w-52"
+              onClick={handleOpenModal}
+            >
+              <PlusIcon className="w-12 h-12 text-purple-600" />
+            </Card>
             <KnowledgeBaseCard
               title="Calculus 3"
               docCount={2}
@@ -92,12 +65,7 @@ export default function KnowledgeBasePage() {
               lastUpdated="2024-01-01"
               onClick={() => {}}
             />
-            <Card 
-              className="flex items-center justify-center border-2 border-dashed border-purple-600 cursor-pointer"
-              onClick={handleOpenModal}
-            >
-              <PlusIcon className="w-12 h-12 text-purple-600" />
-            </Card>
+            
           </div>
         </section>
         <section className="mt-6">
@@ -189,28 +157,6 @@ function ArrowRightIcon(props) {
     </svg>
   )
 }
-
-
-function ArrowUpRightIcon(props) {
-  return (
-    <svg
-      {...props}
-      xmlns="http://www.w3.org/2000/svg"
-      width="24"
-      height="24"
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="2"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-    >
-      <path d="M7 7h10v10" />
-      <path d="M7 17 17 7" />
-    </svg>
-  )
-}
-
 
 function BarChart(props) {
   const data = {
