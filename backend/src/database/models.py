@@ -32,6 +32,7 @@ class KnowledgeBase(Base):
     user_id = Column(Integer, ForeignKey("users.id"))
     name = Column(String(100), nullable=False)
     description = Column(Text)
+    background_image = Column(String(255))
     created_at = Column(DateTime, default=datetime.utcnow)
     updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
     user = relationship("User", back_populates="knowledge_bases")
