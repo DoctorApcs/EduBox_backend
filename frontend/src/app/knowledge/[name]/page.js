@@ -5,9 +5,10 @@ import React, { useState, useEffect } from "react";
 import { useParams } from "next/navigation";
 import DatasetView from "@/components/knowledge_base/KBDatasetView";
 import ReactMarkdown from "react-markdown";
-import Image from 'next/image';
+import Image from "next/image";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
+import CustomMarkdown from "@/components/Markdown";
 
 const API_BASE_URL =
   process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:8000";
@@ -18,16 +19,35 @@ export default function KnowledgeBasePage() {
   const [activeTab, setActiveTab] = useState("Lessons");
   const [lessons, setLessons] = useState([]);
   const [selectedLesson, setSelectedLesson] = useState(null);
+  const [knowledgeBase, setKnowledgeBase] = useState(null);
 
   useEffect(() => {
+    fetchKnowledgeBase();
     fetchLessons();
   }, [knowledgeBaseID]);
 
+  const fetchKnowledgeBase = async () => {
+    try {
+      const response = await fetch(
+        `${API_BASE_URL}/api/knowledge_base/${knowledgeBaseID}`
+      );
+      if (!response.ok) {
+        throw new Error("Network response was not ok");
+      }
+      const data = await response.json();
+      setKnowledgeBase(data);
+    } catch (error) {
+      console.error("Error fetching knowledge base:", error);
+    }
+  };
+
   const fetchLessons = async () => {
     try {
-      const response = await fetch(`${API_BASE_URL}/api/knowledge_base/${knowledgeBaseID}/lessons`);
+      const response = await fetch(
+        `${API_BASE_URL}/api/knowledge_base/${knowledgeBaseID}/lessons`
+      );
       if (!response.ok) {
-        throw new Error('Network response was not ok');
+        throw new Error("Network response was not ok");
       }
       const data = await response.json();
       setLessons(data);
@@ -39,10 +59,19 @@ export default function KnowledgeBasePage() {
   const renderContent = () => {
     switch (activeTab) {
       case "Lessons":
-        return (
+        return selectedLesson ? (
+          <LessonContent
+            lesson={selectedLesson}
+            onBack={() => setSelectedLesson(null)}
+          />
+        ) : (
           <div className="space-y-4">
             {lessons.map((lesson, index) => (
-              <div key={lesson.id} className="flex items-center bg-white rounded-lg shadow-md p-4 cursor-pointer" onClick={() => setSelectedLesson(lesson)}>
+              <div
+                key={lesson.id}
+                className="flex items-center bg-white rounded-lg shadow-md p-4 cursor-pointer"
+                onClick={() => setSelectedLesson(lesson)}
+              >
                 <span className="text-xl font-bold mr-4">{index + 1}</span>
                 <div className="flex-grow">
                   <h3 className="text-lg font-semibold">{lesson.title}</h3>
@@ -78,7 +107,10 @@ export default function KnowledgeBasePage() {
             </Avatar>
             <div className="flex flex-col items-start">
               <span className="font-semibold">Admin</span>
-              <Badge variant="secondary" className="bg-custom-cta text-white text-xs px-2 py-0.5 rounded-full">
+              <Badge
+                variant="secondary"
+                className="bg-custom-cta text-white text-xs px-2 py-0.5 rounded-full"
+              >
                 Pro
               </Badge>
             </div>
@@ -88,9 +120,23 @@ export default function KnowledgeBasePage() {
 
       <main className="max-w-5xl mx-auto px-4 py-8">
         <div className="relative h-48 mb-6 rounded-lg overflow-hidden">
-          <Image src="" alt="Course background" layout="fill" objectFit="cover" />
+          <img
+            src={
+              knowledgeBase
+                ? `${API_BASE_URL}/getfile${knowledgeBase.background_image.replace(
+                    "./",
+                    "/"
+                  )}`
+                : "https://placehold.co/600x400"
+            }
+            alt="Course background"
+            layout="fill"
+            objectFit="cover"
+          />
           <div className="absolute bottom-0 left-0 right-0 flex justify-between items-end p-4 text-black">
-            <h1 className="text-2xl font-bold">Database Course</h1>
+            <h1 className="text-2xl font-bold">
+              {knowledgeBase?.name || knowledgeBaseID}
+            </h1>
           </div>
         </div>
         <div className="flex mb-6">
@@ -98,16 +144,35 @@ export default function KnowledgeBasePage() {
             <button
               key={tab}
               onClick={() => setActiveTab(tab)}
-              className={`px-4 py-2 ${activeTab === tab ? 'text-purple-600 font-bold border-b-2 border-purple-600' : 'text-gray-600'}`}
+              className={`px-4 py-2 ${
+                activeTab === tab
+                  ? "text-purple-600 font-bold border-b-2 border-purple-600"
+                  : "text-gray-600"
+              }`}
             >
               {tab}
             </button>
           ))}
         </div>
-        <div className="content-container">
-          {renderContent()}
-        </div>
+        <div className="content-container">{renderContent()}</div>
       </main>
+    </div>
+  );
+}
+
+function LessonContent({ lesson, onBack }) {
+  return (
+    <div className="bg-white rounded-lg shadow-md p-6">
+      <button
+        onClick={onBack}
+        className="mb-4 text-purple-600 hover:text-purple-800"
+      >
+        ← Back to Lessons
+      </button>
+      <h2 className="text-2xl font-bold mb-4">{lesson.title}</h2>
+      <CustomMarkdown className="prose max-w-none">
+        {lesson.content}
+      </CustomMarkdown>
     </div>
   );
 }

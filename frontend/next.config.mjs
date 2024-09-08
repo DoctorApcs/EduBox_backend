@@ -4,6 +4,16 @@ const nextConfig = {
   async rewrites() {
     return [];
   },
+  images: {
+    remotePatterns: [
+      {
+        protocol: "https",
+        hostname: "assets.vercel.com",
+        port: "",
+        pathname: "/image/upload/**",
+      },
+    ],
+  },
 };
 
 export default nextConfig;
