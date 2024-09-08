@@ -3,15 +3,16 @@
 import React from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { Input } from "@/components/ui/input";
 
 const Header = () => {
   const pathname = usePathname();
 
   const navItems = [
-    { name: "Knowledge Base", path: "/knowledge" },
-    { name: "Chat", path: "/chat" },
-    { name: "File Management", path: "/file-management" },
-    { name: "Analytics", path: "/analytics" },
+    { name: "Dashboard", path: "/knowledge", icon: HomeIcon },
+    { name: "Courses", path: "/courses", icon: BookIcon },
+    { name: "Chat", path: "/chat", icon: WebcamIcon },
+    { name: "Analytics", path: "/analytics", icon: BarChartIcon },
   ];
 
   const isActive = (path) => {
