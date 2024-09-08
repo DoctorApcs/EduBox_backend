@@ -313,6 +313,14 @@ async def get_this_week_sessions(
     return kb_service.get_this_week_sessions(current_user_id)
 
 
+@kb_router.get("/{kb_id}/lessons")
+def get_lessons(
+    kb_id: int,
+    kb_service: KnowledgeBaseService = Depends(),
+):
+    return kb_service.get_lessons(kb_id)
+
+
 @kb_router.websocket("/{kb_id}/generate_course")
 async def generate_course(
     websocket: WebSocket,
