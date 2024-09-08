@@ -9,8 +9,8 @@ const Header = () => {
   const pathname = usePathname();
 
   const navItems = [
-    { name: "Dashboard", path: "/knowledge", icon: HomeIcon },
-    { name: "Courses", path: "/courses", icon: BookIcon },
+    { name: "Dashboard", path: "/", icon: HomeIcon },
+    { name: "Courses", path: "/knowledge", icon: BookIcon },
     { name: "Chat", path: "/chat", icon: WebcamIcon },
     { name: "Analytics", path: "/analytics", icon: BarChartIcon },
   ];
