@@ -56,6 +56,7 @@ module.exports = {
         'custom-secondary': '#6B0ACE',
         'custom-accent': '#C8ABE6',
         'custom-background': '#F9F3FF',
+        'custom-cta': '#FFC746',  
       },
       borderRadius: {
         lg: "var(--radius)",

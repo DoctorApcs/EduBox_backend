@@ -34,21 +34,29 @@ export default function KnowledgeBasePage() {
   return (
     <div className="flex h-full">
       <main className="flex-1 p-6 bg-custom-background">
-        <div className="flex items-center justify-between p-6 bg-custom-primary rounded-lg">
-          <div>
-            <h2 className="text-2xl font-semibold text-white">Welcome back, admin!</h2>
-            <p className="text-white">You are doing great! Keep it up</p>
+        <div className="flex items-center justify-between p-6 bg-custom-primary rounded-lg relative h-52 mt-6">
+          <div className="z-10">
+            <h2 className="text-4xl font-semibold text-white">Welcome back, admin!</h2>
+            <p className="text-white text-xl">You are doing great! Keep it up</p>
           </div>
           <div
-            className="w-32 h-32 bg-cover bg-center"
-            style={{ backgroundImage: "url('/placeholder.svg?height=128&width=128')" }}
+            className="w-64 h-52 bg-cover bg-center absolute right-8 -top-12"
+            style={{ backgroundImage: "url('Idea.svg')" }}
           />
         </div>
         <section className="mt-6">
-          <h3 className="text-xl font-semibold">Your Courses</h3>
-          <div className="grid grid-cols-3 gap-4 mt-4">
+          <div className="flex justify-between items-center">
+            <h3 className="text-xl font-semibold">Your Courses</h3>
+            <a 
+              href="/courses" 
+              className="text-lg text-custom-primary-start hover:underline"
+            >
+              See All
+            </a>
+          </div>
+          <div className="flex gap-6 mt-4 flex-row overflow-x-auto pb-4">
             <Card 
-              className="flex items-center justify-center border-4 border-dashed border-custom-primary-start cursor-pointer bg-transparent rounded-3xl h-52 w-52"
+              className="flex-shrink-0 flex items-center justify-center border-4 border-dashed border-custom-primary-start cursor-pointer bg-transparent rounded-3xl h-52 w-52"
               onClick={handleOpenModal}
             >
               <PlusIcon className="w-12 h-12 text-purple-600" />
@@ -65,7 +73,12 @@ export default function KnowledgeBasePage() {
               lastUpdated="2024-01-01"
               onClick={() => {}}
             />
-            
+            <KnowledgeBaseCard
+              title="CS305"
+              docCount={2}
+              lastUpdated="2024-01-01"
+              onClick={() => {}}
+            />
           </div>
         </section>
         <section className="mt-6">
