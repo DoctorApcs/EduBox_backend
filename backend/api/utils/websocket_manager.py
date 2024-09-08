@@ -177,6 +177,8 @@ class ConnectionManager:
                 KnowledgeBaseCreate(name=request.query, description=request.query)
             )
             kb_id = new_kb.id
+            # Send kb id to the client
+            await websocket.send_json({"type": "kb_created", "content": kb_id})
 
             # Create a task dictionary from the request
             task = {

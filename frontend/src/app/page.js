@@ -77,10 +77,10 @@ export default function DashboardPage() {
     setIsModalOpen(false);
   };
 
-  const handleCreateCourse = () => {
+  const handleCreateCourse = (kbId) => {
     // redirect to knowledge/1
     setIsModalOpen(false);
-    router.push("/knowledge/1");
+    router.push(`/knowledge/${kbId}`);
   };
 
   if (isLoading) {

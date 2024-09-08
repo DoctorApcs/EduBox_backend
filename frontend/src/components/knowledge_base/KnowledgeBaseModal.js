@@ -24,6 +24,7 @@ const KnowledgeBaseModal = ({ isOpen, onClose, onCreate }) => {
   const [sections, setSections] = useState([]);
   const [isCompleted, setIsCompleted] = useState(false);
   const [sources, setSources] = useState([]);
+  const [kbId, setKbId] = useState(null);
 
   const getHostname = (url) => {
     try {
@@ -56,11 +57,14 @@ const KnowledgeBaseModal = ({ isOpen, onClose, onCreate }) => {
           );
           setIsLoading(false); // Set loading to false when human feedback is required
           setLogs(""); // Clear logs when human feedback is required
+        } else if (data.type === "kb_created") {
+          console.log("kb_created", data.content);
+          setKbId(data.content);
         } else if (data.type === "end") {
           setIsCompleted(true);
           setIsLoading(false);
           setTimeout(() => {
-            onCreate(); // Call onClose instead of router.push
+            onCreate(data.metadata.knowledge_base_id); // Call onClose instead of router.push
           }, 2000); // Close modal after 2 seconds
         } else if (data.type === "logs") {
           if (data.content === "added_source_url") {
