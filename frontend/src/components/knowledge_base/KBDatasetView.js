@@ -224,7 +224,7 @@ const DatasetView = ({ knowledgeBaseID }) => {
     }
   };
 
-  const truncateFileName = (fileName, maxLength = 80) => {
+  const truncateFileName = (fileName, maxLength = 30) => {
     if (fileName.length <= maxLength) return fileName;
     const extension = fileName.split(".").pop();
     const nameWithoutExtension = fileName.slice(0, -(extension.length + 1));
@@ -284,11 +284,9 @@ const DatasetView = ({ knowledgeBaseID }) => {
   return (
     // <div className="flex h-screen bg-gray-100">
     <div className="flex h-full w-full p-4 sm:p-6 lg:p-8">
-
       {/* Main content */}
       <main className="flex-1 flex flex-col overflow-hidden">
         <div>
-
           {error && (
             <div
               className="bg-red-100 border-l-4 border-red-500 text-red-700 p-4 mb-6"
