@@ -4,7 +4,7 @@ import { ArrowUpRightIcon } from "lucide-react";
 
 const KnowledgeBaseCard = ({ title, docCount, lastUpdated, onClick }) => {
 return (
-  <Card className="relative rounded-3xl overflow-hidden h-52 w-52 cursor-pointer shadow-lg transition-all duration-300 hover:z-10" onClick={onClick}>
+  <Card className="relative rounded-3xl overflow-hidden h-52 w-52 cursor-pointer shadow-lg transition-all duration-300 transform hover:scale-105" onClick={onClick}>
     <div 
       className="absolute inset-0 bg-cover bg-center"
       style={{ backgroundImage: "url('https://placehold.co/600x400')" }}

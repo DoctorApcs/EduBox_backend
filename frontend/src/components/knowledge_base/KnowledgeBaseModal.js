@@ -66,6 +66,12 @@ const KnowledgeBaseModal = ({ isOpen, onClose, onCreate, kbId }) => {
     }
   }, [isOpen, kbId, onClose]); // Add onClose to the dependency array
 
+  const handleBackgroundClick = (e) => {
+    if (e.target === e.currentTarget) {
+      handleClose();
+    }
+  };
+
   if (!isOpen) return null;
 
   const handleChange = (e) => {
@@ -110,8 +116,11 @@ const KnowledgeBaseModal = ({ isOpen, onClose, onCreate, kbId }) => {
   };
 
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center overflow-hidden">
-      <div className="bg-white rounded-lg shadow-lg w-full max-w-6xl h-5/6 flex">
+    <div 
+      className="fixed inset-0 bg-black bg-opacity-50 backdrop-blur-md flex justify-center items-center overflow-hidden"
+      onClick={handleBackgroundClick}
+    >
+      <div className="bg-white rounded-lg shadow-lg w-full max-w-6xl h-5/6 flex" onClick={(e) => e.stopPropagation()}>
         {/* Purple Sidebar */}
         <div className="w-1/3 bg-purple-600 p-6 overflow-y-auto">
           <h2 className="text-2xl font-bold mb-6 text-white">Create New Course</h2>

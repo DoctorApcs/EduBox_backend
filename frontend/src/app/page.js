@@ -54,7 +54,7 @@ export default function DashboardPage() {
               See All
             </a>
           </div>
-          <div className="flex gap-6 mt-4 flex-row overflow-x-auto pb-4">
+          <div className="flex gap-6 mt-4 flex-row overflow-x-auto p-4">
             <Card 
               className="flex-shrink-0 flex items-center justify-center border-4 border-dashed border-custom-primary-start cursor-pointer bg-transparent rounded-3xl h-52 w-52"
               onClick={handleOpenModal}
