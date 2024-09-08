@@ -19,14 +19,7 @@ class KnowledgeBaseService:
     def create_knowledge_base(
         self, user_id: int, kb: KnowledgeBaseCreate
     ) -> KnowledgeBaseResponse:
-        with self.db_manager.Session() as session:
-            new_kb = KnowledgeBase(
-                user_id=user_id, name=kb.name, description=kb.description
-            )
-            session.add(new_kb)
-            session.commit()
-            session.refresh(new_kb)
-            return KnowledgeBaseResponse.model_validate(new_kb)
+        return self.db_manager.create_knowledge_base(user_id, kb.name, kb.description)
 
     def get_knowledge_base(self, kb_id: int, user_id: int) -> KnowledgeBaseResponse:
         with self.db_manager.Session() as session:

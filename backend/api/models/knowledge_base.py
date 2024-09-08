@@ -35,6 +35,7 @@ class KnowledgeBaseResponse(BaseModel):
     document_count: int
     last_updated: datetime
     documents: List[DocumentInKnowledgeBase]
+    background_image: Optional[str]
 
     model_config = ConfigDict(from_attributes=True)
 

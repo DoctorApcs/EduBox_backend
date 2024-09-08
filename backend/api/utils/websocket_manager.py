@@ -4,7 +4,7 @@ from fastapi import WebSocket
 from typing import Dict, Any, Optional
 from src.constants import GlobalConfig
 from enum import Enum
-from api.models.knowledge_base import CourseGenerationRequest
+from api.models.knowledge_base import CourseGenerationRequest, KnowledgeBaseCreate
 from api.services.knowledge_base import KnowledgeBaseService
 from fastapi import WebSocketDisconnect
 from src.utils.stream import stream_output
@@ -163,7 +163,6 @@ class ConnectionManager:
     async def handle_course_generation(
         self,
         websocket: WebSocket,
-        kb_id: int,
         current_user_id: int,
         kb_service: KnowledgeBaseService,
     ):
@@ -172,11 +171,14 @@ class ConnectionManager:
             request_data = await websocket.receive_text()
             request = CourseGenerationRequest(**json.loads(request_data))
 
-            # Verify that the knowledge base exists and belongs to the current user
-            kb = kb_service.get_knowledge_base(kb_id, current_user_id)
-            if kb is None:
-                await self.send_error(websocket, "Knowledge base not found")
-                return
+            # Create a new knowledge base using the query
+            new_kb = kb_service.create_knowledge_base(
+                current_user_id, 
+                KnowledgeBaseCreate(name=request.query, description=request.query)
+            )
+            kb_id = new_kb.id
+            # Send kb id to the client
+            await websocket.send_json({"type": "kb_created", "content": kb_id})
 
             # Create a task dictionary from the request
             task = {
@@ -202,7 +204,7 @@ class ConnectionManager:
             logging.info(f"Course generation completed for knowledge base {kb_id}")
             # Send the final result
             await self.send_end_message(
-                websocket, MediaType.TEXT, EndStatus.COMPLETE, {"result": result}
+                websocket, MediaType.TEXT, EndStatus.COMPLETE, {"result": result, "knowledge_base_id": kb_id}
             )
 
         except WebSocketDisconnect:

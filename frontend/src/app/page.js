@@ -1,21 +1,73 @@
-"use client"
+"use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
-import { Card } from "@/components/ui/card"
-import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar"
-import { Badge } from "@/components/ui/badge"
-import { Calendar } from "@/components/ui/calendar"
-import KnowledgeBaseCard from "@/components/knowledge_base/KnowledgeBaseCard"
-import { Bar } from 'react-chartjs-2';
-import { Chart as ChartJS, CategoryScale, LinearScale, BarElement, Title, Tooltip, Legend } from 'chart.js';
+import { Card } from "@/components/ui/card";
+import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
+import { Badge } from "@/components/ui/badge";
+import { Calendar } from "@/components/ui/calendar";
+import KnowledgeBaseCard from "@/components/knowledge_base/KnowledgeBaseCard";
+import { Bar } from "react-chartjs-2";
+import {
+  Chart as ChartJS,
+  CategoryScale,
+  LinearScale,
+  BarElement,
+  Title,
+  Tooltip,
+  Legend,
+} from "chart.js";
 import KnowledgeBaseModal from "@/components/knowledge_base/KnowledgeBaseModal";
+import LoadingSpinner from "@/components/LoadingSpinner";
+import ErrorComponent from "@/components/Error";
 
-ChartJS.register(CategoryScale, LinearScale, BarElement, Title, Tooltip, Legend);
+const API_BASE_URL =
+  process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:8000";
+
+ChartJS.register(
+  CategoryScale,
+  LinearScale,
+  BarElement,
+  Title,
+  Tooltip,
+  Legend
+);
 
 export default function DashboardPage() {
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [courses, setCourses] = useState([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState(null);
   const router = useRouter();
+
+  useEffect(() => {
+    const fetchCourses = async () => {
+      try {
+        const response = await fetch(`${API_BASE_URL}/api/knowledge_base`);
+        if (!response.ok) {
+          throw new Error("Failed to fetch courses");
+        }
+        const data = await response.json();
+        setCourses(
+          data.map((course) => ({
+            id: course.id,
+            title: course.name,
+            docCount: course.document_count,
+            lastUpdated: course.updated_at,
+            imageUrl:
+              `${API_BASE_URL}/getfile/${course.background_image}` ||
+              "https://placehold.co/300x200?text=Course",
+          }))
+        );
+        setIsLoading(false);
+      } catch (err) {
+        setError(err.message);
+        setIsLoading(false);
+      }
+    };
+
+    fetchCourses();
+  }, []);
 
   const handleOpenModal = () => {
     setIsModalOpen(true);
@@ -25,19 +77,31 @@ export default function DashboardPage() {
     setIsModalOpen(false);
   };
 
-  const handleCreateCourse = () => {
+  const handleCreateCourse = (kbId) => {
     // redirect to knowledge/1
     setIsModalOpen(false);
-    router.push('/knowledge/1');
+    router.push(`/knowledge/${kbId}`);
   };
+
+  if (isLoading) {
+    return <LoadingSpinner />;
+  }
+
+  if (error) {
+    return <ErrorComponent message={error} />;
+  }
 
   return (
     <div className="flex h-full">
       <main className="flex-1 p-6 bg-custom-background">
         <div className="flex items-center justify-between p-6 bg-custom-primary rounded-lg relative h-52 mt-6">
           <div className="z-1">
-            <h2 className="text-4xl font-semibold text-white">Welcome back, admin!</h2>
-            <p className="text-white text-xl">You are doing great! Keep it up</p>
+            <h2 className="text-4xl font-semibold text-white">
+              Welcome back, admin!
+            </h2>
+            <p className="text-white text-xl">
+              You are doing great! Keep it up
+            </p>
           </div>
           <div
             className="w-64 h-52 bg-cover bg-center absolute right-8 -top-12"
@@ -47,38 +111,30 @@ export default function DashboardPage() {
         <section className="mt-6">
           <div className="flex justify-between items-center">
             <h3 className="text-xl font-semibold">Your Courses</h3>
-            <a 
-              href="/knowledge" 
+            <a
+              href="/knowledge"
               className="text-lg text-custom-primary-start hover:underline"
             >
               See All
             </a>
           </div>
           <div className="flex gap-6 mt-4 flex-row overflow-x-auto p-4">
-            <Card 
+            <Card
               className="flex-shrink-0 flex items-center justify-center border-4 border-dashed border-custom-primary-start cursor-pointer bg-transparent rounded-3xl h-52 w-52"
               onClick={handleOpenModal}
             >
               <PlusIcon className="w-12 h-12 text-purple-600" />
             </Card>
-            <KnowledgeBaseCard
-              title="Calculus 3"
-              docCount={2}
-              lastUpdated="2024-01-01"
-              onClick={() => {}}
-            />
-            <KnowledgeBaseCard
-              title="CS305"
-              docCount={2}
-              lastUpdated="2024-01-01"
-              onClick={() => {}}
-            />
-            <KnowledgeBaseCard
-              title="CS305"
-              docCount={2}
-              lastUpdated="2024-01-01"
-              onClick={() => {}}
-            />
+            {courses.slice(0, 3).map((course) => (
+              <KnowledgeBaseCard
+                key={course.id}
+                title={course.title}
+                docCount={course.docCount}
+                lastUpdated={course.lastUpdated}
+                onClick={() => router.push(`/knowledge/${course.id}`)}
+                imageUrl={course.imageUrl}
+              />
+            ))}
           </div>
         </section>
         <section className="mt-6">
@@ -113,7 +169,10 @@ export default function DashboardPage() {
             <Card className="flex items-center justify-center p-4">
               <div
                 className="w-32 h-32 bg-cover bg-center"
-                style={{ backgroundImage: "url('/placeholder.svg?height=128&width=128')" }}
+                style={{
+                  backgroundImage:
+                    "url('/placeholder.svg?height=128&width=128')",
+                }}
               />
               <div className="ml-4">
                 <h4 className="font-semibold">Mind map</h4>
@@ -124,7 +183,7 @@ export default function DashboardPage() {
       </main>
       <aside className="w-96 p-4 bg-custom-background border-l shadow-lg">
         <div className="flex flex-col items-center">
-          <Avatar className="w-24 h-24 border-8 border-custom-primary-start">
+          <Avatar className="w-24 h-24 border-8 border-custom-primary-start mt-8">
             <AvatarImage src="/placeholder-user.jpg" alt="Admin" />
             <AvatarFallback>AD</AvatarFallback>
           </Avatar>
@@ -141,14 +200,14 @@ export default function DashboardPage() {
           <Calendar mode="single" className="border rounded-md mt-4" />
         </div>
       </aside>
-      
+
       <KnowledgeBaseModal
         isOpen={isModalOpen}
         onClose={handleCloseModal}
         onCreate={handleCreateCourse}
       />
     </div>
-  )
+  );
 }
 
 function ArrowRightIcon(props) {
@@ -168,17 +227,17 @@ function ArrowRightIcon(props) {
       <path d="M5 12h14" />
       <path d="m12 5 7 7-7 7" />
     </svg>
-  )
+  );
 }
 
 function BarChart(props) {
   const data = {
-    labels: ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'],
+    labels: ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"],
     datasets: [
       {
-        label: 'Hours',
+        label: "Hours",
         data: [8, 6, 9, 5, 7, 4, 3],
-        backgroundColor: '#6B0ACE',
+        backgroundColor: "#6B0ACE",
       },
     ],
   };
@@ -203,7 +262,7 @@ function BarChart(props) {
         beginAtZero: true,
         max: 12,
         grid: {
-          color: '#f3f4f6',
+          color: "#f3f4f6",
         },
         ticks: {
           stepSize: 2,
@@ -218,7 +277,6 @@ function BarChart(props) {
     </div>
   );
 }
-
 
 function FileTextIcon(props) {
   return (
@@ -240,9 +298,8 @@ function FileTextIcon(props) {
       <path d="M16 13H8" />
       <path d="M16 17H8" />
     </svg>
-  )
+  );
 }
-
 
 function PlusIcon(props) {
   return (
@@ -261,5 +318,5 @@ function PlusIcon(props) {
       <path d="M5 12h14" />
       <path d="M12 5v14" />
     </svg>
-  )
+  );
 }

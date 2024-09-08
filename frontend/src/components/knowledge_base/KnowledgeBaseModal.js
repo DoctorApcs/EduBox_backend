@@ -1,14 +1,12 @@
 import React, { useState, useEffect, useRef } from "react";
-import { Resizable } from "react-resizable";
-import "react-resizable/css/styles.css";
-// Remove the following import:
-// import { useRouter } from 'next/router';
-import { CheckCircle } from 'lucide-react';
+import { CheckCircle, Loader, Globe } from "lucide-react";
+import Image from "next/image";
+import { motion, AnimatePresence } from "framer-motion"; // Add this import
 
 const API_BASE_URL =
   process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:8000";
 
-const KnowledgeBaseModal = ({ isOpen, onClose, onCreate, kbId }) => {
+const KnowledgeBaseModal = ({ isOpen, onClose, onCreate }) => {
   const [formData, setFormData] = useState({
     query: "",
     max_sections: 3,
@@ -22,39 +20,63 @@ const KnowledgeBaseModal = ({ isOpen, onClose, onCreate, kbId }) => {
   const [humanFeedbackRequired, setHumanFeedbackRequired] = useState(false);
   const [feedbackText, setFeedbackText] = useState("");
   const [logs, setLogs] = useState("");
-  const [showLogs, setShowLogs] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
   const [sections, setSections] = useState([]);
-  const [logsHeight, setLogsHeight] = useState(200); // Initial height for logs
-  const logsRef = useRef(null);
   const [isCompleted, setIsCompleted] = useState(false);
+  const [sources, setSources] = useState([]);
+  const [kbId, setKbId] = useState(null);
+
+  const getHostname = (url) => {
+    try {
+      return new URL(url).hostname;
+    } catch (error) {
+      console.error("Invalid URL:", url);
+      return "Unknown";
+    }
+  };
 
   useEffect(() => {
     if (isOpen) {
       // Open WebSocket connection when modal is opened
-      websocketRef.current = new WebSocket(`ws://${API_BASE_URL.replace(
-        /^https?:\/\//,
-        ""
-      )}/api/knowledge_base/${1}/generate_course`);
+      websocketRef.current = new WebSocket(
+        `ws://${API_BASE_URL.replace(
+          /^https?:\/\//,
+          ""
+        )}/api/knowledge_base/generate_course`
+      );
 
       websocketRef.current.onmessage = (event) => {
         const data = JSON.parse(event.data);
         if (data.type === "human_feedback") {
           setHumanFeedbackRequired(true);
-          setSections(data.output.map((section, index) => ({ id: index + 1, title: section })));
+          setSections(
+            data.output.map((section, index) => ({
+              id: index + 1,
+              title: section,
+            }))
+          );
+          setIsLoading(false); // Set loading to false when human feedback is required
+          setLogs(""); // Clear logs when human feedback is required
+        } else if (data.type === "kb_created") {
+          console.log("kb_created", data.content);
+          setKbId(data.content);
         } else if (data.type === "end") {
           setIsCompleted(true);
+          setIsLoading(false);
           setTimeout(() => {
-            onCreate(); // Call onClose instead of router.push
+            onCreate(data.metadata.knowledge_base_id); // Call onClose instead of router.push
           }, 2000); // Close modal after 2 seconds
-        } else {
-          setLogs(prevContent => prevContent + JSON.stringify(data, null, 2) + "\n\n");
+        } else if (data.type === "logs") {
+          if (data.content === "added_source_url") {
+            const url = data.output
+              .split("✅ Added source url to research:")[1]
+              .trim();
+            setSources((prevSources) => [url, ...prevSources]);
+          } else {
+            setLogs(data.output);
+          }
         }
       };
-
-      // Scroll logs to bottom when content changes
-      if (logsRef.current) {
-        logsRef.current.scrollTop = logsRef.current.scrollHeight;
-      }
 
       return () => {
         // Close WebSocket connection when modal is closed
@@ -64,7 +86,7 @@ const KnowledgeBaseModal = ({ isOpen, onClose, onCreate, kbId }) => {
         setCourseContent("");
       };
     }
-  }, [isOpen, kbId, onClose]); // Add onClose to the dependency array
+  }, [isOpen, onClose]); // Add onClose to the dependency array
 
   const handleBackgroundClick = (e) => {
     if (e.target === e.currentTarget) {
@@ -76,18 +98,22 @@ const KnowledgeBaseModal = ({ isOpen, onClose, onCreate, kbId }) => {
 
   const handleChange = (e) => {
     const { name, value, type, checked } = e.target;
-    setFormData(prevData => ({
+    setFormData((prevData) => ({
       ...prevData,
-      [name]: type === 'checkbox' ? checked : value,
+      [name]: type === "checkbox" ? checked : value,
     }));
   };
-  
+
   const handleSubmit = (e) => {
     e.preventDefault();
-    if (websocketRef.current && websocketRef.current.readyState === WebSocket.OPEN) {
+    setIsLoading(true);
+    setLogs("Creating course...");
+    if (
+      websocketRef.current &&
+      websocketRef.current.readyState === WebSocket.OPEN
+    ) {
       websocketRef.current.send(JSON.stringify(formData));
     }
-    // onCreate(formData);
   };
 
   const handleClose = () => {
@@ -101,33 +127,44 @@ const KnowledgeBaseModal = ({ isOpen, onClose, onCreate, kbId }) => {
   };
 
   const handleFeedback = () => {
-    if (websocketRef.current && websocketRef.current.readyState === WebSocket.OPEN) {
-      websocketRef.current.send(JSON.stringify({
-        type: "human_feedback",
-        content: feedbackText.trim() || "no"
-      }));
+    if (
+      websocketRef.current &&
+      websocketRef.current.readyState === WebSocket.OPEN
+    ) {
+      setIsLoading(true); // Set loading to true when submitting feedback
+      setLogs("Processing feedback..."); // Set logs when submitting feedback
+      websocketRef.current.send(
+        JSON.stringify({
+          type: "human_feedback",
+          content: feedbackText.trim() || "no",
+        })
+      );
       setHumanFeedbackRequired(false);
       setFeedbackText("");
     }
   };
 
-  const handleResize = (event, { size }) => {
-    setLogsHeight(size.height);
-  };
-
   return (
-    <div 
+    <div
       className="fixed inset-0 bg-black bg-opacity-50 backdrop-blur-md flex justify-center items-center overflow-hidden"
       onClick={handleBackgroundClick}
     >
-      <div className="bg-white rounded-lg shadow-lg w-full max-w-6xl h-5/6 flex" onClick={(e) => e.stopPropagation()}>
+      <div
+        className="bg-white rounded-lg shadow-lg w-full max-w-6xl h-5/6 flex"
+        onClick={(e) => e.stopPropagation()}
+      >
         {/* Purple Sidebar */}
         <div className="w-1/3 bg-purple-600 p-6 overflow-y-auto">
-          <h2 className="text-2xl font-bold mb-6 text-white">Create New Course</h2>
+          <h2 className="text-2xl font-bold mb-6 text-white">
+            Create New Course
+          </h2>
           <form onSubmit={handleSubmit} className="space-y-4">
             {/* Query */}
             <div>
-              <label htmlFor="query" className="block text-sm font-medium text-white mb-1">
+              <label
+                htmlFor="query"
+                className="block text-sm font-medium text-white mb-1"
+              >
                 Query
               </label>
               <input
@@ -143,7 +180,10 @@ const KnowledgeBaseModal = ({ isOpen, onClose, onCreate, kbId }) => {
 
             {/* Max Sections */}
             <div>
-              <label htmlFor="max_sections" className="block text-sm font-medium text-white mb-1">
+              <label
+                htmlFor="max_sections"
+                className="block text-sm font-medium text-white mb-1"
+              >
                 Max Sections
               </label>
               <input
@@ -159,23 +199,31 @@ const KnowledgeBaseModal = ({ isOpen, onClose, onCreate, kbId }) => {
 
             {/* Other checkboxes */}
             <div className="space-y-2">
-              {['include_human_feedback', 'follow_guidelines', 'verbose'].map((field) => (
-                <label key={field} className="inline-flex items-center">
-                  <input
-                    type="checkbox"
-                    name={field}
-                    checked={formData[field]}
-                    onChange={handleChange}
-                    className="form-checkbox h-4 w-4 text-purple-300 border-purple-400 rounded"
-                  />
-                  <span className="ml-2 text-white text-sm">{field.replace(/_/g, ' ')}</span>
-                </label>
-              ))}
+              {["include_human_feedback", "follow_guidelines", "verbose"].map(
+                (field) => (
+                  <label key={field} className="inline-flex items-center">
+                    <input
+                      type="checkbox"
+                      name={field}
+                      checked={formData[field]}
+                      onChange={handleChange}
+                      className="form-checkbox h-4 w-4 text-purple-300 border-purple-400 rounded"
+                      defaultChecked={true}
+                    />
+                    <span className="ml-2 text-white text-sm">
+                      {field.replace(/_/g, " ")}
+                    </span>
+                  </label>
+                )
+              )}
             </div>
 
             {/* Model */}
             <div>
-              <label htmlFor="model" className="block text-sm font-medium text-white mb-1">
+              <label
+                htmlFor="model"
+                className="block text-sm font-medium text-white mb-1"
+              >
                 Model
               </label>
               <select
@@ -190,8 +238,11 @@ const KnowledgeBaseModal = ({ isOpen, onClose, onCreate, kbId }) => {
             </div>
 
             {/* Image upload */}
-            <div>
-              <label htmlFor="image" className="block text-sm font-medium text-white mb-1">
+            {/* <div>
+              <label
+                htmlFor="image"
+                className="block text-sm font-medium text-white mb-1"
+              >
                 Upload Image
               </label>
               <input
@@ -201,7 +252,7 @@ const KnowledgeBaseModal = ({ isOpen, onClose, onCreate, kbId }) => {
                 accept="image/*"
                 className="w-full p-2 border border-purple-400 rounded-md bg-purple-500 text-white file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-purple-50 file:text-purple-700 hover:file:bg-purple-100"
               />
-            </div>
+            </div> */}
 
             {/* Action Buttons */}
             <div className="flex justify-end space-x-3 mt-6">
@@ -226,24 +277,32 @@ const KnowledgeBaseModal = ({ isOpen, onClose, onCreate, kbId }) => {
         <div className="w-2/3 flex flex-col">
           <div className="flex-grow p-6 bg-white overflow-y-auto">
             <h2 className="text-2xl font-bold mb-6">Course Content</h2>
-            {isCompleted && (
-              <div className="flex items-center justify-center mb-4">
-                <CheckCircle className="h-12 w-12 text-green-500" />
-                <span className="ml-2 text-lg font-semibold">Course creation completed!</span>
-              </div>
-            )}
             <div className="overflow-y-auto">
-              {sections.map(section => (
-                <div key={section.id} className="bg-gray-100 p-4 rounded-lg mb-4">
-                  <h3 className="text-lg font-semibold">Section {section.id}: {section.title}</h3>
+              {sections.map((section) => (
+                <div
+                  key={section.id}
+                  className="bg-gray-100 p-4 rounded-lg mb-4"
+                >
+                  <h3 className="text-lg font-semibold">
+                    Section {section.id}: {section.title}
+                  </h3>
                 </div>
               ))}
-              {!sections.length && (
+              {!sections.length && !isLoading && (
                 <pre className="whitespace-pre-wrap text-gray-600">
-                  {courseContent || "The course content will be displayed here after creation."}
+                  {courseContent ||
+                    "The course content will be displayed here after creation."}
                 </pre>
               )}
             </div>
+            {isLoading && (
+              <div className="flex items-center justify-start mt-4">
+                <Loader className="h-8 w-8 text-blue-500 animate-spin" />
+                <span className="ml-2 text-lg font-regular truncate">
+                  {logs}
+                </span>
+              </div>
+            )}
             {humanFeedbackRequired && (
               <div className="mt-4 space-y-2">
                 <textarea
@@ -253,42 +312,65 @@ const KnowledgeBaseModal = ({ isOpen, onClose, onCreate, kbId }) => {
                   className="w-full p-2 border border-gray-300 rounded-md"
                   rows="3"
                 />
-                <button
-                  onClick={handleFeedback}
-                  className="px-4 py-2 bg-blue-500 text-white rounded-md hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
-                >
-                  Submit Feedback
-                </button>
+                <div className="flex space-x-2">
+                  <button
+                    onClick={handleFeedback}
+                    className="px-4 py-2 bg-custom-primary-start text-white rounded-md hover:bg-custom-primary-end focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+                  >
+                    Submit Feedback
+                  </button>
+                  <button
+                    onClick={() => {
+                      setFeedbackText("");
+                      handleFeedback();
+                    }}
+                    className="px-4 py-2 bg-gray-300 text-gray-700 rounded-md hover:bg-gray-400 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-400"
+                  >
+                    No Feedback
+                  </button>
+                </div>
+              </div>
+            )}
+            {isCompleted && (
+              <div className="flex items-center justify-start mb-4">
+                <CheckCircle className="h-12 w-12 text-green-500" />
+                <span className="ml-2 text-lg font-semibold">
+                  Course creation completed!
+                </span>
+              </div>
+            )}
+
+            {/* Updated Sources section */}
+            {sources.length > 0 && (
+              <div className="mt-6">
+                <h3 className="text-xl font-bold mb-2">Sources</h3>
+                <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+                  <AnimatePresence>
+                    {sources.map((source, index) => (
+                      <motion.a
+                        key={source}
+                        href={source}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="block p-4 bg-white rounded-lg shadow hover:shadow-md transition-shadow duration-300"
+                        initial={{ scale: 0.8, opacity: 0 }}
+                        animate={{ scale: 1, opacity: 1 }}
+                        exit={{ scale: 0.8, opacity: 0 }}
+                        transition={{ duration: 0.3 }}
+                      >
+                        <div className="flex items-center">
+                          <Globe className="w-4 h-4 mr-2 text-gray-500" />
+                          <span className="text-sm text-gray-600 truncate">
+                            {getHostname(source)}
+                          </span>
+                        </div>
+                      </motion.a>
+                    ))}
+                  </AnimatePresence>
+                </div>
               </div>
             )}
           </div>
-          
-          {/* Logs Section */}
-          <Resizable
-            height={logsHeight}
-            width={Infinity}
-            onResize={handleResize}
-            minConstraints={[Infinity, 100]}
-            maxConstraints={[Infinity, window.innerHeight * 0.3]}
-          >
-            <div style={{ height: `${logsHeight}px` }} className="border-t border-gray-200">
-              <button
-                onClick={() => setShowLogs(!showLogs)}
-                className="w-full p-2 text-left text-gray-600 hover:bg-gray-100 focus:outline-none"
-              >
-                {showLogs ? "Hide Logs" : "Show Logs"}
-              </button>
-              {showLogs && (
-                <pre
-                  ref={logsRef}
-                  className="bg-gray-50 p-4 text-sm text-gray-600 overflow-y-auto"
-                  style={{ height: `calc(100% - 40px)` }}
-                >
-                  {logs || "No logs available."}
-                </pre>
-              )}
-            </div>
-          </Resizable>
         </div>
       </div>
     </div>

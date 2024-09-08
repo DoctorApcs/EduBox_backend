@@ -321,17 +321,16 @@ def get_lessons(
     return kb_service.get_lessons(kb_id)
 
 
-@kb_router.websocket("/{kb_id}/generate_course")
+@kb_router.websocket("/generate_course")
 async def generate_course(
     websocket: WebSocket,
-    kb_id: int,
     current_user_id: int = Depends(get_current_user_id),
     kb_service: KnowledgeBaseService = Depends(),
 ):
     await ws_manager.connect(websocket)
     try:
         await ws_manager.handle_course_generation(
-            websocket, kb_id, current_user_id, kb_service
+            websocket, current_user_id, kb_service
         )
     finally:
         ws_manager.disconnect(websocket)
