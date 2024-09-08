@@ -283,39 +283,11 @@ const DatasetView = ({ knowledgeBaseID }) => {
 
   return (
     // <div className="flex h-screen bg-gray-100">
-    <div className="flex h-[calc(100vh-4rem)]  min-h-full w-full p-4 sm:p-6 lg:p-8 max-w-screen-2xl mx-auto">
-      {/* Sidebar */}
-      <aside className="w-64 bg-white shadow-md">
-        <div className="p-4">
-          <div className="w-10 h-10 bg-gray-200 rounded-full mb-4"></div>
-          <h2 className="text-xl font-semibold">{knowledgeBase.name}</h2>
-        </div>
-        <nav className="mt-6">
-          <a
-            href="#"
-            className="block py-2 px-4 bg-blue-100 text-blue-700 border-l-4 border-blue-700"
-          >
-            <FileText className="inline-block mr-2" size={20} />
-            Dataset
-          </a>
-
-          <a
-            href="#"
-            className="block py-2 px-4 text-gray-600 hover:bg-gray-100"
-          >
-            <Settings className="inline-block mr-2" size={20} />
-            Configuration
-          </a>
-        </nav>
-      </aside>
+    <div className="flex h-full w-full p-4 sm:p-6 lg:p-8">
 
       {/* Main content */}
       <main className="flex-1 flex flex-col overflow-hidden">
-        <div className="p-8">
-          <div className="mb-4">
-            <h1 className="text-2xl font-bold">Dataset</h1>
-            <p className="text-sm text-gray-600">Knowledge Base / Dataset</p>
-          </div>
+        <div>
 
           {error && (
             <div
@@ -339,33 +311,22 @@ const DatasetView = ({ knowledgeBaseID }) => {
           </div> */}
         </div>
 
-        <div className="flex-1 overflow-hidden flex flex-col bg-white shadow rounded-lg mx-8 mb-8">
+        <div className="flex-1 overflow-hidden flex flex-col bg-white shadow rounded-lg">
           <div className="flex justify-between p-6">
             <button className="px-4 py-2 bg-gray-100 text-gray-700 rounded">
               Bulk
             </button>
             <div className="flex">
-              <div className="relative mr-2">
-                <input
-                  type="text"
-                  placeholder="Search your files"
-                  className="pl-10 pr-4 py-2 border rounded-md"
-                />
-                <Search
-                  className="absolute left-3 top-2.5 text-gray-400"
-                  size={20}
-                />
-              </div>
               <button
                 onClick={() => setIsUploadModalOpen(true)}
-                className="px-4 py-2 bg-blue-500 text-white rounded flex items-center"
+                className="px-4 py-2 bg-custom-primary-start text-white rounded flex items-center"
               >
                 <Plus size={20} className="mr-2" />
                 Add file
               </button>
             </div>
           </div>
-          <div className="flex-1 overflow-auto">
+          <div className="flex-1 overflow-auto p-6">
             <table className="w-full">
               <colgroup>
                 <col style={{ width: "40%" }} />

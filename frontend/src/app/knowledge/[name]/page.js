@@ -6,6 +6,8 @@ import { useParams } from "next/navigation";
 import DatasetView from "@/components/knowledge_base/KBDatasetView";
 import ReactMarkdown from "react-markdown";
 import Image from 'next/image';
+import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
+import { Badge } from "@/components/ui/badge";
 
 const API_BASE_URL =
   process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:8000";
@@ -61,32 +63,51 @@ export default function KnowledgeBasePage() {
   };
 
   return (
-    <div className="max-w-screen mx-auto p-4 h-screen overflow-y-auto">
-      <div className="relative h-48 mb-6 rounded-lg overflow-hidden">
-        <Image src="/path-to-your-code-image.jpg" alt="Code background" layout="fill" objectFit="cover" />
-        <div className="absolute bottom-0 left-0 right-0 flex justify-between items-end p-4 text-white">
-          <h1 className="text-2xl font-bold">Database Course</h1>
-          <div className="flex items-center space-x-2">
-            <Image src="/path-to-admin-icon.jpg" alt="Admin" width={30} height={30} className="rounded-full" />
-            <span>Admin</span>
-            <span className="bg-yellow-400 text-black text-xs px-2 py-1 rounded-full">Pro</span>
+    <div className="h-full bg-purple-50 overflow-y-auto">
+      <header className="bg-custom-bg">
+        <div className="max-w-7xl mx-auto px-4 py-4 flex items-center justify-between">
+          <input
+            type="text"
+            placeholder="Search your courses, activities, knowledge..."
+            className="w-full max-w-xl px-4 py-2 rounded-full border border-gray-300 focus:outline-none focus:ring-2 focus:ring-purple-500"
+          />
+          <div className="flex items-center space-x-4">
+            <Avatar className="w-12 h-12 border-4 border-custom-primary-start">
+              <AvatarImage src="/placeholder-user.jpg" alt="Admin" />
+              <AvatarFallback>AD</AvatarFallback>
+            </Avatar>
+            <div className="flex flex-col items-start">
+              <span className="font-semibold">Admin</span>
+              <Badge variant="secondary" className="bg-custom-cta text-white text-xs px-2 py-0.5 rounded-full">
+                Pro
+              </Badge>
+            </div>
           </div>
         </div>
-      </div>
-      <div className="flex mb-6">
-        {["Lessons", "Sources", "Quick Chat"].map((tab) => (
-          <button
-            key={tab}
-            onClick={() => setActiveTab(tab)}
-            className={`px-4 py-2 ${activeTab === tab ? 'text-purple-600 font-bold border-b-2 border-purple-600' : 'text-gray-600'}`}
-          >
-            {tab}
-          </button>
-        ))}
-      </div>
-      <div className="content-container">
-        {renderContent()}
-      </div>
+      </header>
+
+      <main className="max-w-5xl mx-auto px-4 py-8">
+        <div className="relative h-48 mb-6 rounded-lg overflow-hidden">
+          <Image src="" alt="Course background" layout="fill" objectFit="cover" />
+          <div className="absolute bottom-0 left-0 right-0 flex justify-between items-end p-4 text-black">
+            <h1 className="text-2xl font-bold">Database Course</h1>
+          </div>
+        </div>
+        <div className="flex mb-6">
+          {["Lessons", "Sources", "Quick Chat"].map((tab) => (
+            <button
+              key={tab}
+              onClick={() => setActiveTab(tab)}
+              className={`px-4 py-2 ${activeTab === tab ? 'text-purple-600 font-bold border-b-2 border-purple-600' : 'text-gray-600'}`}
+            >
+              {tab}
+            </button>
+          ))}
+        </div>
+        <div className="content-container">
+          {renderContent()}
+        </div>
+      </main>
     </div>
   );
 }

@@ -15,7 +15,12 @@ const Header = () => {
     { name: "Analytics", path: "/analytics", icon: BarChartIcon },
   ];
 
-  const isActive = (path) => pathname === path;
+  const isActive = (path) => {
+    if (path === '/') {
+      return pathname === '/';
+    }
+    return pathname.startsWith(path + '/') || pathname === path;
+  };
 
   return (
     <aside className="w-72 p-0 bg-white border-r h-full flex flex-col items-center shadow-lg">
