@@ -27,6 +27,7 @@ from src.agents.course_agent import CourseAgent
 from src.constants import GlobalConfig
 from api.utils.websocket_manager import ws_manager
 from src.agents.quiz_agent import QuizAgent
+from api.models.assistant import AssistantResponse
 
 kb_router = APIRouter()
 UPLOAD_DIR = "uploads"
@@ -352,3 +353,17 @@ async def generate_quiz(
     quiz = await quiz_agent.run(section_content)
     
     return quiz
+
+
+@kb_router.get("/{kb_id}/assistants", response_model=List[AssistantResponse])
+async def get_knowledge_base_assistants(
+    kb_id: int,
+    current_user_id: int = Depends(get_current_user_id),
+    kb_service: KnowledgeBaseService = Depends(),
+):
+    assistants = kb_service.get_knowledge_base_assistants(kb_id, current_user_id)
+    if assistants is None:
+        raise HTTPException(status_code=404, detail="Knowledge base not found")
+    return assistants
+
+

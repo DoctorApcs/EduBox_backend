@@ -27,7 +27,7 @@ const getBadgeText = (createdAt, updatedAt) => {
   return null;
 };
 
-const AssistantCard = ({ assistant, onSelect, onDelete }) => {
+export const AssistantCard = ({ assistant, onSelect, onDelete }) => {
   const [knowledgeBase, setKnowledgeBase] = useState(null);
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const menuRef = useRef(null);
