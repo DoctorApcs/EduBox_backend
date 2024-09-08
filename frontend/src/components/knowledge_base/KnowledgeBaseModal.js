@@ -1,14 +1,10 @@
 import React, { useState, useEffect, useRef } from "react";
-import { Resizable } from "react-resizable";
-import "react-resizable/css/styles.css";
-// Remove the following import:
-// import { useRouter } from 'next/router';
-import { CheckCircle } from 'lucide-react';
+import { CheckCircle, Loader } from "lucide-react";
 
 const API_BASE_URL =
   process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:8000";
 
-const KnowledgeBaseModal = ({ isOpen, onClose, onCreate, kbId }) => {
+const KnowledgeBaseModal = ({ isOpen, onClose, onCreate }) => {
   const [formData, setFormData] = useState({
     query: "",
     max_sections: 3,
@@ -22,39 +18,40 @@ const KnowledgeBaseModal = ({ isOpen, onClose, onCreate, kbId }) => {
   const [humanFeedbackRequired, setHumanFeedbackRequired] = useState(false);
   const [feedbackText, setFeedbackText] = useState("");
   const [logs, setLogs] = useState("");
-  const [showLogs, setShowLogs] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
   const [sections, setSections] = useState([]);
-  const [logsHeight, setLogsHeight] = useState(200); // Initial height for logs
-  const logsRef = useRef(null);
   const [isCompleted, setIsCompleted] = useState(false);
 
   useEffect(() => {
     if (isOpen) {
       // Open WebSocket connection when modal is opened
-      websocketRef.current = new WebSocket(`ws://${API_BASE_URL.replace(
-        /^https?:\/\//,
-        ""
-      )}/api/knowledge_base/${1}/generate_course`);
+      websocketRef.current = new WebSocket(
+        `ws://${API_BASE_URL.replace(
+          /^https?:\/\//,
+          ""
+        )}/api/knowledge_base/generate_course`
+      );
 
       websocketRef.current.onmessage = (event) => {
         const data = JSON.parse(event.data);
         if (data.type === "human_feedback") {
           setHumanFeedbackRequired(true);
-          setSections(data.output.map((section, index) => ({ id: index + 1, title: section })));
+          setSections(
+            data.output.map((section, index) => ({
+              id: index + 1,
+              title: section,
+            }))
+          );
         } else if (data.type === "end") {
           setIsCompleted(true);
+          setIsLoading(false);
           setTimeout(() => {
             onCreate(); // Call onClose instead of router.push
           }, 2000); // Close modal after 2 seconds
-        } else {
-          setLogs(prevContent => prevContent + JSON.stringify(data, null, 2) + "\n\n");
+        } else if (data.type === "logs") {
+          setLogs(data.message);
         }
       };
-
-      // Scroll logs to bottom when content changes
-      if (logsRef.current) {
-        logsRef.current.scrollTop = logsRef.current.scrollHeight;
-      }
 
       return () => {
         // Close WebSocket connection when modal is closed
@@ -64,7 +61,7 @@ const KnowledgeBaseModal = ({ isOpen, onClose, onCreate, kbId }) => {
         setCourseContent("");
       };
     }
-  }, [isOpen, kbId, onClose]); // Add onClose to the dependency array
+  }, [isOpen, onClose]); // Add onClose to the dependency array
 
   const handleBackgroundClick = (e) => {
     if (e.target === e.currentTarget) {
@@ -76,18 +73,21 @@ const KnowledgeBaseModal = ({ isOpen, onClose, onCreate, kbId }) => {
 
   const handleChange = (e) => {
     const { name, value, type, checked } = e.target;
-    setFormData(prevData => ({
+    setFormData((prevData) => ({
       ...prevData,
-      [name]: type === 'checkbox' ? checked : value,
+      [name]: type === "checkbox" ? checked : value,
     }));
   };
-  
+
   const handleSubmit = (e) => {
     e.preventDefault();
-    if (websocketRef.current && websocketRef.current.readyState === WebSocket.OPEN) {
+    setIsLoading(true);
+    if (
+      websocketRef.current &&
+      websocketRef.current.readyState === WebSocket.OPEN
+    ) {
       websocketRef.current.send(JSON.stringify(formData));
     }
-    // onCreate(formData);
   };
 
   const handleClose = () => {
@@ -101,33 +101,42 @@ const KnowledgeBaseModal = ({ isOpen, onClose, onCreate, kbId }) => {
   };
 
   const handleFeedback = () => {
-    if (websocketRef.current && websocketRef.current.readyState === WebSocket.OPEN) {
-      websocketRef.current.send(JSON.stringify({
-        type: "human_feedback",
-        content: feedbackText.trim() || "no"
-      }));
+    if (
+      websocketRef.current &&
+      websocketRef.current.readyState === WebSocket.OPEN
+    ) {
+      websocketRef.current.send(
+        JSON.stringify({
+          type: "human_feedback",
+          content: feedbackText.trim() || "no",
+        })
+      );
       setHumanFeedbackRequired(false);
       setFeedbackText("");
     }
   };
 
-  const handleResize = (event, { size }) => {
-    setLogsHeight(size.height);
-  };
-
   return (
-    <div 
+    <div
       className="fixed inset-0 bg-black bg-opacity-50 backdrop-blur-md flex justify-center items-center overflow-hidden"
       onClick={handleBackgroundClick}
     >
-      <div className="bg-white rounded-lg shadow-lg w-full max-w-6xl h-5/6 flex" onClick={(e) => e.stopPropagation()}>
+      <div
+        className="bg-white rounded-lg shadow-lg w-full max-w-6xl h-5/6 flex"
+        onClick={(e) => e.stopPropagation()}
+      >
         {/* Purple Sidebar */}
         <div className="w-1/3 bg-purple-600 p-6 overflow-y-auto">
-          <h2 className="text-2xl font-bold mb-6 text-white">Create New Course</h2>
+          <h2 className="text-2xl font-bold mb-6 text-white">
+            Create New Course
+          </h2>
           <form onSubmit={handleSubmit} className="space-y-4">
             {/* Query */}
             <div>
-              <label htmlFor="query" className="block text-sm font-medium text-white mb-1">
+              <label
+                htmlFor="query"
+                className="block text-sm font-medium text-white mb-1"
+              >
                 Query
               </label>
               <input
@@ -143,7 +152,10 @@ const KnowledgeBaseModal = ({ isOpen, onClose, onCreate, kbId }) => {
 
             {/* Max Sections */}
             <div>
-              <label htmlFor="max_sections" className="block text-sm font-medium text-white mb-1">
+              <label
+                htmlFor="max_sections"
+                className="block text-sm font-medium text-white mb-1"
+              >
                 Max Sections
               </label>
               <input
@@ -159,23 +171,30 @@ const KnowledgeBaseModal = ({ isOpen, onClose, onCreate, kbId }) => {
 
             {/* Other checkboxes */}
             <div className="space-y-2">
-              {['include_human_feedback', 'follow_guidelines', 'verbose'].map((field) => (
-                <label key={field} className="inline-flex items-center">
-                  <input
-                    type="checkbox"
-                    name={field}
-                    checked={formData[field]}
-                    onChange={handleChange}
-                    className="form-checkbox h-4 w-4 text-purple-300 border-purple-400 rounded"
-                  />
-                  <span className="ml-2 text-white text-sm">{field.replace(/_/g, ' ')}</span>
-                </label>
-              ))}
+              {["include_human_feedback", "follow_guidelines", "verbose"].map(
+                (field) => (
+                  <label key={field} className="inline-flex items-center">
+                    <input
+                      type="checkbox"
+                      name={field}
+                      checked={formData[field]}
+                      onChange={handleChange}
+                      className="form-checkbox h-4 w-4 text-purple-300 border-purple-400 rounded"
+                    />
+                    <span className="ml-2 text-white text-sm">
+                      {field.replace(/_/g, " ")}
+                    </span>
+                  </label>
+                )
+              )}
             </div>
 
             {/* Model */}
             <div>
-              <label htmlFor="model" className="block text-sm font-medium text-white mb-1">
+              <label
+                htmlFor="model"
+                className="block text-sm font-medium text-white mb-1"
+              >
                 Model
               </label>
               <select
@@ -190,8 +209,11 @@ const KnowledgeBaseModal = ({ isOpen, onClose, onCreate, kbId }) => {
             </div>
 
             {/* Image upload */}
-            <div>
-              <label htmlFor="image" className="block text-sm font-medium text-white mb-1">
+            {/* <div>
+              <label
+                htmlFor="image"
+                className="block text-sm font-medium text-white mb-1"
+              >
                 Upload Image
               </label>
               <input
@@ -201,7 +223,7 @@ const KnowledgeBaseModal = ({ isOpen, onClose, onCreate, kbId }) => {
                 accept="image/*"
                 className="w-full p-2 border border-purple-400 rounded-md bg-purple-500 text-white file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-purple-50 file:text-purple-700 hover:file:bg-purple-100"
               />
-            </div>
+            </div> */}
 
             {/* Action Buttons */}
             <div className="flex justify-end space-x-3 mt-6">
@@ -229,18 +251,32 @@ const KnowledgeBaseModal = ({ isOpen, onClose, onCreate, kbId }) => {
             {isCompleted && (
               <div className="flex items-center justify-center mb-4">
                 <CheckCircle className="h-12 w-12 text-green-500" />
-                <span className="ml-2 text-lg font-semibold">Course creation completed!</span>
+                <span className="ml-2 text-lg font-semibold">
+                  Course creation completed!
+                </span>
+              </div>
+            )}
+            {isLoading && (
+              <div className="flex items-center justify-center mb-4">
+                <Loader className="h-8 w-8 text-blue-500 animate-spin" />
+                <span className="ml-2 text-lg font-semibold">{logs}</span>
               </div>
             )}
             <div className="overflow-y-auto">
-              {sections.map(section => (
-                <div key={section.id} className="bg-gray-100 p-4 rounded-lg mb-4">
-                  <h3 className="text-lg font-semibold">Section {section.id}: {section.title}</h3>
+              {sections.map((section) => (
+                <div
+                  key={section.id}
+                  className="bg-gray-100 p-4 rounded-lg mb-4"
+                >
+                  <h3 className="text-lg font-semibold">
+                    Section {section.id}: {section.title}
+                  </h3>
                 </div>
               ))}
-              {!sections.length && (
+              {!sections.length && !isLoading && (
                 <pre className="whitespace-pre-wrap text-gray-600">
-                  {courseContent || "The course content will be displayed here after creation."}
+                  {courseContent ||
+                    "The course content will be displayed here after creation."}
                 </pre>
               )}
             </div>
@@ -262,33 +298,6 @@ const KnowledgeBaseModal = ({ isOpen, onClose, onCreate, kbId }) => {
               </div>
             )}
           </div>
-          
-          {/* Logs Section */}
-          <Resizable
-            height={logsHeight}
-            width={Infinity}
-            onResize={handleResize}
-            minConstraints={[Infinity, 100]}
-            maxConstraints={[Infinity, window.innerHeight * 0.3]}
-          >
-            <div style={{ height: `${logsHeight}px` }} className="border-t border-gray-200">
-              <button
-                onClick={() => setShowLogs(!showLogs)}
-                className="w-full p-2 text-left text-gray-600 hover:bg-gray-100 focus:outline-none"
-              >
-                {showLogs ? "Hide Logs" : "Show Logs"}
-              </button>
-              {showLogs && (
-                <pre
-                  ref={logsRef}
-                  className="bg-gray-50 p-4 text-sm text-gray-600 overflow-y-auto"
-                  style={{ height: `calc(100% - 40px)` }}
-                >
-                  {logs || "No logs available."}
-                </pre>
-              )}
-            </div>
-          </Resizable>
         </div>
       </div>
     </div>

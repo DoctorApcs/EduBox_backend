@@ -183,7 +183,7 @@ export default function DashboardPage() {
       </main>
       <aside className="w-96 p-4 bg-custom-background border-l shadow-lg">
         <div className="flex flex-col items-center">
-          <Avatar className="w-24 h-24 border-8 border-custom-primary-start">
+          <Avatar className="w-24 h-24 border-8 border-custom-primary-start mt-8">
             <AvatarImage src="/placeholder-user.jpg" alt="Admin" />
             <AvatarFallback>AD</AvatarFallback>
           </Avatar>

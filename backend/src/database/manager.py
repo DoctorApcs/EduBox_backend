@@ -13,6 +13,7 @@ from .models import (
     DocumentStatus,
     Session,
 )
+from api.models.knowledge_base import KnowledgeBaseResponse
 from .vector_store import VectorDB, QdrantVectorDB
 from datetime import datetime
 import uuid
@@ -70,7 +71,7 @@ class DatabaseManager:
             session.add(kb)
             session.commit()
             self.vector_db.create_collection(f"kb_{kb.id}")
-            return kb.id
+            return KnowledgeBaseResponse.model_validate(kb)
 
     def get_knowledge_base(self, knowledge_base_id: int, user_id: int):
         with self.Session() as session:

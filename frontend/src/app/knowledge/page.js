@@ -69,7 +69,7 @@ export default function KnowledgeBasePage() {
   }
 
   return (
-    <div className="min-h-screen bg-purple-50">
+    <div className="h-full bg-purple-50 overflow-y-auto">
       <header className="bg-custom-bg">
         <div className="max-w-7xl mx-auto px-4 py-4 flex items-center justify-between">
           <input
@@ -112,7 +112,6 @@ export default function KnowledgeBasePage() {
         isOpen={isModalOpen}
         onClose={handleCloseModal}
         onCreate={handleCreateCourse}
-        kbId={1} // You may want to adjust this value or make it dynamic
       />
     </div>
   );
