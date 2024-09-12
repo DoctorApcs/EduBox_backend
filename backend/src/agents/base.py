@@ -10,6 +10,7 @@ from llama_index.agent.openai import OpenAIAgent
 from .prompts import ASSISTANT_SYSTEM_PROMPT
 import logging
 
+from llama_index.core.chat_engine.types import StreamingAgentChatResponse
 
 class ChatAssistant:
 
@@ -30,9 +31,10 @@ class ChatAssistant:
             tools=self.tools,
             llm=self.llm,
             verbose=True,
-            system_prompt=self.configuration.get(
-                "system_prompt", ASSISTANT_SYSTEM_PROMPT
-            ),
+            # system_prompt=self.configuration.get(
+            #     "system_prompt", ASSISTANT_SYSTEM_PROMPT
+            # ),
+            system_prompt=ASSISTANT_SYSTEM_PROMPT,
         )
 
     def _init_model(self, service, model_id):
@@ -79,7 +81,7 @@ class ChatAssistant:
         ]
         return self.agent.stream_chat(message, message_history).response_gen
 
-    async def astream_chat(self, message, message_history):
+    async def astream_chat(self, message, message_history) -> StreamingAgentChatResponse:
         message_history = [
             LLamaIndexChatMessage(content=msg["content"], role=msg["role"])
             for msg in message_history

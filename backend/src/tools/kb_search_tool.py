@@ -49,6 +49,7 @@ def load_knowledge_base_search_tool(config: dict):
         
         retriever_response = retriever.retrieve(query_str)
         logging.info("Retrieval Content: ", [n.node.get_content(metadata_mode=MetadataMode.LLM) for n in retriever_response])
-        return [n.node.get_content(metadata_mode=MetadataMode.LLM) for n in retriever_response]
+        content = ["Source {i}: {content}".format(i=i, content=n.node.get_content(metadata_mode=MetadataMode.LLM)) for i, n in enumerate(retriever_response)]
+        return "\n".join(content)
     
     return FunctionTool.from_defaults(retrieve_knowledge_base)

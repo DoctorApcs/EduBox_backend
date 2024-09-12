@@ -157,12 +157,13 @@ async def websocket_conversation(
                     conversation_id, current_user_id, message
                 ):
                     # Assume chunk is a string. If it's a different structure, adjust accordingly.
-                    await ws_manager.send_text_message(
-                        websocket,
-                        chunk,
-                        sender_type="assistant",
-                        extra_metadata={"assistant_id": assistant_id},
-                    )
+                    if chunk["type"] == "text":
+                        await ws_manager.send_text_message(
+                            websocket,
+                            chunk["content"],
+                            sender_type="assistant",
+                            extra_metadata={"assistant_id": assistant_id},
+                        )
 
                 # Send end message for successful completion
                 await ws_manager.send_end_message(
