@@ -7,7 +7,6 @@ from fastapi import (
     UploadFile,
     HTTPException,
     WebSocket,
-    WebSocketDisconnect,
 )
 from fastapi.responses import JSONResponse, FileResponse
 from src.tasks.document_parser_tasks import process_document
@@ -23,7 +22,6 @@ from api.models.knowledge_base import (
 )
 from api.services.knowledge_base import KnowledgeBaseService
 from typing import List
-from src.agents.course_agent import CourseAgent
 from src.constants import GlobalConfig
 from api.utils.websocket_manager import ws_manager
 from src.agents.quiz_agent import QuizAgent

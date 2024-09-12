@@ -1,7 +1,7 @@
 import base64
 import json
 from fastapi import WebSocket
-from typing import Dict, Any, Optional
+from typing import Dict, Any, Optional, List
 from src.constants import GlobalConfig
 from enum import Enum
 from api.models.knowledge_base import CourseGenerationRequest, KnowledgeBaseCreate
@@ -9,12 +9,12 @@ from api.services.knowledge_base import KnowledgeBaseService
 from fastapi import WebSocketDisconnect
 from src.utils.stream import stream_output
 from src.agents.course_agent import CourseAgent
+from src.tools.kb_search_tool import SingleSourceNode
 
 # from src.utils.logger.logging import LogHandler
 import logging
 
 # logger = LogHandler().get_logger(__name__)
-
 
 class MediaType(str, Enum):
     TEXT = "text"
@@ -28,6 +28,7 @@ class MessageType(str, Enum):
     STATUS = "status"
     ERROR = "error"
     END = "end"
+    SOURCES = "sources"
 
 
 class EndStatus(str, Enum):
@@ -92,6 +93,16 @@ class ConnectionManager:
             media_type=MediaType.TEXT,
             content=text,
             metadata=metadata,
+        )
+        await self.send_chat_message(websocket, message)
+        
+    async def send_sources(self, websocket: WebSocket, sources: List[Dict[str, Any]]):
+        print(sources)
+        message = Message(
+            message_type=MessageType.SOURCES,
+            media_type=MediaType.TEXT,
+            content=sources,
+            metadata={"sender_type": "assistant"},
         )
         await self.send_chat_message(websocket, message)
 
