@@ -108,7 +108,7 @@ class KnowledgeBaseService:
             new_order = (max_order[0] + 1) if max_order else 1
 
             new_lesson = Lesson(
-                knowledge_base_id=kb_id, title=title, content=content, order=new_order
+                knowledge_base_id=kb_id, title=title, content=content["report"], order=new_order
             )
             session.add(new_lesson)
             session.commit()
@@ -142,7 +142,7 @@ class KnowledgeBaseService:
                     new_lesson = Lesson(
                         knowledge_base_id=kb_id,
                         title=title,
-                        content=content,
+                        content=str(content["report"]),
                         order=new_order,
                     )
                     session.add(new_lesson)
