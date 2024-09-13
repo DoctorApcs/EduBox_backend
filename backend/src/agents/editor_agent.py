@@ -6,8 +6,9 @@ import asyncio
 import json
 
 from multi_agents.memory.draft import DraftState
-from multi_agents.agents import ResearchAgent, ReviewerAgent, ReviserAgent
-
+from .research_agent import ResearchAgent
+from .reviewer_agent import ReviewerAgent
+from .revisor_agent import ReviserAgent
 
 class EditorAgent:
     def __init__(self, websocket=None, stream_output=None, headers=None):
@@ -115,6 +116,7 @@ class EditorAgent:
                     "topic": query,  # + (f". Also: {human_feedback}" if human_feedback is not None else ""),
                     "title": title,
                     "headers": self.headers,
+                    "recursion_limit": 5
                 }
             )
             for query in queries
