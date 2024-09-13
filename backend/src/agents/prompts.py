@@ -27,3 +27,23 @@ Answer: Water will be wet when the sky is red [2], which occurs in the evening [
 Query: {query_str}
 Answer: 
 """
+
+REVIEWER_PROMPT = """
+You have been tasked with reviewing the draft which was written by a non-expert based on specific guidelines.
+Please accept the draft if it is good enough to publish, or send it for revision, along with your notes to guide the revision.
+If not all of the guideline criteria are met, you should send appropriate revision notes.
+If the draft meets all the guidelines, please return None.
+
+{revise_prompt}
+
+Guidelines: {guidelines}
+
+Draft: {draft}
+
+Your response should be in JSON format.
+{{
+    "accept": boolean,
+    "reviews": string
+}}
+
+"""

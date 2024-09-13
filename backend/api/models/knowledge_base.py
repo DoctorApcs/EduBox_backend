@@ -2,7 +2,7 @@ from pydantic import BaseModel, ConfigDict, Field
 from typing import List, Dict, Optional
 from datetime import datetime
 from typing import List
-
+from src.constants import GlobalConfig
 
 class DocumentInKnowledgeBase(BaseModel):
     id: int
@@ -49,7 +49,7 @@ class CourseGenerationRequest(BaseModel):
     include_human_feedback: bool = False
     follow_guidelines: bool = False
     model: str = "gpt-4o-mini"
-    guidelines: Optional[List[str]] = None
+    guidelines: Optional[List[str]] = GlobalConfig.MODEL.DEFAULT_GUIDELINES
     verbose: bool = False
 
 
