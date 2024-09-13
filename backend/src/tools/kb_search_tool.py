@@ -87,12 +87,15 @@ def load_knowledge_base_search_tool(config: dict):
         
         retriever_response = retriever.retrieve(query_str)
         logging.info("Retrieval Content: ", [n.node.get_content(metadata_mode=MetadataMode.LLM) for n in retriever_response])
-        print(retriever_response[0].node.metadata["metadata"]["file_name"])
+        try: 
+            url = retriever_response[0].node.metadata["metadata"]["file_name"]
+        except:
+            url = ""
         return RetrievalResponses([
             SingleSourceNode(
                 index=start_id + i,
                 text=n.node.get_content(metadata_mode=MetadataMode.LLM), 
-                url=n.node.metadata["metadata"]["file_name"],
+                url=url,
                 chunk_start=0,
                 chunk_end=0
             )
