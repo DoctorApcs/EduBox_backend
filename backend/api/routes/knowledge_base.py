@@ -7,7 +7,6 @@ from fastapi import (
     UploadFile,
     HTTPException,
     WebSocket,
-    WebSocketDisconnect,
 )
 from fastapi.responses import JSONResponse, FileResponse
 from src.tasks.document_parser_tasks import process_document
@@ -23,9 +22,10 @@ from api.models.knowledge_base import (
 )
 from api.services.knowledge_base import KnowledgeBaseService
 from typing import List
-from src.agents.course_agent import CourseAgent
 from src.constants import GlobalConfig
 from api.utils.websocket_manager import ws_manager
+from src.agents.quiz_agent import QuizAgent
+from api.models.assistant import AssistantResponse
 
 kb_router = APIRouter()
 UPLOAD_DIR = "uploads"
@@ -334,3 +334,34 @@ async def generate_course(
         )
     finally:
         ws_manager.disconnect(websocket)
+
+@kb_router.get("/{kb_id}/lessons/{lesson_id}/generate_quiz")
+async def generate_quiz(
+    kb_id: int,
+    lesson_id: int,
+    kb_service: KnowledgeBaseService = Depends(),
+):
+    # Retrieve the content for the specified section
+    section_content = kb_service.get_lesson_content(kb_id, lesson_id)
+    
+    # Initialize the QuizAgent
+    quiz_agent = QuizAgent()
+    
+    # Generate the quiz using the QuizAgent
+    quiz = await quiz_agent.run(section_content)
+    
+    return quiz
+
+
+@kb_router.get("/{kb_id}/assistants", response_model=List[AssistantResponse])
+async def get_knowledge_base_assistants(
+    kb_id: int,
+    current_user_id: int = Depends(get_current_user_id),
+    kb_service: KnowledgeBaseService = Depends(),
+):
+    assistants = kb_service.get_knowledge_base_assistants(kb_id, current_user_id)
+    if assistants is None:
+        raise HTTPException(status_code=404, detail="Knowledge base not found")
+    return assistants
+
+

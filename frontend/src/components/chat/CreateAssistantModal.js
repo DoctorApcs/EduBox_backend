@@ -1,11 +1,12 @@
 import React, { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { X, Upload, Info } from "lucide-react";
+import { set } from "date-fns";
 
 const API_BASE_URL =
   process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:8000";
 
-const CreateAssistantModal = ({ isOpen, onClose, onCreateSuccess }) => {
+const CreateAssistantModal = ({ isOpen, onClose, onCreateSuccess, setIsLoading }) => {
   const router = useRouter();
   const [assistantName, setAssistantName] = useState("");
   const [description, setDescription] = useState("");
@@ -58,8 +59,10 @@ const CreateAssistantModal = ({ isOpen, onClose, onCreateSuccess }) => {
 
       if (response.ok) {
         const data = await response.json();
-        onClose();
+        setIsLoading(true);
+        // onClose();
         onCreateSuccess(); // Call this to update the assistants list in the parent component
+        setIsLoading(false);
         router.push(`/chat/${data.id}`); // Navigate to the new assistant's page
       } else {
         console.error("Failed to create assistant");
@@ -76,7 +79,7 @@ const CreateAssistantModal = ({ isOpen, onClose, onCreateSuccess }) => {
 
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-start pt-16 z-50">
-      <div className="bg-white rounded-lg shadow-xl w-full max-w-2xl">
+      <div className="bg-purple-200 rounded-lg shadow-xl w-full max-w-2xl">
         <div className="flex justify-between items-center p-6 border-b">
           <div className="flex items-center space-x-3">
             <div className="w-10 h-10 bg-gray-200 rounded-lg flex items-center justify-center">
@@ -108,7 +111,7 @@ const CreateAssistantModal = ({ isOpen, onClose, onCreateSuccess }) => {
               value={assistantName}
               onChange={(e) => setAssistantName(e.target.value)}
               placeholder="e.g. Resume Jarvis"
-              className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-300 focus:ring focus:ring-blue-200 focus:ring-opacity-50 p-2"
+              className="mt-1 block w-full rounded-md bg-purple-100 border-gray-200 shadow-sm focus:border-blue-300 focus:ring focus:ring-blue-200 focus:ring-opacity-50 p-2"
             />
           </div>
 
@@ -121,7 +124,7 @@ const CreateAssistantModal = ({ isOpen, onClose, onCreateSuccess }) => {
               value={description}
               onChange={(e) => setDescription(e.target.value)}
               rows={3}
-              className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-300 focus:ring focus:ring-blue-200 focus:ring-opacity-50 p-2"
+              className="mt-1 block w-full rounded-md bg-purple-100 border-gray-200 shadow-sm focus:border-blue-300 focus:ring focus:ring-blue-200 focus:ring-opacity-50 p-2"
             />
             <label className="block text-sm font-medium text-gray-700">
               System Prompt
@@ -131,7 +134,7 @@ const CreateAssistantModal = ({ isOpen, onClose, onCreateSuccess }) => {
               value={systemPrompt}
               onChange={(e) => setSystemPrompt(e.target.value)}
               rows={3}
-              className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-300 focus:ring focus:ring-blue-200 focus:ring-opacity-50 p-2"
+              className="mt-1 block w-full rounded-md bg-purple-100 border-gray-200 shadow-sm focus:border-blue-300 focus:ring focus:ring-blue-200 focus:ring-opacity-50 p-2"
             />
           </div>
 
@@ -142,7 +145,7 @@ const CreateAssistantModal = ({ isOpen, onClose, onCreateSuccess }) => {
             <select
               value={model}
               onChange={(e) => setModel(e.target.value)}
-              className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-300 focus:ring focus:ring-blue-200 focus:ring-opacity-50 p-2"
+              className="mt-1 block w-full rounded-md bg-purple-100 shadow-sm focus:border-blue-300 focus:ring focus:ring-blue-200 focus:ring-opacity-50 p-2"
             >
               <option value="gpt-4o-mini">GPT-4o mini</option>
               {/* Add more options here for future extensions */}
@@ -157,7 +160,7 @@ const CreateAssistantModal = ({ isOpen, onClose, onCreateSuccess }) => {
             <select
               value={selectedKnowledgeBase}
               onChange={(e) => setSelectedKnowledgeBase(e.target.value)}
-              className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-300 focus:ring focus:ring-blue-200 focus:ring-opacity-50 p-2"
+              className="mt-1 block w-full rounded-md bg-purple-100 shadow-sm focus:border-blue-300 focus:ring focus:ring-blue-200 focus:ring-opacity-50 p-2"
             >
               <option value="">Please select</option>
               {knowledgeBases.map((kb) => (
@@ -178,7 +181,7 @@ const CreateAssistantModal = ({ isOpen, onClose, onCreateSuccess }) => {
           </button>
           <button
             onClick={handleSubmit}
-            className="px-4 py-2 bg-blue-500 text-white rounded-md hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+            className="px-4 py-2 bg-purple-600 text-white rounded-md hover:bg-purple-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
           >
             Create Assistant
           </button>

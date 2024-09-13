@@ -4,11 +4,13 @@
 import React, { useState, useEffect } from "react";
 import { useParams } from "next/navigation";
 import DatasetView from "@/components/knowledge_base/KBDatasetView";
-import ReactMarkdown from "react-markdown";
-import Image from "next/image";
+import LessonContent from "@/components/knowledge_base/LessonContent";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
-import CustomMarkdown from "@/components/Markdown";
+import { AssistantCard } from "@/components/chat/AssistantCards";
+import { Plus } from "lucide-react";
+import { useRouter } from "next/navigation";
+import CreateAssistantModal from "@/components/chat/CreateAssistantModal";
 
 const API_BASE_URL =
   process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:8000";
@@ -20,10 +22,14 @@ export default function KnowledgeBasePage() {
   const [lessons, setLessons] = useState([]);
   const [selectedLesson, setSelectedLesson] = useState(null);
   const [knowledgeBase, setKnowledgeBase] = useState(null);
+  const [assistants, setAssistants] = useState([]);
+  const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
+  const router = useRouter();
 
   useEffect(() => {
     fetchKnowledgeBase();
     fetchLessons();
+    fetchAssistants();
   }, [knowledgeBaseID]);
 
   const fetchKnowledgeBase = async () => {
@@ -56,6 +62,51 @@ export default function KnowledgeBasePage() {
     }
   };
 
+  const fetchAssistants = async () => {
+    try {
+      const response = await fetch(
+        `${API_BASE_URL}/api/knowledge_base/${knowledgeBaseID}/assistants`
+      );
+      if (!response.ok) {
+        throw new Error("Network response was not ok");
+      }
+      const data = await response.json();
+      setAssistants(data);
+    } catch (error) {
+      console.error("Error fetching assistants:", error);
+    }
+  };
+
+  const handleAssistantSelect = (assistant) => {
+    router.push(`/chat/${assistant.id}`);
+  };
+
+  const handleAssistantDelete = async (assistantId) => {
+    try {
+      const response = await fetch(
+        `${API_BASE_URL}/api/assistant/${assistantId}`,
+        {
+          method: "DELETE",
+        }
+      );
+
+      if (!response.ok) {
+        throw new Error("Failed to delete assistant");
+      }
+
+      // Remove the deleted assistant from the state
+      setAssistants(
+        assistants.filter((assistant) => assistant.id !== assistantId)
+      );
+    } catch (error) {
+      console.error("Error deleting assistant:", error);
+    }
+  };
+
+  const handleCreateAssistant = () => {
+    setIsCreateModalOpen(true);
+  };
+
   const renderContent = () => {
     switch (activeTab) {
       case "Lessons":
@@ -63,6 +114,7 @@ export default function KnowledgeBasePage() {
           <LessonContent
             lesson={selectedLesson}
             onBack={() => setSelectedLesson(null)}
+            kbId={knowledgeBaseID}
           />
         ) : (
           <div className="space-y-4">
@@ -85,7 +137,24 @@ export default function KnowledgeBasePage() {
       case "Sources":
         return <DatasetView knowledgeBaseID={knowledgeBaseID} />;
       case "Quick Chat":
-        return <div>Quick Chat component (to be implemented)</div>;
+        return (
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+            {assistants.map((assistant) => (
+              <AssistantCard
+                key={assistant.id}
+                assistant={assistant}
+                onSelect={() => handleAssistantSelect(assistant)}
+                onDelete={() => handleAssistantDelete(assistant.id)}
+              />
+            ))}
+            <div
+              className="bg-transparent border-2 border-purple-500 border-dashed rounded-2xl flex items-center justify-center cursor-pointer hover:bg-purple-50 transition-colors duration-300"
+              onClick={handleCreateAssistant}
+            >
+              <Plus size={48} className="text-purple-500" />
+            </div>
+          </div>
+        );
       default:
         return null;
     }
@@ -156,23 +225,12 @@ export default function KnowledgeBasePage() {
         </div>
         <div className="content-container">{renderContent()}</div>
       </main>
-    </div>
-  );
-}
-
-function LessonContent({ lesson, onBack }) {
-  return (
-    <div className="bg-white rounded-lg shadow-md p-6">
-      <button
-        onClick={onBack}
-        className="mb-4 text-purple-600 hover:text-purple-800"
-      >
-        ← Back to Lessons
-      </button>
-      <h2 className="text-2xl font-bold mb-4">{lesson.title}</h2>
-      <CustomMarkdown className="prose max-w-none">
-        {lesson.content}
-      </CustomMarkdown>
+      <CreateAssistantModal
+        isOpen={isCreateModalOpen}
+        onClose={() => setIsCreateModalOpen(false)}
+        onCreateSuccess={fetchAssistants}
+        setIsLoading={() => {}}
+      />
     </div>
   );
 }

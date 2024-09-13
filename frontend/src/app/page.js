@@ -53,7 +53,7 @@ export default function DashboardPage() {
             id: course.id,
             title: course.name,
             docCount: course.document_count,
-            lastUpdated: course.updated_at,
+            lastUpdated: course.last_updated,
             imageUrl:
               `${API_BASE_URL}/getfile/${course.background_image}` ||
               "https://placehold.co/300x200?text=Course",
@@ -125,19 +125,22 @@ export default function DashboardPage() {
             >
               <PlusIcon className="w-12 h-12 text-purple-600" />
             </Card>
-            {courses.slice(0, 3).map((course) => (
-              <KnowledgeBaseCard
-                key={course.id}
-                title={course.title}
-                docCount={course.docCount}
-                lastUpdated={course.lastUpdated}
-                onClick={() => router.push(`/knowledge/${course.id}`)}
-                imageUrl={course.imageUrl}
-              />
-            ))}
+            {courses
+              .sort((a, b) => new Date(b.lastUpdated) - new Date(a.lastUpdated))
+              .slice(0, 3)
+              .map((course) => (
+                <KnowledgeBaseCard
+                  key={course.id}
+                  title={course.title}
+                  docCount={course.docCount}
+                  lastUpdated={course.lastUpdated}
+                  onClick={() => router.push(`/knowledge/${course.id}`)}
+                  imageUrl={course.imageUrl}
+                />
+              ))}
           </div>
         </section>
-        <section className="mt-6">
+        {/* <section className="mt-6">
           <h3 className="text-xl font-semibold">Recent Activities</h3>
           <div className="grid grid-cols-3 gap-4 mt-4">
             <Card className="flex items-center p-4">
@@ -179,7 +182,7 @@ export default function DashboardPage() {
               </div>
             </Card>
           </div>
-        </section>
+        </section> */}
       </main>
       <aside className="w-96 p-4 bg-custom-background border-l shadow-lg">
         <div className="flex flex-col items-center">

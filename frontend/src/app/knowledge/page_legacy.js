@@ -116,16 +116,18 @@ const KnowledgeBasePage = () => {
       </div>
 
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 sm:gap-6 lg:gap-8">
-        {knowledgeBases.map((kb) => (
-          <KnowledgeBaseCard
-            key={kb.id}
-            title={kb.name}
-            description={kb.description}
-            docCount={kb.document_count}
-            lastUpdated={formatDate(kb.last_updated)}
-            onClick={() => handleKnowledgeBaseClick(kb.id)}
-          />
-        ))}
+        {knowledgeBases
+          .sort((a, b) => new Date(b.last_updated) - new Date(a.last_updated))
+          .map((kb) => (
+            <KnowledgeBaseCard
+              key={kb.id}
+              title={kb.name}
+              description={kb.description}
+              docCount={kb.document_count}
+              lastUpdated={formatDate(kb.last_updated)}
+              onClick={() => handleKnowledgeBaseClick(kb.id)}
+            />
+          ))}
       </div>
 
       <KnowledgeBaseModal

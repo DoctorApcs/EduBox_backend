@@ -14,7 +14,8 @@ from api.models.assistant import (
     MessageResponse
 )
 from typing import List, Dict, Optional, Generator, Any
-
+from api.utils.websocket_manager import ws_manager
+from src.tools.kb_search_tool import RetrievalResponses 
 
 class AssistantService:
     def __init__(self, db_manager: DatabaseManager = Depends(get_db_manager)):
@@ -199,10 +200,13 @@ class AssistantService:
             
             full_response = ""
             response = await assistant_instance.astream_chat(message.content, message_history)
-
+            
+            for source in response.sources:
+                yield {"type": "sources", "sources": source.raw_output.to_dict()}
+            
             async for chunk in response.async_response_gen():
                 full_response += chunk
-                yield chunk
+                yield {"type": "text", "content": chunk}
             
             assistant_message = Message(
                 conversation_id=conversation_id,

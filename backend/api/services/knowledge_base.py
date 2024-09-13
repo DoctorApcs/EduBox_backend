@@ -7,10 +7,10 @@ from api.models.knowledge_base import (
     KnowledgeBaseResponse,
     LessonResponse,
 )
-from src.database.models import KnowledgeBase, Lesson
+from src.database.models import KnowledgeBase, Lesson, Assistant
 from src.dependencies import get_db_manager
 from typing import List, Dict
-
+from api.models.assistant import AssistantResponse
 
 class KnowledgeBaseService:
     def __init__(self, db_manager: DatabaseManager = Depends(get_db_manager)):
@@ -158,3 +158,13 @@ class KnowledgeBaseService:
         with self.db_manager.Session() as session:
             lessons = session.query(Lesson).filter_by(knowledge_base_id=kb_id).all()
             return [LessonResponse.model_validate(lesson) for lesson in lessons]
+
+    def get_lesson_content(self, kb_id: int, lesson_id: int):
+        with self.db_manager.Session() as session:
+            lesson = session.query(Lesson).filter_by(id=lesson_id, knowledge_base_id=kb_id).first()
+            return lesson.content
+        
+    def get_knowledge_base_assistants(self, kb_id: int, user_id: int):
+        with self.db_manager.Session() as session:
+            assistants = session.query(Assistant).filter_by(knowledge_base_id=kb_id, user_id=user_id).all()
+            return [AssistantResponse.model_validate(assistant) for assistant in assistants]

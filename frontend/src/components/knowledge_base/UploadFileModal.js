@@ -57,7 +57,7 @@ const UploadFileModal = ({ isOpen, onClose, onUpload, allowedFileTypes }) => {
         </div>
         <div className="p-6">
           <div className="flex space-x-4 mb-4">
-            <button className="px-4 py-2 bg-blue-100 text-blue-700 rounded">
+            <button className="px-4 py-2 bg-custom-primary-start text-white rounded">
               File
             </button>
             <button className="px-4 py-2 text-gray-600 hover:bg-gray-100 rounded">
@@ -91,13 +91,15 @@ const UploadFileModal = ({ isOpen, onClose, onUpload, allowedFileTypes }) => {
                   key={`${file.name}-${index}`}
                   className="flex items-center justify-between text-sm text-gray-600 my-1"
                 >
-                  <div className="flex items-center">
-                    <FileIcon size={16} className="mr-2" />
-                    {file.name}
+                  <div className="flex items-center overflow-hidden">
+                    <FileIcon size={16} className="mr-2 flex-shrink-0" />
+                    <span className="truncate max-w-[200px]" title={file.name}>
+                      {file.name}
+                    </span>
                   </div>
                   <button
                     onClick={() => removeFile(index)}
-                    className="text-red-500 hover:text-red-700"
+                    className="text-red-500 hover:text-red-700 flex-shrink-0"
                   >
                     <Trash2 size={16} />
                   </button>
@@ -116,7 +118,7 @@ const UploadFileModal = ({ isOpen, onClose, onUpload, allowedFileTypes }) => {
           </button>
           <button
             onClick={handleUpload}
-            className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600"
+            className="px-4 py-2 bg-custom-primary-start text-white rounded hover:bg-custom-primary-end"
             disabled={files.length === 0 || uploading}
           >
             {uploading ? "Uploading..." : "Upload"}

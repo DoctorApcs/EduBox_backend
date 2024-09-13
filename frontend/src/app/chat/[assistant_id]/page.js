@@ -125,7 +125,7 @@ const ChatAssistantPage = () => {
   if (error) return <ErrorComponent message={error} />;
 
   return (
-    <div className="flex h-[calc(100vh-4rem)] bg-gray-100">
+    <div className="flex h-full bg-gray-100">
       <Sidebar
         isVisible={isSideView}
         width={sidebarWidth}

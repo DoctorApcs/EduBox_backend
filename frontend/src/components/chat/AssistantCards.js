@@ -27,7 +27,7 @@ const getBadgeText = (createdAt, updatedAt) => {
   return null;
 };
 
-const AssistantCard = ({ assistant, onSelect, onDelete }) => {
+export const AssistantCard = ({ assistant, onSelect, onDelete }) => {
   const [knowledgeBase, setKnowledgeBase] = useState(null);
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const menuRef = useRef(null);
@@ -81,7 +81,7 @@ const AssistantCard = ({ assistant, onSelect, onDelete }) => {
 
   return (
     <div
-      className="bg-white shadow-lg rounded-2xl overflow-hidden cursor-pointer hover:shadow-xl transition-shadow relative"
+      className="bg-white shadow-lg rounded-2xl cursor-pointer hover:shadow-xl relative overflow-hidden hover:scale-105 transition-all duration-300"
       onClick={() => onSelect(assistant)}
     >
       <div className="relative">

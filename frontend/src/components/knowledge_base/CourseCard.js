@@ -1,16 +1,16 @@
-import { useRouter } from 'next/navigation';
-
-export function CourseCard({ id, title, documents, imageUrl }) {
-  const router = useRouter();
-
+export function CourseCard({ id, title, documents, imageUrl, onClick }) {
   const handleStartLearning = () => {
-    router.push(`/knowledge/${id}`);
+    onClick(id);
   };
 
   return (
     <div className="bg-white rounded-2xl shadow-md overflow-hidden hover:scale-105 transition-all duration-300">
       <div className="relative mb-4">
-        <img src={imageUrl} alt={title} className="w-full h-40 object-cover shadow-md" />
+        <img
+          src={imageUrl}
+          alt={title}
+          className="w-full h-40 object-cover shadow-md"
+        />
         <div className="absolute top-2 right-2 bg-purple-600 text-white text-xs font-bold px-2 py-1 rounded-full">
           {documents} Docs
         </div>
@@ -30,7 +30,10 @@ export function CourseCard({ id, title, documents, imageUrl }) {
 }
 
 export const AddCourseCard = ({ onClick }) => (
-  <div className="bg-transparent rounded-2xl shadow-md p-4 flex items-center justify-center border-4 border-dashed border-custom-primary-start cursor-pointer hover:border-purple-500 transition-colors" onClick={onClick}>
+  <div
+    className="bg-transparent rounded-2xl shadow-md p-4 flex items-center justify-center border-4 border-dashed border-custom-primary-start cursor-pointer hover:border-purple-500 transition-colors"
+    onClick={onClick}
+  >
     <span className="text-6xl text-custom-primary-start">+</span>
   </div>
 );

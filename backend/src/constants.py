@@ -28,6 +28,22 @@ class ModelConfig:
     
     OPENAI_API_KEY = os.environ.get('OPENAI_API_KEY')
     
+    FAST_LLM_MODEL = os.environ.get('FAST_LLM_MODEL', "gpt-4o-mini")
+    SMART_LLM_MODEL = os.environ.get('SMART_LLM_MODEL', "gpt-4o-mini")
+    
+    DEFAULT_GUIDELINES = [
+        "Each course section MUST be detailed and comprehensive, providing in-depth explanations of the topic.",
+        "Include clear citations for all sources using hyperlinks within the text.",
+        "Incorporate relevant images to illustrate key concepts. Provide descriptions for each image in [square brackets].",
+        "Include at least one relevant video link per section to demonstrate the topic. Describe the video content briefly.",
+        "Use bullet points or numbered lists to break down complex information when appropriate.",
+        "Ensure a logical flow of information within each section, starting with basic concepts and progressing to more advanced ideas.",
+        "Conclude each section with a brief summary or key takeaways.",
+        "If a subsection lacks sufficient supporting sources or content, merge it with the previous section or remove it entirely.",
+        "Use appropriate headings and subheadings to organize the content hierarchically.",
+        "Include practical examples or case studies to reinforce theoretical concepts.",
+    ]
+    
 class GlobalConfig:
     MODEL = ModelConfig
     DATABASE_PATH = "./DB/knowledge_base.db"

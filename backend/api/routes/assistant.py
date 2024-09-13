@@ -13,9 +13,7 @@ from api.services.assistant import AssistantService
 from api.utils.websocket_manager import ws_manager, MediaType, EndStatus
 from src.dependencies import get_current_user_id
 import logging
-
 assistant_router = APIRouter()
-
 
 ## Assistant ##
 @assistant_router.post("/", response_model=AssistantResponse)
@@ -150,19 +148,25 @@ async def websocket_conversation(
 
             # Process the incoming message
             message = ChatMessage(content=data["content"])
-            print(message)
 
             try:
                 async for chunk in assistant_service.astream_chat_with_assistant(
                     conversation_id, current_user_id, message
                 ):
                     # Assume chunk is a string. If it's a different structure, adjust accordingly.
-                    await ws_manager.send_text_message(
-                        websocket,
-                        chunk,
-                        sender_type="assistant",
-                        extra_metadata={"assistant_id": assistant_id},
-                    )
+                    if chunk["type"] == "text":
+                        await ws_manager.send_text_message(
+                            websocket,
+                            chunk["content"],
+                            sender_type="assistant",
+                            extra_metadata={"assistant_id": assistant_id},
+                        )
+                    elif chunk["type"] == "sources":
+                        print("Sources0000: ", chunk["sources"])
+                        await ws_manager.send_sources(
+                            websocket,
+                            sources=chunk["sources"],
+                        )
 
                 # Send end message for successful completion
                 await ws_manager.send_end_message(
