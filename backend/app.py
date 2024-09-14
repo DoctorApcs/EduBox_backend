@@ -11,6 +11,8 @@ from fastapi import FastAPI, HTTPException
 from src.constants import GlobalConfig
 from api.routes.knowledge_base import kb_router
 from api.routes.assistant import assistant_router
+from api.routes.auth import router as auth_router
+from api.routes.users import router as users_router
 
 BASE_DIR = Path(__file__).parent.absolute()
 
@@ -81,6 +83,8 @@ app.add_middleware(
 
 app.include_router(kb_router, prefix="/api/knowledge_base")
 app.include_router(assistant_router, prefix="/api/assistant")
+app.include_router(auth_router, prefix="/api/auth")
+app.include_router(users_router, prefix="/api/users")
 
 
 if __name__ == "__main__":

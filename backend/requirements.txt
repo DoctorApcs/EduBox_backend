@@ -34,3 +34,5 @@ llama-parse==0.4.9
 flower==2.0.1
 langgraph==0.2.18
 gpt-researcher==0.9.3
+passlib==1.7.4
+python-jose==3.3.0
