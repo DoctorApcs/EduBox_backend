@@ -7,7 +7,7 @@ class ToolManager:
     def __init__(self, config):
         self.tools = [
             load_knowledge_base_search_tool(config),
-            load_display_tool(config["conversation_id"])
+            # load_display_tool(config["conversation_id"])
         ]
 
     def add_tool(self, tool):

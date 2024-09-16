@@ -1,0 +1,5 @@
+@import 'katex/dist/katex.min.css';
+
+.katex-mathml {
+    display: none !important;
+  }
