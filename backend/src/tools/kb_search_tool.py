@@ -66,27 +66,26 @@ def load_knowledge_base_search_tool(config: dict):
     index = VectorStoreIndex.from_vector_store(vector_store, storage_context=storage_context, embed_model=embed_model)
     start_id = 0
     
-    def retrieve_knowledge_base(query_str: str):
+    def retrieve_knowledge_base(query_str: str, num_sources: int = 5):
         
         """
-        Useful for answering questions about papers, research. Add paper year if needed.  
-        Retrieves papers based on the given query string and optional year.
+        Useful for answering questions about the knowledge base.
 
         Args:
             query_str (str): The query string used to search for papers.
-            start_date (str, optional): The start range of retrieve papers. Defaults to "None".
-            end_date (str, optional): The end range of retrieve papers. Defaults to today.
+            num_sources (int, optional): The number of sources to retrieve. Defaults to 5.
             
         Returns:
-            list: A list of retrieved papers, each containing the paper link and content.
+            RetrievalResponses: A list of retrieved sources, each containing the source link and content.
         """
         retriever = index.as_retriever(
-            similarity_top_k=5,
+            similarity_top_k=num_sources,
         )
         
         
         retriever_response = retriever.retrieve(query_str)
-        logging.info("Retrieval Content: ", [n.node.get_content(metadata_mode=MetadataMode.LLM) for n in retriever_response])
+        print("Retrieval Content: ", [n.node.get_content(metadata_mode=MetadataMode.LLM) for n in retriever_response])
+        print("Retrieval Metadata: ", [n.node.metadata for n in retriever_response])
         try: 
             url = retriever_response[0].node.metadata["metadata"]["file_name"]
         except:

@@ -2,6 +2,8 @@
 import Header from "@/components/Header";
 import { useRouter } from "next/navigation";
 import "@/styles/globals.css";
+import "@/styles/katex-tailwind.css";
+
 import { Montserrat } from "next/font/google";
 
 const montserrat = Montserrat({ subsets: ["latin"] });

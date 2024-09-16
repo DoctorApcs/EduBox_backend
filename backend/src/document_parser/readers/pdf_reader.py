@@ -23,7 +23,7 @@ RETRY_TIMES = 3
 class PDFReader(BaseReader):
     """PDF parser."""
 
-    def __init__(self, return_full_document: Optional[bool] = False) -> None:
+    def __init__(self, return_full_document: Optional[bool] = True) -> None:
         """
         Initialize PDFReader.
         """
