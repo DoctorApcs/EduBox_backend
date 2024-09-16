@@ -5,7 +5,6 @@ import remarkGfm from "remark-gfm";
 import rehypeKatex from "rehype-katex";
 import { Prism as SyntaxHighlighter } from "react-syntax-highlighter";
 import { vscDarkPlus } from "react-syntax-highlighter/dist/esm/styles/prism";
-import "katex/dist/katex.min.css"; // Import KaTeX CSS for styling
 
 const CustomMarkdown = ({ children, onShowSource }) => {
   let processedContent = "";
