@@ -5,68 +5,13 @@ import React, {
   useCallback,
   useMemo,
 } from "react";
-import { Send, User, Bot, Loader2, Maximize2 } from "lucide-react";
-import ReactMarkdown from "@/components/Markdown";
+import { Send, User, Bot, Loader2, Maximize2, FileText } from "lucide-react";
 import ErrorMessage from "@/components/chat/ErrorMessage"; // Import the new ErrorMessage component
 import PreviewBox from "./PreviewBox";
+import { Message } from "@/components/chat/Message";
 
 const API_BASE_URL =
   process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:8000";
-
-const Message = React.memo(({ message }) => {
-  const renderMessage = (message) => {
-    switch (message.type) {
-      case "text":
-        return <ReactMarkdown>{message.content}</ReactMarkdown>;
-      case "video":
-        const fullVideoUrl = `${API_BASE_URL}/getfile/${message.content}`;
-        return (
-          <video controls className="w-full max-w-lg mt-2">
-            <source src={fullVideoUrl} type="video/mp4" />
-            Your browser does not support the video tag.
-          </video>
-        );
-      case "image":
-        return (
-          <img
-            src={message.content}
-            alt="Assistant generated image"
-            className="w-full max-w-lg mt-2"
-          />
-        );
-      default:
-        return <ReactMarkdown>{message.content}</ReactMarkdown>;
-    }
-  };
-
-  return (
-    <div
-      className={`flex ${
-        message.sender_type === "user" ? "justify-end" : "justify-start"
-      } mb-4`}
-    >
-      <div
-        className={`${
-          message.sender_type === "user"
-            ? "max-w-[60%] bg-purple-600 text-white"
-            : "max-w-[100%] bg-purple-200 text-gray-800"
-        } p-3 rounded-lg`}
-      >
-        <div className="flex items-center mb-1">
-          {message.sender_type === "user" ? (
-            <User size={16} className="mr-2" />
-          ) : (
-            <Bot size={16} className="mr-2" />
-          )}
-          <span className="font-semibold">
-            {message.sender_type === "user" ? "You" : "Assistant"}
-          </span>
-        </div>
-        {renderMessage(message)}
-      </div>
-    </div>
-  );
-});
 
 const ChatArea = ({ conversation, assistantId }) => {
   const [messages, setMessages] = useState([]);
@@ -76,6 +21,7 @@ const ChatArea = ({ conversation, assistantId }) => {
   const [isAssistantTyping, setIsAssistantTyping] = useState(false);
   const [error, setError] = useState(""); // New state for error messages
   const [isPreviewOpen, setIsPreviewOpen] = useState(false);
+  const [sources, setSources] = useState([]);
 
   const messagesEndRef = useRef(null);
   const textareaRef = useRef(null);
@@ -145,6 +91,10 @@ const ChatArea = ({ conversation, assistantId }) => {
           });
           setMessages((prevMessages) => [...prevMessages, newMessage]);
 
+          break;
+        case "sources":
+          setSources(data.content);
+          console.log("Received sources:", data);
           break;
         default:
           console.log("Unknown message type:", data.type);
@@ -266,6 +216,15 @@ const ChatArea = ({ conversation, assistantId }) => {
 
   const memoizedMessages = useMemo(() => messages, [messages]);
 
+  const showSource = useCallback((index) => {
+    if (sources[index]) {
+      const source = sources[index];
+      console.log(source);
+      const fileUrl = `${API_BASE_URL}/getfile/uploads/${source.url}`;
+      window.open(fileUrl, '_blank');
+    }
+  }, [sources]);
+
   return (
     <div className="flex flex-col h-full bg-purple-50">
       <div className="flex-grow flex overflow-hidden">
@@ -273,7 +232,7 @@ const ChatArea = ({ conversation, assistantId }) => {
           <div className="flex-grow overflow-y-auto p-4">
             <div className="max-w-4xl mx-auto">
               {memoizedMessages.map((message, index) => (
-                <Message key={index} message={message} />
+                <Message key={index} message={message} onShowSource={showSource} />
               ))}
               {isAssistantTyping && (
                 <Loader2 className="w-6 h-6 animate-spin" />
