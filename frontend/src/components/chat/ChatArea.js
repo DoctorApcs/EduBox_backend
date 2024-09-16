@@ -22,6 +22,7 @@ const ChatArea = ({ conversation, assistantId }) => {
   const [error, setError] = useState(""); // New state for error messages
   const [isPreviewOpen, setIsPreviewOpen] = useState(false);
   const [sources, setSources] = useState([]);
+  const [previewContent, setPreviewContent] = useState(null);
 
   const messagesEndRef = useRef(null);
   const textareaRef = useRef(null);
@@ -220,69 +221,68 @@ const ChatArea = ({ conversation, assistantId }) => {
     if (sources[index]) {
       const source = sources[index];
       console.log(source);
-      const fileUrl = `${API_BASE_URL}/getfile/uploads/${source.url}`;
-      window.open(fileUrl, '_blank');
+      
+      if (typeof source.url === 'string' && source.url.toLowerCase().endsWith('.pdf')) {
+        const fileUrl = `${API_BASE_URL}/getfile/uploads/${source.url}`;
+        setPreviewContent(<iframe src={fileUrl} width="100%" height="100%" />);
+        setIsPreviewOpen(true);
+      } else if (source.url.startsWith('https://')) {
+        window.open(source.url, '_blank');
+      } else {
+        console.error('Unsupported source URL:', source.url);
+      }
     }
-  }, [sources]);
+  }, [sources, API_BASE_URL]);
 
   return (
-    <div className="flex flex-col h-full bg-purple-50">
-      <div className="flex-grow flex overflow-hidden">
-        <div className="flex-grow flex flex-row">
-          <div className="flex-grow overflow-y-auto p-4">
-            <div className="max-w-4xl mx-auto">
-              {memoizedMessages.map((message, index) => (
-                <Message key={index} message={message} onShowSource={showSource} />
-              ))}
-              {isAssistantTyping && (
-                <Loader2 className="w-6 h-6 animate-spin" />
-              )}
-              {streamingMessage && <Message message={streamingMessage} />}
-              {error && <ErrorMessage message={error} />}
-              <div ref={messagesEndRef} style={{ height: "1px" }} />
-            </div>
+    <div className="flex h-full bg-purple-50">
+      <div className={`flex-grow flex flex-col ${isPreviewOpen ? 'w-2/3' : 'w-full'} transition-all duration-300`}>
+        <div className="flex-grow overflow-y-auto p-4 pb-32">
+          <div className="max-w-4xl mx-auto">
+            {memoizedMessages.map((message, index) => (
+              <Message key={index} message={message} onShowSource={showSource} />
+            ))}
+            {isAssistantTyping && (
+              <Loader2 className="w-6 h-6 animate-spin" />
+            )}
+            {streamingMessage && <Message message={streamingMessage} />}
+            {error && <ErrorMessage message={error} />}
+            <div ref={messagesEndRef} style={{ height: "1px" }} />
           </div>
-          {isPreviewOpen && (
-            <PreviewBox
-              isOpen={isPreviewOpen}
-              onClose={togglePreview}
-              title="Preview"
-            >
-              {/* Add your preview content here */}
-              <p>This is where you can display preview content.</p>
-            </PreviewBox>
-          )}
+        </div>
+        <div className="bottom-0 left-0 right-0 border-t border-gray-200 p-4 bg-white">
+          <form onSubmit={sendMessage} className="max-w-4xl mx-auto">
+            <div className="flex items-end bg-white rounded-3xl shadow-lg border border-gray-300">
+              <textarea
+                ref={textareaRef}
+                value={inputMessage}
+                onChange={handleInputChange}
+                onKeyDown={handleKeyDown}
+                placeholder="Message Assistant (Press Enter to send, Shift+Enter for new line)"
+                className="flex-1 bg-transparent border-none rounded-3xl py-4 px-5 focus:outline-none resize-none text-gray-800 min-h-[60px]"
+                rows={1}
+                disabled={isLoading}
+              />
+              <button
+                type="submit"
+                className="bg-transparent text-gray-500 p-4 rounded-full hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-gray-300 disabled:opacity-50 mr-2"
+                disabled={isLoading}
+              >
+                <Send size={24} />
+              </button>
+            </div>
+          </form>
         </div>
       </div>
-      <div className="border-t border-gray-200 p-4">
-        <form onSubmit={sendMessage} className="max-w-4xl mx-auto">
-          <div className="flex items-end bg-white rounded-3xl shadow-lg border border-gray-300">
-            <textarea
-              ref={textareaRef}
-              value={inputMessage}
-              onChange={handleInputChange}
-              onKeyDown={handleKeyDown}
-              placeholder="Message Assistant (Press Enter to send, Shift+Enter for new line)"
-              className="flex-1 bg-transparent border-none rounded-3xl py-4 px-5 focus:outline-none resize-none text-gray-800 min-h-[60px]"
-              rows={1}
-              disabled={isLoading}
-            />
-            <button
-              type="submit"
-              className="bg-transparent text-gray-500 p-4 rounded-full hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-gray-300 disabled:opacity-50 mr-2"
-              disabled={isLoading}
-            >
-              <Send size={24} />
-            </button>
-          </div>
-        </form>
-      </div>
-      <button
-        onClick={togglePreview}
-        className="fixed bottom-4 right-4 bg-purple-500 text-white p-2 rounded-full shadow-lg hover:bg-purple-600 focus:outline-none focus:ring-2 focus:ring-blue-300"
-      >
-        <Maximize2 size={24} />
-      </button>
+      {isPreviewOpen && (
+          <PreviewBox
+            isOpen={isPreviewOpen}
+            onClose={togglePreview}
+            title="Source Preview"
+          >
+            {previewContent}
+          </PreviewBox>
+      )}
     </div>
   );
 };
