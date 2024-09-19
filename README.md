@@ -15,3 +15,7 @@ Please take a look at the specific document for running each service
 
 - [Running Backend server](./backend/README.md)
 - [Running Frontend server](./frontend/README.md)
+
+# Android UI Repo
+
+[Android UI Repo](https://github.com/DoctorApcs/DoctorAndroid)
