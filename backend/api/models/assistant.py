@@ -24,6 +24,7 @@ class AssistantResponse(BaseModel):
 
 class ConversationResponse(BaseModel):
     id: int
+    title: str
     user_id: int
     assistant_id: int
     started_at: datetime

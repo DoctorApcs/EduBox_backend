@@ -1,6 +1,6 @@
 import os
 import datetime
-from sqlalchemy import func
+from sqlalchemy import func, update
 from fastapi import Depends, HTTPException
 from sqlalchemy.orm import Session
 from src.database.manager import DatabaseManager
@@ -19,6 +19,7 @@ from api.models.assistant import (
 from typing import List, Dict, Optional, Generator, Any
 from api.utils.websocket_manager import ws_manager
 from src.tools.kb_search_tool import RetrievalResponses 
+import logging
 
 class AssistantService:
     def __init__(self, db_manager: DatabaseManager = Depends(get_db_manager)):
@@ -73,12 +74,12 @@ class AssistantService:
                 
                 new_conversation = Conversation(
                     user_id=user_id,
-                    assistant_id=assistant_id
+                    assistant_id=assistant_id,
+                    title="New Chat"
                 )
                 session.add(new_conversation)
                 session.flush()  # Flush to get the new conversation ID
 
-                # Add the default initial message from the assistant
                 initial_message = Message(
                     conversation_id=new_conversation.id,
                     sender_type="assistant",
@@ -104,6 +105,7 @@ class AssistantService:
                 conversations = session.query(Conversation).filter_by(assistant_id=assistant_id).all()
                 return [ConversationResponse.model_validate(conversation) for conversation in conversations]
         except Exception as e:
+            logging.error(f"An error occurred while fetching conversations: {str(e)}", exc_info=True)
             raise HTTPException(status_code=500, detail=f"An error occurred while fetching conversations: {str(e)}")
 
     def chat_with_assistant(self, conversation_id: int, user_id: int, message: ChatMessage) -> ChatResponse:
@@ -144,6 +146,7 @@ class AssistantService:
                 return ChatResponse(assistant_message=response)
         
         except Exception as e:
+            logging.error(f"An error occurred during the chat: {str(e)}", exc_info=True)
             raise HTTPException(status_code=500, detail=f"An error occurred during the chat: {str(e)}")
 
     def stream_chat_with_assistant(self, conversation_id: int, user_id: int, message: ChatMessage) -> Generator[str, None, None]:
@@ -187,7 +190,8 @@ class AssistantService:
                 raise HTTPException(status_code=404, detail="Conversation not found")
             
             message_history = self._get_message_history(session, conversation_id)
-            
+            is_first_message = session.query(Message).filter_by(conversation_id=conversation_id, sender_type="user").count() == 1
+
             user_message = Message(
                 conversation_id=conversation_id,
                 sender_type="user",
@@ -219,9 +223,23 @@ class AssistantService:
                 content=full_response
             )
             session.add(assistant_message)
+            
+            if is_first_message:
+                # Generate and update the conversation title
+                new_title = self.generate_conversation_title(full_response)
+                session.execute(
+                    update(Conversation).
+                    where(Conversation.id == conversation_id).
+                    values(title=new_title)
+                )
+                yield {"type": "update_title", "content": new_title}
+
             session.commit()
 
-        
+    def generate_conversation_title(self, first_response: str) -> str:
+        # Simple implementation: use the first 30 characters of the response
+        return first_response[:30] + "..." if len(first_response) > 30 else first_response
+
     def _get_message_history(self, session: Session, conversation_id: int) -> List[Dict[str, str]]:
         messages = session.query(Message).filter_by(conversation_id=conversation_id).order_by(Message.created_at).all()
         sources = session.query(Source).filter_by(conversation_id=conversation_id).order_by(Source.index).all()
@@ -286,6 +304,7 @@ class AssistantService:
                 messages = session.query(Message).filter_by(conversation_id=conversation_id).order_by(Message.created_at).all()
                 return [MessageResponse.model_validate(message) for message in messages]
         except Exception as e:
+            logging.error(f"An error occurred while fetching conversation history: {str(e)}", exc_info=True)
             raise HTTPException(status_code=500, detail=f"An error occurred while fetching conversation history: {str(e)}")
         
         
@@ -301,4 +320,3 @@ class AssistantService:
             "conversation_id": conversation_id,
             "system_prompt": assistant.systemprompt
         }
-        
