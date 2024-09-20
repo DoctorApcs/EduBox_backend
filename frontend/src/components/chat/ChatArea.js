@@ -62,6 +62,10 @@ const ChatArea = ({ conversation, assistantId, onConversationUpdate }) => {
             });
           }
           break;
+        case "update_title":
+          onConversationUpdate({ ...conversation, title: data.content });
+          break;
+
         case "status":
           console.log("Status update:", data.content);
           break;
@@ -107,9 +111,7 @@ const ChatArea = ({ conversation, assistantId, onConversationUpdate }) => {
           });
           console.log("Received sources:", data);
           break;
-        case "update_title":
-          onConversationUpdate({ ...conversation, title: data.content });
-          break;
+
         default:
           console.log("Unknown message type:", data.type);
       }

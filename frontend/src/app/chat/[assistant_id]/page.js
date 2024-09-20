@@ -127,7 +127,7 @@ const ChatAssistantPage = () => {
         conv.id === updatedConversation.id ? updatedConversation : conv
       )
     );
-    setSelectedConversation(updatedConversation);
+    // setSelectedConversation(updatedConversation);
   };
 
   if (isLoading) return <LoadingSpinner />;
