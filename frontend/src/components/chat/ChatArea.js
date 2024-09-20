@@ -94,7 +94,7 @@ const ChatArea = ({ conversation, assistantId }) => {
 
           break;
         case "sources":
-          setSources(data.content);
+          setSources((prevSources) => [...prevSources, ...data.content]);
           console.log("Received sources:", data);
           break;
         default:
@@ -133,12 +133,24 @@ const ChatArea = ({ conversation, assistantId }) => {
 
   const fetchConversationHistory = async () => {
     try {
-      const response = await fetch(
-        `${API_BASE_URL}/api/assistant/${assistantId}/conversations/${conversation.id}/history`
-      );
-      if (!response.ok) throw new Error("Failed to fetch conversation history");
-      const data = await response.json();
-      setMessages(data);
+      const [historyResponse, sourcesResponse] = await Promise.all([
+        fetch(
+          `${API_BASE_URL}/api/assistant/${assistantId}/conversations/${conversation.id}/history`
+        ),
+        fetch(
+          `${API_BASE_URL}/api/assistant/${assistantId}/conversations/${conversation.id}/sources`
+        ),
+      ]);
+
+      if (!historyResponse.ok)
+        throw new Error("Failed to fetch conversation history");
+      if (!sourcesResponse.ok) throw new Error("Failed to fetch sources");
+
+      const historyData = await historyResponse.json();
+      const sourcesData = await sourcesResponse.json();
+
+      setMessages(historyData);
+      setSources(sourcesData);
     } catch (error) {
       console.error("Error fetching conversation history:", error);
       setError("Failed to load conversation history. Please try again."); // Set error message
@@ -217,34 +229,48 @@ const ChatArea = ({ conversation, assistantId }) => {
 
   const memoizedMessages = useMemo(() => messages, [messages]);
 
-  const showSource = useCallback((index) => {
-    if (sources[index]) {
-      const source = sources[index];
-      console.log(source);
-      
-      if (typeof source.url === 'string' && source.url.toLowerCase().endsWith('.pdf')) {
-        const fileUrl = `${API_BASE_URL}/getfile/uploads/${source.url}`;
-        setPreviewContent(<iframe src={fileUrl} width="100%" height="100%" />);
-        setIsPreviewOpen(true);
-      } else if (source.url.startsWith('https://')) {
-        window.open(source.url, '_blank');
-      } else {
-        console.error('Unsupported source URL:', source.url);
+  const showSource = useCallback(
+    (index) => {
+      if (sources[index]) {
+        const source = sources[index];
+        console.log(source);
+
+        if (
+          typeof source.url === "string" &&
+          source.url.toLowerCase().endsWith(".pdf")
+        ) {
+          const fileUrl = `${API_BASE_URL}/getfile/uploads/${source.url}`;
+          setPreviewContent(
+            <iframe src={fileUrl} width="100%" height="100%" />
+          );
+          setIsPreviewOpen(true);
+        } else if (source.url.startsWith("https://")) {
+          window.open(source.url, "_blank");
+        } else {
+          console.error("Unsupported source URL:", source.url);
+        }
       }
-    }
-  }, [sources, API_BASE_URL]);
+    },
+    [sources, API_BASE_URL]
+  );
 
   return (
     <div className="flex h-full bg-purple-50">
-      <div className={`flex-grow flex flex-col ${isPreviewOpen ? 'w-2/3' : 'w-full'} transition-all duration-300`}>
+      <div
+        className={`flex-grow flex flex-col ${
+          isPreviewOpen ? "w-2/3" : "w-full"
+        } transition-all duration-300`}
+      >
         <div className="flex-grow overflow-y-auto p-4 pb-32">
           <div className="max-w-4xl mx-auto">
             {memoizedMessages.map((message, index) => (
-              <Message key={index} message={message} onShowSource={showSource} />
+              <Message
+                key={index}
+                message={message}
+                onShowSource={showSource}
+              />
             ))}
-            {isAssistantTyping && (
-              <Loader2 className="w-6 h-6 animate-spin" />
-            )}
+            {isAssistantTyping && <Loader2 className="w-6 h-6 animate-spin" />}
             {streamingMessage && <Message message={streamingMessage} />}
             {error && <ErrorMessage message={error} />}
             <div ref={messagesEndRef} style={{ height: "1px" }} />
@@ -275,13 +301,13 @@ const ChatArea = ({ conversation, assistantId }) => {
         </div>
       </div>
       {isPreviewOpen && (
-          <PreviewBox
-            isOpen={isPreviewOpen}
-            onClose={togglePreview}
-            title="Source Preview"
-          >
-            {previewContent}
-          </PreviewBox>
+        <PreviewBox
+          isOpen={isPreviewOpen}
+          onClose={togglePreview}
+          title="Source Preview"
+        >
+          {previewContent}
+        </PreviewBox>
       )}
     </div>
   );

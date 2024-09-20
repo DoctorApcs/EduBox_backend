@@ -45,7 +45,7 @@ class RetrievalResponses:
     def to_dict(self) -> dict:
         return [node.to_dict() for node in self.source_nodes]
     
-def load_knowledge_base_search_tool(config: dict):
+def load_knowledge_base_search_tool(config: dict, max_source_index: int):
     embedding_service = config.get("embedding_service", "openai")
     
     if embedding_service == "openai":
@@ -64,7 +64,7 @@ def load_knowledge_base_search_tool(config: dict):
     
     storage_context = StorageContext.from_defaults(vector_store=vector_store)
     index = VectorStoreIndex.from_vector_store(vector_store, storage_context=storage_context, embed_model=embed_model)
-    start_id = 0
+    start_id = max_source_index
     
     def retrieve_knowledge_base(query_str: str, num_sources: int = 5):
         
@@ -84,19 +84,14 @@ def load_knowledge_base_search_tool(config: dict):
         
         
         retriever_response = retriever.retrieve(query_str)
-        print("Retrieval Content: ", [n.node.get_content(metadata_mode=MetadataMode.LLM) for n in retriever_response])
-        print("Retrieval Metadata: ", [n.node.metadata for n in retriever_response])
-        try: 
-            url = retriever_response[0].node.metadata["metadata"]["file_name"]
-        except:
-            url = ""
+        
         return RetrievalResponses([
             SingleSourceNode(
                 index=start_id + i,
                 text=n.node.get_content(metadata_mode=MetadataMode.LLM), 
-                url=url,
-                chunk_start=0,
-                chunk_end=0
+                url=n.node.metadata.get("metadata", {}).get("file_name", ""),
+                chunk_start=n.node.metadata.get("chunk_start", 0),
+                chunk_end=n.node.metadata.get("chunk_end", 0)
             )
             for i, n in enumerate(retriever_response)
         ])

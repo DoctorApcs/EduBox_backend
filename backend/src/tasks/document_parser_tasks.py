@@ -29,15 +29,27 @@ class TextFileProcessor(FileProcessor):
         docs: List[Document] = reader.load_data(file_path)
         
         splitter = SentenceSplitter()
-        chunks = splitter.split_text("\n".join([doc.text for doc in docs]))
-        chunks = [Document(text=chunk, metadata=docs[0].metadata) for chunk in chunks]
-        
+        full_text = "\n".join([doc.text for doc in docs])
+        chunks = splitter.split_text(full_text)
+
+        processed_chunks = []
+        start_index = 0
+        for chunk in chunks:
+            end_index = start_index + len(chunk)
+            chunk_metadata = docs[0].metadata.copy()
+            chunk_metadata.update({
+                "chunk_start": start_index,
+                "chunk_end": end_index
+            })
+            processed_chunks.append(Document(text=chunk, metadata=chunk_metadata))
+            start_index = end_index
+
         return {
             "file_type": self.reader_class.__name__.replace('Reader', ''),
             "file_path": file_path,
             "processed_at": datetime.now().isoformat(),
-            "chunks": len(chunks),
-            "documents": chunks,
+            "chunks": len(processed_chunks),
+            "documents": processed_chunks,
         }
 
 class VideoFileProcessor(FileProcessor):

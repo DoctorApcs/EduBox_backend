@@ -105,7 +105,6 @@ class Assistant(Base):
     user = relationship("User", back_populates="assistants")
     knowledge_base = relationship("KnowledgeBase")
 
-
 class Conversation(Base):
     __tablename__ = "conversations"
     id = Column(Integer, primary_key=True)
@@ -116,6 +115,7 @@ class Conversation(Base):
     user = relationship("User")
     assistant = relationship("Assistant")
     messages = relationship("Message", back_populates="conversation")
+    sources = relationship("Source", back_populates="conversation")  # New relationship
 
 
 class Message(Base):
@@ -137,3 +137,15 @@ class Session(Base):
     ended_at = Column(DateTime)
     user = relationship("User")
     knowledge_base = relationship("KnowledgeBase")
+
+class Source(Base):
+    __tablename__ = 'sources'
+    id = Column(Integer, primary_key=True)
+    conversation_id = Column(Integer, ForeignKey('conversations.id'))
+    index = Column(Integer, nullable=False)
+    text = Column(Text, nullable=False)
+    url = Column(String(255), nullable=False)
+    chunk_start = Column(Integer, nullable=False)
+    chunk_end = Column(Integer, nullable=False)
+    created_at = Column(DateTime, default=datetime.utcnow)
+    conversation = relationship("Conversation", back_populates="sources")

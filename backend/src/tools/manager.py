@@ -4,9 +4,9 @@ from llama_index.core.tools import FunctionTool
 from typing import List
 
 class ToolManager:
-    def __init__(self, config):
+    def __init__(self, config, max_source_index):
         self.tools = [
-            load_knowledge_base_search_tool(config),
+            load_knowledge_base_search_tool(config, max_source_index),
             # load_display_tool(config["conversation_id"])
         ]
 
