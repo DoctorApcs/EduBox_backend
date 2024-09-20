@@ -15,10 +15,11 @@ from llama_index.core.chat_engine.types import StreamingAgentChatResponse
 class ChatAssistant:
 
     def __init__(
-        self, configuration: dict, db_manager: DatabaseManager = Depends(get_db_manager)
+        self, configuration: dict, max_source_index: int = 0, db_manager: DatabaseManager = Depends(get_db_manager)
     ):
         self.db_manager = db_manager
         self.configuration = configuration
+        self.max_source_index = max_source_index
         self._init_agent()
 
     def _init_agent(self):
@@ -65,7 +66,7 @@ class ChatAssistant:
             )
 
     def _init_tools(self):
-        return ToolManager(config=self.configuration).get_tools()
+        return ToolManager(config=self.configuration, max_source_index=self.max_source_index).get_tools()
 
     def on_message(self, message, message_history) -> str:
         message_history = [

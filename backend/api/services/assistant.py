@@ -1,8 +1,10 @@
 import os
+import datetime
+from sqlalchemy import func
 from fastapi import Depends, HTTPException
 from sqlalchemy.orm import Session
 from src.database.manager import DatabaseManager
-from src.database.models import Assistant, Conversation, Message
+from src.database.models import Assistant, Conversation, Message, Source
 from src.dependencies import get_db_manager
 from src.agents.base import ChatAssistant
 from api.models.assistant import (
@@ -11,7 +13,8 @@ from api.models.assistant import (
     ChatMessage, 
     ChatResponse, 
     ConversationResponse,
-    MessageResponse
+    MessageResponse,
+    SourceResponse
 )
 from typing import List, Dict, Optional, Generator, Any
 from api.utils.websocket_manager import ws_manager
@@ -196,14 +199,16 @@ class AssistantService:
             assistant = conversation.assistant
             assistant_config = self._get_assistant_config(assistant, conversation_id)
             
-            assistant_instance = ChatAssistant(assistant_config)
-            
+            max_source_index = self._get_max_source_index(session, conversation_id)
+            assistant_instance = ChatAssistant(assistant_config, max_source_index)
+                        
             full_response = ""
             response = await assistant_instance.astream_chat(message.content, message_history)
             
             for source in response.sources:
                 yield {"type": "sources", "sources": source.raw_output.to_dict()}
-            
+                self._add_sources_to_db(session, conversation_id, source.raw_output.to_dict())
+                
             async for chunk in response.async_response_gen():
                 full_response += chunk
                 yield {"type": "text", "content": chunk}
@@ -219,8 +224,57 @@ class AssistantService:
         
     def _get_message_history(self, session: Session, conversation_id: int) -> List[Dict[str, str]]:
         messages = session.query(Message).filter_by(conversation_id=conversation_id).order_by(Message.created_at).all()
-        return [{"content": msg.content, "role": msg.sender_type} for msg in messages]
+        sources = session.query(Source).filter_by(conversation_id=conversation_id).order_by(Source.index).all()
 
+        history = [{"content": msg.content, "role": msg.sender_type} for msg in messages]
+
+        # Add sources as messages with role "tool"
+        for source in sources:
+            history.append({
+                "content": source.text,
+                "role": "assistant",
+                "metadata": {
+                    "url": source.url,
+                    "chunk_start": source.chunk_start,
+                    "chunk_end": source.chunk_end
+                }
+            })
+
+        # Sort the combined history by creation time
+        return sorted(history, key=lambda x: x.get('created_at', datetime.datetime.min))
+
+    def _get_max_source_index(self, session: Session, conversation_id: int) -> int:
+        max_index = session.query(func.max(Source.index)).filter_by(conversation_id=conversation_id).scalar()
+        return max_index or 0
+
+    def get_sources(self, conversation_id: int, user_id: int) -> List[SourceResponse]:
+        with self.db_manager.Session() as session:
+            sources = session.query(Source).filter_by(conversation_id=conversation_id).all()
+            return [
+                SourceResponse.model_validate({
+                    "id": source.id, 
+                    "conversation_id": source.conversation_id, 
+                    "text": source.text, 
+                    "url": source.url, 
+                    "chunk_start": source.chunk_start, 
+                    "chunk_end": source.chunk_end, 
+                    "index": source.index
+                }) 
+                for source in sources
+            ]
+            
+    def _add_sources_to_db(self, session: Session, conversation_id: int, sources: List[Dict[str, Any]]):
+        for source in sources:
+            new_source = Source(
+                conversation_id=conversation_id,
+                text=source["text"],
+                index=source["index"],
+                url=source["url"],
+                chunk_start=source["chunk_start"],
+                chunk_end=source["chunk_end"]
+            )
+            session.add(new_source)
+            
     def get_conversation_history(self, conversation_id: int, user_id: int) -> List[MessageResponse]:
         try:
             with self.db_manager.Session() as session:

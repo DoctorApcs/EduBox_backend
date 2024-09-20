@@ -8,6 +8,7 @@ from api.models.assistant import (
     ChatResponse,
     ConversationResponse,
     MessageResponse,
+    SourceResponse
 )
 from api.services.assistant import AssistantService
 from api.utils.websocket_manager import ws_manager, MediaType, EndStatus
@@ -129,6 +130,14 @@ async def get_conversation_history(
 ):
     return assistant_service.get_conversation_history(conversation_id, current_user_id)
 
+@assistant_router.get("/{assistant_id}/conversations/{conversation_id}/sources", response_model=List[SourceResponse])
+def get_sources(
+    assistant_id: int,
+    conversation_id: int,
+    current_user_id: int = Depends(get_current_user_id),
+    assistant_service: AssistantService = Depends()
+):
+    return assistant_service.get_sources(conversation_id, current_user_id)
 
 @assistant_router.websocket("/{assistant_id}/conversations/{conversation_id}/ws")
 async def websocket_conversation(

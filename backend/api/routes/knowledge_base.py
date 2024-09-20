@@ -26,6 +26,7 @@ from src.constants import GlobalConfig
 from api.utils.websocket_manager import ws_manager
 from src.agents.quiz_agent import QuizAgent
 from api.models.assistant import AssistantResponse
+from pathlib import Path
 
 kb_router = APIRouter()
 UPLOAD_DIR = "uploads"
