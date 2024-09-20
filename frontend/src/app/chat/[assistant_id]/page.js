@@ -121,6 +121,15 @@ const ChatAssistantPage = () => {
     // Implement the logic to open the create assistant modal
   };
 
+  const handleConversationUpdate = (updatedConversation) => {
+    setConversations((prevConversations) =>
+      prevConversations.map((conv) =>
+        conv.id === updatedConversation.id ? updatedConversation : conv
+      )
+    );
+    // setSelectedConversation(updatedConversation);
+  };
+
   if (isLoading) return <LoadingSpinner />;
   if (error) return <ErrorComponent message={error} />;
 
@@ -152,6 +161,7 @@ const ChatAssistantPage = () => {
           <ChatArea
             conversation={selectedConversation}
             assistantId={selectedAssistant.id}
+            onConversationUpdate={handleConversationUpdate}
           />
         ) : (
           <div className="flex-1 flex items-center justify-center text-gray-500">

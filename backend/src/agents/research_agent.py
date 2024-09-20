@@ -29,6 +29,7 @@ class ResearchAgent:
         except Exception as e:
             print(f"{Fore.RED}Error in researching topic {subtopic}: {e}{Style.RESET_ALL}")
             report = None
+            context = None
         return {subtopic: {"report": report, "context": context}}
 
     async def run_initial_research(self, research_state: dict):

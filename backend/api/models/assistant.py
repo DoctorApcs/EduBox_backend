@@ -24,6 +24,7 @@ class AssistantResponse(BaseModel):
 
 class ConversationResponse(BaseModel):
     id: int
+    title: str
     user_id: int
     assistant_id: int
     started_at: datetime
@@ -45,3 +46,12 @@ class MessageResponse(BaseModel):
     created_at: datetime
 
     model_config = ConfigDict(from_attributes=True)
+    
+class SourceResponse(BaseModel):
+    id: int
+    conversation_id: int
+    text: str
+    url: str
+    chunk_start: int
+    chunk_end: int
+    index: int
