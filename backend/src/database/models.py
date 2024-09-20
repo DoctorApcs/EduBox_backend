@@ -110,12 +110,13 @@ class Conversation(Base):
     id = Column(Integer, primary_key=True)
     user_id = Column(Integer, ForeignKey("users.id"))
     assistant_id = Column(Integer, ForeignKey("assistants.id"))
+    title = Column(String(255), nullable=False)  
     started_at = Column(DateTime, default=datetime.utcnow)
     ended_at = Column(DateTime)
     user = relationship("User")
     assistant = relationship("Assistant")
     messages = relationship("Message", back_populates="conversation")
-    sources = relationship("Source", back_populates="conversation")  # New relationship
+    sources = relationship("Source", back_populates="conversation")  
 
 
 class Message(Base):

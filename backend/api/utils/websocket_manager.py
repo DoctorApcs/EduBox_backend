@@ -29,6 +29,7 @@ class MessageType(str, Enum):
     ERROR = "error"
     END = "end"
     SOURCES = "sources"
+    UPDATE_TITLE = "update_title"
 
 
 class EndStatus(str, Enum):
@@ -97,7 +98,6 @@ class ConnectionManager:
         await self.send_chat_message(websocket, message)
         
     async def send_sources(self, websocket: WebSocket, sources: List[Dict[str, Any]]):
-        print(sources)
         message = Message(
             message_type=MessageType.SOURCES,
             media_type=MediaType.TEXT,
@@ -105,6 +105,16 @@ class ConnectionManager:
             metadata={"sender_type": "assistant"},
         )
         await self.send_chat_message(websocket, message)
+        
+    async def send_update_title(self, websocket: WebSocket, new_title):
+        message = Message(
+            message_type=MessageType.UPDATE_TITLE,
+            media_type=MediaType.TEXT,
+            content=new_title,
+            metadata={"sender_type": "assistant"}
+        )
+        await self.send_chat_message(websocket, message)
+
 
     async def send_media_chunk(
         self,
@@ -170,6 +180,7 @@ class ConnectionManager:
             metadata=metadata,
         )
         await self.send_chat_message(websocket, message)
+        
 
     async def handle_course_generation(
         self,

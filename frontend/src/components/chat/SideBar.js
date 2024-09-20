@@ -101,9 +101,12 @@ const Sidebar = ({
                   onClick={() => onConversationSelect(conversation)}
                 >
                   <div className="flex items-center">
-                    <MessageSquare size={18} className="mr-2 text-gray-600" />
-                    <p className="text-sm text-gray-800">
-                      Conversation {conversation.id}
+                    <MessageSquare
+                      size={18}
+                      className="mr-2 text-gray-600 flex-shrink-0"
+                    />
+                    <p className="text-sm text-gray-800 truncate flex-grow">
+                      {conversation.title}
                     </p>
                   </div>
                 </div>
