@@ -120,9 +120,24 @@ const KnowledgeBaseModal = ({ isOpen, onClose, onCreate }) => {
     if (websocketRef.current) {
       websocketRef.current.close();
     }
+    // Reset all content and data
     setCourseContent("");
     setHumanFeedbackRequired(false);
     setFeedbackText("");
+    setLogs("");
+    setIsLoading(false);
+    setSections([]);
+    setIsCompleted(false);
+    setSources([]);
+    setKbId(null);
+    setFormData({
+      query: "",
+      max_sections: 3,
+      include_human_feedback: false,
+      follow_guidelines: false,
+      model: "gpt-4o-mini",
+      verbose: false,
+    });
     onClose();
   };
 

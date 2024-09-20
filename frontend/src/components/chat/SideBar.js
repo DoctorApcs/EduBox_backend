@@ -103,7 +103,7 @@ const Sidebar = ({
                   <div className="flex items-center">
                     <MessageSquare size={18} className="mr-2 text-gray-600" />
                     <p className="text-sm text-gray-800">
-                      Conversation {conversation.id}
+                      {conversation.title}
                     </p>
                   </div>
                 </div>

@@ -11,6 +11,7 @@ import { AssistantCard } from "@/components/chat/AssistantCards";
 import { Plus } from "lucide-react";
 import { useRouter } from "next/navigation";
 import CreateAssistantModal from "@/components/chat/CreateAssistantModal";
+import { motion } from "framer-motion";
 
 const API_BASE_URL =
   process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:8000";
@@ -230,6 +231,7 @@ export default function KnowledgeBasePage() {
         onClose={() => setIsCreateModalOpen(false)}
         onCreateSuccess={fetchAssistants}
         setIsLoading={() => {}}
+        knowledgeBaseId={knowledgeBaseID}
       />
     </div>
   );

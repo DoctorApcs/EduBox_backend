@@ -13,7 +13,7 @@ import { Message } from "@/components/chat/Message";
 const API_BASE_URL =
   process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:8000";
 
-const ChatArea = ({ conversation, assistantId }) => {
+const ChatArea = ({ conversation, assistantId, onConversationUpdate }) => {
   const [messages, setMessages] = useState([]);
   const [inputMessage, setInputMessage] = useState("");
   const [isLoading, setIsLoading] = useState(false);
@@ -94,8 +94,21 @@ const ChatArea = ({ conversation, assistantId }) => {
 
           break;
         case "sources":
-          setSources((prevSources) => [...prevSources, ...data.content]);
+          setSources((prevSources) => {
+            const newSources = [...prevSources];
+            data.content.forEach((source) => {
+              if (source.index !== undefined) {
+                newSources[source.index] = source;
+              } else {
+                newSources.push(source);
+              }
+            });
+            return newSources;
+          });
           console.log("Received sources:", data);
+          break;
+        case "update_title":
+          onConversationUpdate({ ...conversation, title: data.content });
           break;
         default:
           console.log("Unknown message type:", data.type);

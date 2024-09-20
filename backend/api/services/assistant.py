@@ -20,6 +20,7 @@ from typing import List, Dict, Optional, Generator, Any
 from api.utils.websocket_manager import ws_manager
 from src.tools.kb_search_tool import RetrievalResponses 
 import logging
+from src.utils.misc import generate_conversation_title
 
 class AssistantService:
     def __init__(self, db_manager: DatabaseManager = Depends(get_db_manager)):
@@ -182,7 +183,6 @@ class AssistantService:
             )
             session.add(assistant_message)
             session.commit()
-
     async def astream_chat_with_assistant(self, conversation_id: int, user_id: int, message: ChatMessage):
         with self.db_manager.Session() as session:
             conversation = session.query(Conversation).filter_by(id=conversation_id, user_id=user_id).first()
@@ -190,8 +190,8 @@ class AssistantService:
                 raise HTTPException(status_code=404, detail="Conversation not found")
             
             message_history = self._get_message_history(session, conversation_id)
-            is_first_message = session.query(Message).filter_by(conversation_id=conversation_id, sender_type="user").count() == 1
-
+            is_first_message = session.query(Message).filter_by(conversation_id=conversation_id, sender_type="user").count() == 0
+            logging.error(f"is_first_message: {is_first_message}")
             user_message = Message(
                 conversation_id=conversation_id,
                 sender_type="user",
@@ -226,19 +226,17 @@ class AssistantService:
             
             if is_first_message:
                 # Generate and update the conversation title
-                new_title = self.generate_conversation_title(full_response)
+                new_title = self.generate_conversation_title(message.content, full_response)
                 session.execute(
                     update(Conversation).
                     where(Conversation.id == conversation_id).
                     values(title=new_title)
                 )
                 yield {"type": "update_title", "content": new_title}
-
             session.commit()
 
-    def generate_conversation_title(self, first_response: str) -> str:
-        # Simple implementation: use the first 30 characters of the response
-        return first_response[:30] + "..." if len(first_response) > 30 else first_response
+    def generate_conversation_title(self, user_message: str, assistant_response: str) -> str:
+        return generate_conversation_title(user_message, assistant_response)
 
     def _get_message_history(self, session: Session, conversation_id: int) -> List[Dict[str, str]]:
         messages = session.query(Message).filter_by(conversation_id=conversation_id).order_by(Message.created_at).all()
