@@ -1,0 +1,62 @@
+{
+    "1": {
+        "outline": "Title slide introducing the topic 'Introduction to Python Programming'.",
+        "template_slide_number": "slide_0"
+    },
+    "2": {
+        "outline": "Table of contents outlining the main sections: 1. What is Python? 2. Features of Python 3. Setting Up Python 4. Basic Syntax 5. Data Types 6. Control Structures 7. Functions 8. Modules and Packages 9. Error Handling 10. Conclusion.",
+        "template_slide_number": "slide_1"
+    },
+    "3": {
+        "outline": "Introduction to the first section: 'What is Python?'",
+        "template_slide_number": "slide_3"
+    },
+    "4": {
+        "outline": "Content slide explaining Python's history, its creator, and its evolution over the years.",
+        "template_slide_number": "slide_2"
+    },
+    "5": {
+        "outline": "Comparison slide contrasting Python with other programming languages like Java and C++ in terms of syntax and usability.",
+        "template_slide_number": "slide_4"
+    },
+    "6": {
+        "outline": "Bullet point slide listing the key features of Python: easy to learn, interpreted, dynamically typed, and extensive libraries.",
+        "template_slide_number": "slide_8"
+    },
+    "7": {
+        "outline": "Introduction to the section on 'Setting Up Python'.",
+        "template_slide_number": "slide_3"
+    },
+    "8": {
+        "outline": "Content slide detailing the installation process for Python on different operating systems (Windows, macOS, Linux).",
+        "template_slide_number": "slide_2"
+    },
+    "9": {
+        "outline": "Bullet point slide summarizing the different IDEs and text editors available for Python programming.",
+        "template_slide_number": "slide_8"
+    },
+    "10": {
+        "outline": "Introduction to the section on 'Basic Syntax'.",
+        "template_slide_number": "slide_3"
+    },
+    "11": {
+        "outline": "Content slide explaining Python's basic syntax, including indentation, comments, and print statements.",
+        "template_slide_number": "slide_2"
+    },
+    "12": {
+        "outline": "Comparison slide showing the differences in syntax between Python and other languages for common tasks (e.g., printing, loops).",
+        "template_slide_number": "slide_5"
+    },
+    "13": {
+        "outline": "Introduction to the section on 'Data Types'.",
+        "template_slide_number": "slide_3"
+    },
+    "14": {
+        "outline": "Content slide discussing the various data types in Python: integers, floats, strings, lists, tuples, and dictionaries.",
+        "template_slide_number": "slide_2"
+    },
+    "15": {
+        "outline": "End slide summarizing key takeaways from the presentation, emphasizing Python's versatility and ease of use.",
+        "template_slide_number": "slide_12"
+    }
+}

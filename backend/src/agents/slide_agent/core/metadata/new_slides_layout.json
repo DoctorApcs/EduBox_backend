@@ -1,0 +1,504 @@
+[
+    {
+        "slide_number": 0,
+        "shapes": {
+            "Placeholder_0": {
+                "text": "Title",
+                "max_chars": 5
+            },
+            "Placeholder_1": {
+                "text": "Subtitle",
+                "max_chars": 8
+            },
+            "Placeholder_2": {
+                "text": "Section",
+                "max_chars": 7
+            },
+            "Placeholder_4": {
+                "text": "Economics thesis defense",
+                "max_chars": 24
+            },
+            "Placeholder_12": {
+                "text": "1",
+                "max_chars": 1
+            }
+        },
+        "layout_type": "TITLE"
+    },
+    {
+        "slide_number": 1,
+        "shapes": {
+            "Placeholder_0": {
+                "text": "01",
+                "max_chars": 2
+            },
+            "Placeholder_1": {
+                "text": "Short body text",
+                "max_chars": 15
+            },
+            "Placeholder_2": {
+                "text": "Subtitle",
+                "max_chars": 8
+            },
+            "Placeholder_3": {
+                "text": "Economics thesis defense",
+                "max_chars": 24
+            },
+            "Placeholder_4": {
+                "text": "02",
+                "max_chars": 2
+            },
+            "Placeholder_5": {
+                "text": "Short body text",
+                "max_chars": 15
+            },
+            "Placeholder_6": {
+                "text": "Subtitle",
+                "max_chars": 8
+            },
+            "Placeholder_7": {
+                "text": "03",
+                "max_chars": 2
+            },
+            "Placeholder_8": {
+                "text": "Short body text",
+                "max_chars": 15
+            },
+            "Placeholder_9": {
+                "text": "Subtitle",
+                "max_chars": 8
+            },
+            "Placeholder_12": {
+                "text": "2",
+                "max_chars": 1
+            },
+            "Placeholder_13": {
+                "text": "04",
+                "max_chars": 2
+            },
+            "Placeholder_14": {
+                "text": "Short body text",
+                "max_chars": 15
+            },
+            "Placeholder_15": {
+                "text": "Subtitle",
+                "max_chars": 8
+            },
+            "Placeholder_16": {
+                "text": "Table of contents",
+                "max_chars": 17
+            }
+        },
+        "layout_type": "BLANK_1"
+    },
+    {
+        "slide_number": 2,
+        "shapes": {
+            "Placeholder_0": {
+                "text": "Title",
+                "max_chars": 5
+            },
+            "Placeholder_1": {
+                "text": "Subtitle",
+                "max_chars": 8
+            },
+            "Placeholder_2": {
+                "text": "01",
+                "max_chars": 2
+            },
+            "Placeholder_3": {
+                "text": "Economics thesis defense",
+                "max_chars": 24
+            },
+            "Placeholder_12": {
+                "text": "4",
+                "max_chars": 1
+            }
+        },
+        "layout_type": "SECTION_HEADER"
+    },
+    {
+        "slide_number": 3,
+        "shapes": {
+            "Placeholder_0": {
+                "text": "Title",
+                "max_chars": 5
+            },
+            "Placeholder_1": {
+                "text": "Body text",
+                "max_chars": 9
+            },
+            "Placeholder_2": {
+                "text": "Economics thesis defense",
+                "max_chars": 24
+            },
+            "Placeholder_12": {
+                "text": "3",
+                "max_chars": 1
+            }
+        },
+        "layout_type": "SECTION_TITLE_AND_DESCRIPTION"
+    },
+    {
+        "slide_number": 4,
+        "shapes": {
+            "Placeholder_0": {
+                "text": "Title",
+                "max_chars": 5
+            },
+            "Placeholder_1": {
+                "text": "Body text",
+                "max_chars": 9
+            },
+            "Placeholder_2": {
+                "text": "Header",
+                "max_chars": 6
+            },
+            "Placeholder_3": {
+                "text": "Body text",
+                "max_chars": 9
+            },
+            "Placeholder_4": {
+                "text": "Header",
+                "max_chars": 6
+            },
+            "Placeholder_5": {
+                "text": "Body text",
+                "max_chars": 9
+            },
+            "Placeholder_6": {
+                "text": "Header",
+                "max_chars": 6
+            },
+            "Placeholder_7": {
+                "text": "Economics thesis defense",
+                "max_chars": 24
+            },
+            "Placeholder_12": {
+                "text": "5",
+                "max_chars": 1
+            }
+        },
+        "layout_type": "BLANK_1_1_1_2"
+    },
+    {
+        "slide_number": 5,
+        "shapes": {
+            "Placeholder_0": {
+                "text": "Title",
+                "max_chars": 5
+            },
+            "Placeholder_1": {
+                "text": "Body text",
+                "max_chars": 9
+            },
+            "Placeholder_2": {
+                "text": "Subtitle",
+                "max_chars": 8
+            },
+            "Placeholder_3": {
+                "text": "Body text",
+                "max_chars": 9
+            },
+            "Placeholder_4": {
+                "text": "Subtitle",
+                "max_chars": 8
+            },
+            "Placeholder_5": {
+                "text": "Body text",
+                "max_chars": 9
+            },
+            "Placeholder_6": {
+                "text": "Subtitle",
+                "max_chars": 8
+            },
+            "Placeholder_7": {
+                "text": "Economics thesis defense",
+                "max_chars": 24
+            },
+            "Placeholder_12": {
+                "text": "6",
+                "max_chars": 1
+            },
+            "Google Shape;493;p52": {
+                "text": "01",
+                "max_chars": 2
+            },
+            "Google Shape;494;p52": {
+                "text": "02",
+                "max_chars": 2
+            },
+            "Google Shape;495;p52": {
+                "text": "03",
+                "max_chars": 2
+            }
+        },
+        "layout_type": "BLANK_1_1_1_2_1"
+    },
+    {
+        "slide_number": 6,
+        "shapes": {
+            "Placeholder_0": {
+                "text": "Title",
+                "max_chars": 5
+            },
+            "Placeholder_1": {
+                "text": "Body text",
+                "max_chars": 9
+            },
+            "Placeholder_2": {
+                "text": "Subtitle",
+                "max_chars": 8
+            },
+            "Placeholder_3": {
+                "text": "Body text",
+                "max_chars": 9
+            },
+            "Placeholder_4": {
+                "text": "Subtitle",
+                "max_chars": 8
+            },
+            "Placeholder_5": {
+                "text": "Economics thesis defense",
+                "max_chars": 24
+            },
+            "Placeholder_12": {
+                "text": "7",
+                "max_chars": 1
+            }
+        },
+        "layout_type": "TITLE_AND_TWO_COLUMNS"
+    },
+    {
+        "slide_number": 7,
+        "shapes": {
+            "Placeholder_0": {
+                "text": "Title",
+                "max_chars": 5
+            },
+            "Placeholder_1": {
+                "text": "Economics thesis defense",
+                "max_chars": 24
+            },
+            "Placeholder_2": {
+                "text": "Short body text",
+                "max_chars": 15
+            },
+            "Placeholder_3": {
+                "text": "Subtitle",
+                "max_chars": 8
+            },
+            "Placeholder_4": {
+                "text": "Short body text",
+                "max_chars": 15
+            },
+            "Placeholder_5": {
+                "text": "Subtitle",
+                "max_chars": 8
+            },
+            "Placeholder_6": {
+                "text": "Short body text",
+                "max_chars": 15
+            },
+            "Placeholder_7": {
+                "text": "Subtitle",
+                "max_chars": 8
+            },
+            "Placeholder_8": {
+                "text": "Short body text",
+                "max_chars": 15
+            },
+            "Placeholder_9": {
+                "text": "Subtitle",
+                "max_chars": 8
+            },
+            "Placeholder_12": {
+                "text": "8",
+                "max_chars": 1
+            },
+            "Placeholder_13": {
+                "text": "Short body text",
+                "max_chars": 15
+            },
+            "Placeholder_14": {
+                "text": "Subtitle",
+                "max_chars": 8
+            },
+            "Placeholder_15": {
+                "text": "Short body text",
+                "max_chars": 15
+            },
+            "Placeholder_16": {
+                "text": "Subtitle",
+                "max_chars": 8
+            }
+        },
+        "layout_type": "BLANK_1_1_1_1_1"
+    },
+    {
+        "slide_number": 8,
+        "shapes": {
+            "Placeholder_0": {
+                "text": "Title",
+                "max_chars": 5
+            },
+            "Placeholder_1": {
+                "text": "Subtitle",
+                "max_chars": 8
+            },
+            "Placeholder_2": {
+                "text": "01",
+                "max_chars": 2
+            },
+            "Placeholder_3": {
+                "text": "Economics thesis defense",
+                "max_chars": 24
+            },
+            "Placeholder_12": {
+                "text": "4",
+                "max_chars": 1
+            }
+        },
+        "layout_type": "SECTION_HEADER"
+    },
+    {
+        "slide_number": 9,
+        "shapes": {
+            "Placeholder_0": {
+                "text": "Title",
+                "max_chars": 5
+            },
+            "Placeholder_1": {
+                "text": "Body text",
+                "max_chars": 9
+            },
+            "Placeholder_2": {
+                "text": "Economics thesis defense",
+                "max_chars": 24
+            },
+            "Placeholder_12": {
+                "text": "9",
+                "max_chars": 1
+            }
+        },
+        "layout_type": "ONE_COLUMN_TEXT"
+    },
+    {
+        "slide_number": 10,
+        "shapes": {
+            "Placeholder_0": {
+                "text": "Awesome words",
+                "max_chars": 13
+            },
+            "Placeholder_1": {
+                "text": "Economics thesis defense",
+                "max_chars": 24
+            },
+            "Placeholder_12": {
+                "text": "10",
+                "max_chars": 2
+            }
+        },
+        "layout_type": "MAIN_POINT"
+    },
+    {
+        "slide_number": 11,
+        "shapes": {
+            "Placeholder_0": {
+                "text": "Title",
+                "max_chars": 5
+            },
+            "Placeholder_1": {
+                "text": "Subtitle",
+                "max_chars": 8
+            },
+            "Placeholder_2": {
+                "text": "01",
+                "max_chars": 2
+            },
+            "Placeholder_3": {
+                "text": "Economics thesis defense",
+                "max_chars": 24
+            },
+            "Placeholder_12": {
+                "text": "4",
+                "max_chars": 1
+            }
+        },
+        "layout_type": "SECTION_HEADER"
+    },
+    {
+        "slide_number": 12,
+        "shapes": {
+            "Placeholder_0": {
+                "text": "Title",
+                "max_chars": 5
+            },
+            "Placeholder_1": {
+                "text": "Body text",
+                "max_chars": 9
+            },
+            "Placeholder_2": {
+                "text": "Economics thesis defense",
+                "max_chars": 24
+            },
+            "Placeholder_12": {
+                "text": "12",
+                "max_chars": 2
+            }
+        },
+        "layout_type": "CUSTOM_1"
+    },
+    {
+        "slide_number": 13,
+        "shapes": {
+            "Placeholder_0": {
+                "text": "Thanks",
+                "max_chars": 6
+            },
+            "Placeholder_1": {
+                "text": "Do you have any questions?",
+                "max_chars": 26
+            },
+            "Placeholder_2": {
+                "text": "Economics thesis defense",
+                "max_chars": 24
+            },
+            "Placeholder_12": {
+                "text": "13",
+                "max_chars": 2
+            },
+            "Google Shape;1007;p74": {
+                "text": "Please keep this slide for attribution",
+                "max_chars": 38
+            }
+        },
+        "layout_type": "BLANK_1_1_1_1_1_1_2"
+    },
+    {
+        "slide_number": 14,
+        "shapes": {
+            "Placeholder_0": {
+                "text": "Thanks",
+                "max_chars": 6
+            },
+            "Placeholder_1": {
+                "text": "Do you have any questions?",
+                "max_chars": 26
+            },
+            "Placeholder_2": {
+                "text": "Economics thesis defense",
+                "max_chars": 24
+            },
+            "Placeholder_12": {
+                "text": "13",
+                "max_chars": 2
+            },
+            "Google Shape;1007;p74": {
+                "text": "Please keep this slide for attribution",
+                "max_chars": 38
+            }
+        },
+        "layout_type": "BLANK_1_1_1_1_1_1_2"
+    }
+]

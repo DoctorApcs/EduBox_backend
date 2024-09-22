@@ -1,0 +1,401 @@
+[
+    {
+        "slide_number": 0,
+        "layout_type": "TITLE",
+        "shapes": {
+            "Placeholder_0": {
+                "type": "title"
+            },
+            "Placeholder_1": {
+                "type": "subtitle"
+            },
+            "Placeholder_2": {
+                "type": "section"
+            },
+            "Placeholder_4": {
+                "type": "other"
+            },
+            "Placeholder_12": {
+                "type": "other"
+            }
+        }
+    },
+    {
+        "slide_number": 1,
+        "layout_type": "BLANK_1",
+        "shapes": {
+            "Placeholder_0": {
+                "type": "other"
+            },
+            "Placeholder_1": {
+                "type": "short_body_text"
+            },
+            "Placeholder_2": {
+                "type": "subtitle"
+            },
+            "Placeholder_3": {
+                "type": "other"
+            },
+            "Placeholder_4": {
+                "type": "other"
+            },
+            "Placeholder_5": {
+                "type": "short_body_text"
+            },
+            "Placeholder_6": {
+                "type": "subtitle"
+            },
+            "Placeholder_7": {
+                "type": "other"
+            },
+            "Placeholder_8": {
+                "type": "short_body_text"
+            },
+            "Placeholder_9": {
+                "type": "subtitle"
+            },
+            "Placeholder_12": {
+                "type": "other"
+            },
+            "Placeholder_13": {
+                "type": "other"
+            },
+            "Placeholder_14": {
+                "type": "short_body_text"
+            },
+            "Placeholder_15": {
+                "type": "subtitle"
+            },
+            "Placeholder_16": {
+                "type": "other"
+            }
+        }
+    },
+    {
+        "slide_number": 2,
+        "layout_type": "SECTION_HEADER",
+        "shapes": {
+            "Placeholder_0": {
+                "type": "title"
+            },
+            "Placeholder_1": {
+                "type": "subtitle"
+            },
+            "Placeholder_2": {
+                "type": "other"
+            },
+            "Placeholder_3": {
+                "type": "other"
+            },
+            "Placeholder_12": {
+                "type": "other"
+            }
+        }
+    },
+    {
+        "slide_number": 3,
+        "layout_type": "SECTION_TITLE_AND_DESCRIPTION",
+        "shapes": {
+            "Placeholder_0": {
+                "type": "title"
+            },
+            "Placeholder_1": {
+                "type": "body_text"
+            },
+            "Placeholder_2": {
+                "type": "other"
+            },
+            "Placeholder_12": {
+                "type": "other"
+            }
+        }
+    },
+    {
+        "slide_number": 4,
+        "layout_type": "BLANK_1_1_1_2",
+        "shapes": {
+            "Placeholder_0": {
+                "type": "title"
+            },
+            "Placeholder_1": {
+                "type": "body_text"
+            },
+            "Placeholder_2": {
+                "type": "header"
+            },
+            "Placeholder_3": {
+                "type": "body_text"
+            },
+            "Placeholder_4": {
+                "type": "header"
+            },
+            "Placeholder_5": {
+                "type": "body_text"
+            },
+            "Placeholder_6": {
+                "type": "header"
+            },
+            "Placeholder_7": {
+                "type": "other"
+            },
+            "Placeholder_12": {
+                "type": "other"
+            }
+        }
+    },
+    {
+        "slide_number": 5,
+        "layout_type": "BLANK_1_1_1_2_1",
+        "shapes": {
+            "Placeholder_0": {
+                "type": "title"
+            },
+            "Placeholder_1": {
+                "type": "body_text"
+            },
+            "Placeholder_2": {
+                "type": "subtitle"
+            },
+            "Placeholder_3": {
+                "type": "body_text"
+            },
+            "Placeholder_4": {
+                "type": "subtitle"
+            },
+            "Placeholder_5": {
+                "type": "body_text"
+            },
+            "Placeholder_6": {
+                "type": "subtitle"
+            },
+            "Placeholder_7": {
+                "type": "other"
+            },
+            "Placeholder_12": {
+                "type": "other"
+            },
+            "Google Shape;493;p52": {
+                "type": "other"
+            },
+            "Google Shape;494;p52": {
+                "type": "other"
+            },
+            "Google Shape;495;p52": {
+                "type": "other"
+            }
+        }
+    },
+    {
+        "slide_number": 6,
+        "layout_type": "TITLE_AND_TWO_COLUMNS",
+        "shapes": {
+            "Placeholder_0": {
+                "type": "title"
+            },
+            "Placeholder_1": {
+                "type": "body_text"
+            },
+            "Placeholder_2": {
+                "type": "subtitle"
+            },
+            "Placeholder_3": {
+                "type": "body_text"
+            },
+            "Placeholder_4": {
+                "type": "subtitle"
+            },
+            "Placeholder_5": {
+                "type": "other"
+            },
+            "Placeholder_12": {
+                "type": "other"
+            }
+        }
+    },
+    {
+        "slide_number": 7,
+        "layout_type": "BLANK_1_1_1_1_1",
+        "shapes": {
+            "Placeholder_0": {
+                "type": "title"
+            },
+            "Placeholder_1": {
+                "type": "other"
+            },
+            "Placeholder_2": {
+                "type": "short_body_text"
+            },
+            "Placeholder_3": {
+                "type": "subtitle"
+            },
+            "Placeholder_4": {
+                "type": "short_body_text"
+            },
+            "Placeholder_5": {
+                "type": "subtitle"
+            },
+            "Placeholder_6": {
+                "type": "short_body_text"
+            },
+            "Placeholder_7": {
+                "type": "subtitle"
+            },
+            "Placeholder_8": {
+                "type": "short_body_text"
+            },
+            "Placeholder_9": {
+                "type": "subtitle"
+            },
+            "Placeholder_12": {
+                "type": "other"
+            },
+            "Placeholder_13": {
+                "type": "short_body_text"
+            },
+            "Placeholder_14": {
+                "type": "subtitle"
+            },
+            "Placeholder_15": {
+                "type": "short_body_text"
+            },
+            "Placeholder_16": {
+                "type": "subtitle"
+            }
+        }
+    },
+    {
+        "slide_number": 8,
+        "layout_type": "SECTION_HEADER",
+        "shapes": {
+            "Placeholder_0": {
+                "type": "title"
+            },
+            "Placeholder_1": {
+                "type": "subtitle"
+            },
+            "Placeholder_2": {
+                "type": "other"
+            },
+            "Placeholder_3": {
+                "type": "other"
+            },
+            "Placeholder_12": {
+                "type": "other"
+            }
+        }
+    },
+    {
+        "slide_number": 9,
+        "layout_type": "ONE_COLUMN_TEXT",
+        "shapes": {
+            "Placeholder_0": {
+                "type": "title"
+            },
+            "Placeholder_1": {
+                "type": "body_text"
+            },
+            "Placeholder_2": {
+                "type": "other"
+            },
+            "Placeholder_12": {
+                "type": "other"
+            }
+        }
+    },
+    {
+        "slide_number": 10,
+        "layout_type": "MAIN_POINT",
+        "shapes": {
+            "Placeholder_0": {
+                "type": "awesome_word"
+            },
+            "Placeholder_1": {
+                "type": "other"
+            },
+            "Placeholder_12": {
+                "type": "other"
+            }
+        }
+    },
+    {
+        "slide_number": 11,
+        "layout_type": "SECTION_HEADER",
+        "shapes": {
+            "Placeholder_0": {
+                "type": "title"
+            },
+            "Placeholder_1": {
+                "type": "subtitle"
+            },
+            "Placeholder_2": {
+                "type": "other"
+            },
+            "Placeholder_3": {
+                "type": "other"
+            },
+            "Placeholder_12": {
+                "type": "other"
+            }
+        }
+    },
+    {
+        "slide_number": 12,
+        "layout_type": "CUSTOM_1",
+        "shapes": {
+            "Placeholder_0": {
+                "type": "title"
+            },
+            "Placeholder_1": {
+                "type": "body_text"
+            },
+            "Placeholder_2": {
+                "type": "other"
+            },
+            "Placeholder_12": {
+                "type": "other"
+            }
+        }
+    },
+    {
+        "slide_number": 13,
+        "layout_type": "BLANK_1_1_1_1_1_1_2",
+        "shapes": {
+            "Placeholder_0": {
+                "type": "other"
+            },
+            "Placeholder_1": {
+                "type": "other"
+            },
+            "Placeholder_2": {
+                "type": "other"
+            },
+            "Placeholder_12": {
+                "type": "other"
+            },
+            "Google Shape;1007;p74": {
+                "type": "other"
+            }
+        }
+    },
+    {
+        "slide_number": 14,
+        "layout_type": "BLANK_1_1_1_1_1_1_2",
+        "shapes": {
+            "Placeholder_0": {
+                "type": "other"
+            },
+            "Placeholder_1": {
+                "type": "other"
+            },
+            "Placeholder_2": {
+                "type": "other"
+            },
+            "Placeholder_12": {
+                "type": "other"
+            },
+            "Google Shape;1007;p74": {
+                "type": "other"
+            }
+        }
+    }
+]
